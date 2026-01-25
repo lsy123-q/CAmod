@@ -19,10 +19,27 @@ namespace CAmod.Items
             Item.width = 28;
             Item.height = 28;
             Item.accessory = true;
-            Item.rare = ItemRarityID.Red;
+            Item.rare = ModContent.RarityType<Rarities.AncientRarity>();
             Item.value = Item.sellPrice(gold: 25);
         }
+        public override void AddRecipes()
+        {
+            Recipe recipe = CreateRecipe();
 
+            recipe.AddIngredient(ModContent.ItemType<Materials.AncientEmblem>(), 1);
+            // 고대의 휘장 1개를 요구한다
+
+            recipe.AddIngredient(ItemID.Cannon, 1);
+            // 대포 1개를 요구한다
+
+            recipe.AddIngredient(ItemID.Glass, 50);
+            // 유리 블럭 50개를 요구한다
+
+            recipe.AddTile(TileID.DemonAltar);
+            // 악마의 제단에서 제작 가능하게 한다
+
+            recipe.Register();
+        }
         public override void UpdateAccessory(Player player, bool hideVisual)
         {
             GlassCannonPlayer gPlayer = player.GetModPlayer<GlassCannonPlayer>();

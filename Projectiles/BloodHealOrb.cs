@@ -27,9 +27,14 @@ namespace CAmod.Projectiles
 
         public override void AI()
         {
-           
-                // 최초 소환 시점이다 (1회만 실행된다
 
+            // 최초 소환 시점이다 (1회만 실행된다
+            Lighting.AddLight(
+Projectile.Center,
+0.9f,  // R : 선혈 빨강
+0.1f,  // G : 거의 없음
+0.1f   // B : 거의 없음
+);
             Projectile.extraUpdates = 3;
             // 이동 보간 밀도를 높인다
 

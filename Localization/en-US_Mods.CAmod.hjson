@@ -73,9 +73,30 @@ Items: {
 		DisplayName: Ancient Emblem
 		Tooltip: ""
 	}
+
+	MonsterController: {
+		DisplayName: Monster Controller
+		Tooltip: ""
+	}
+
+	SpeedFreak: {
+		DisplayName: Speed Freak
+		Tooltip: ""
+	}
+
+	LeafShield: {
+		Tooltip: ""
+		DisplayName: The First Dryad's Blessing
+	}
 }
 
-"Keybinds.Dimension Gate.DisplayName": Dimension  Gate
+Keybinds: {
+	"Dimension Gate.DisplayName": Dimension  Gate
+	"Monster Control.DisplayName": Monster  Control
+	SummonControlledMonster.DisplayName: Summon Controlled Monster
+	"Leaf Ward.DisplayName": Leaf  Ward
+	"Leaf Shield..DisplayName": Leaf  Shield.
+}
 
 Buffs: {
 	DimensionGateCooltime: {
@@ -102,6 +123,11 @@ Buffs: {
 		DisplayName: blood thirst
 		Description: The next magic attack steals the enemy's energy.
 	}
+
+	LeafShieldCooltime: {
+		Description: You can't use Leaf Shield for a while.
+		DisplayName: Leaf Shield Cooltime
+	}
 }
 
 Projectiles: {
@@ -111,4 +137,19 @@ Projectiles: {
 	BloodHealOrb.DisplayName: Blood Heal Orb
 	bomb.DisplayName: bomb
 	GlassCannonBonusHit.DisplayName: Glass Cannon Bonus Hit
+	LeafBlowerOrbit.DisplayName: Leaf Blower Orbit
 }
+
+Configs: {
+	MonsterControlConfig: {
+		DisplayName: Monster Control Config
+		Headers.MonsterControl: Monster Control Header
+
+		SummonNPCType: {
+			Label: ��ȯ�� NPC Ÿ��
+			Tooltip: ��: Zombie �Ǵ� 3 �Ǵ� ModName/NPCName
+		}
+	}
+}
+
+NPCs.ControlledMonster.DisplayName: Controlled Monster

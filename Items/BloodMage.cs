@@ -17,7 +17,7 @@ namespace CAmod.Items
             Item.width = 28;
             Item.height = 28;
             Item.value = Item.buyPrice(gold: 10);
-            Item.rare = 8;
+            Item.rare = ModContent.RarityType<Rarities.AncientRarity>();
             Item.value = Item.sellPrice(gold: 25);
         }
        
@@ -39,26 +39,19 @@ namespace CAmod.Items
 
                     recipe.AddIngredient(
                         calamity.Find<ModItem>("BloodPact").Type, 1);
+                    recipe.AddIngredient(ModContent.ItemType<Materials.AncientEmblem>(), 1);
 
-
-                    recipe.AddIngredient(
-                        calamity.Find<ModItem>("CoreofCalamity").Type, 1);
-                    // 재앙의 코어 1개를 요구한다
+                  
 
                     recipe.AddIngredient(
                         calamity.Find<ModItem>("BloodOrb").Type, 10);
                     // 블러드 오브 10개를 요구한다
                     // 
-                    recipe.AddIngredient(
-                        ItemID.SoulDrain, 1);
-                    // 라이프 드레인 1개를 요구한다
 
-                    recipe.AddIngredient(
-                      ItemID.ManaCrystal, 1);
-                    // 마나 수정 1개를 요구한다
+
 
                     recipe.AddTile(
-                        TileID.MythrilAnvil);
+                     TileID.DemonAltar);
                     // 하드모드 모루에서 제작 가능하게 한다
 
                     recipe.Register();

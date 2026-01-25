@@ -44,6 +44,8 @@ namespace CAmod.Items
                 {
                     Recipe recipe = CreateRecipe();
 
+                    recipe.AddIngredient(ModContent.ItemType<Materials.AncientEmblem>(), 1);
+                    // 고대의 휘장(Ancient Emblem) 1개를 요구한다
                     recipe.AddIngredient(
                         calamity.Find<ModItem>("CosmiliteBar").Type, 10);
                     // 칼라미티가 있으면 코스밀라이트 주괴 10개를 요구한다
