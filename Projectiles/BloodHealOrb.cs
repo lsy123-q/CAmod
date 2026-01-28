@@ -74,7 +74,7 @@ Projectile.Center,
             {
                 int healed = Math.Min(healPotential, player.statLifeMax2 - player.statLife);
                 float healRatio = (float)healed / player.statLifeMax2;
-                float scale = MathHelper.Lerp(1.0f, 2.0f, healRatio);
+                float scale = MathHelper.Lerp(0.5f, 2.5f, healRatio);
 
                 for (int i = 0; i < 15; i++)
                 {
@@ -159,13 +159,15 @@ Projectile.Center,
                     0f,
                     1f
                 );
+
     if (Projectile.localAI[0] == 0f)
     {
         Projectile.localAI[0] = 1f;
         
     }
 
-    float dustScale = MathHelper.Lerp(1.0f, 2.0f, healRatio);
+    float dustScale = MathHelper.Lerp(0.5f, 2.5f, healRatio);
+              
                 for (int i = 1; i <= stepCount; i++)
                 {
                     float t = (i * interval) / distMove;
@@ -178,9 +180,9 @@ Projectile.Center,
     default,
     dustScale
 );
-
+                    Main.dust[d].fadeIn = 1.5f + healRatio;
                     Main.dust[d].velocity = Vector2.Zero;
-                    Main.dust[d].noGravity = true;
+                   
                     Main.dust[d].noGravity = true;
                     Main.dust[d].shader = GameShaders.Armor.GetSecondaryShader(1, Main.LocalPlayer);
 

@@ -76,11 +76,7 @@ namespace CAmod.Players
 
             if (!bloodMageEquipped && wasBloodMageEquipped && vampCooldown > 0f)
             {
-                Player.KillMe(
-    PlayerDeathReason.LegacyEmpty(),
-    Player.statLifeMax2 * 10,
-    0
-);
+              
                 // 쿨타임 도중 장신구를 해제하면 즉사한다
                 return;
             }
@@ -95,27 +91,39 @@ namespace CAmod.Players
                 );
                 // 현재 잃은 체력 비율이다
 
-                float accel = MathHelper.Lerp(1f, 2.0f, missingRatio* missingRatio);
+                float accel = MathHelper.Lerp(1f, 2.0f, missingRatio);
 
 
                 if (vampCooldown > 0f && bloodMageEquipped)
                 {
-                    vampCooldown -= accel;
+                    vampCooldown -= accel * (5f + cachedRegenPerSecond);
+               
+                }
+            if (vampCooldown > 0f) {
+
                 Player.ClearBuff(ModContent.BuffType<BloodMageCooldown>());
                 Player.AddBuff(
                         ModContent.BuffType<BloodMageCooldown>(),
-                        (int)MathF.Ceiling(vampCooldown)
+                        (int)MathF.Ceiling(vampCooldown / (accel * (5f + cachedRegenPerSecond)))
                     );
-                }
-                else if(vampCooldown <= 0f&& bloodMageEquipped)
-                {
-                    vampCooldown = 0f;
 
-                    Player.AddBuff(ModContent.BuffType<BloodMageOn>(), 1);
+            }
 
-                    if (Player.HasBuff(ModContent.BuffType<BloodMageCooldown>()))
-                        Player.ClearBuff(ModContent.BuffType<BloodMageCooldown>());
-                }
+           if (vampCooldown <= 0f && bloodMageEquipped)
+            {
+                vampCooldown = 0f;
+
+                
+            }
+            if (vampCooldown <= 0f) {
+
+                Player.AddBuff(ModContent.BuffType<BloodMageOn>(), 1);
+
+                if (Player.HasBuff(ModContent.BuffType<BloodMageCooldown>()))
+                    Player.ClearBuff(ModContent.BuffType<BloodMageCooldown>());
+
+            }
+
             if (!Player.dead && bloodMageEquipped)
             {
                 int missingLife = Player.statLifeMax2 - Player.statLife;
@@ -154,7 +162,7 @@ namespace CAmod.Players
                 }
             }
 
-            if (bloodMageEquipped && !allowBloodHeal)
+            if (vampCooldown > 0f  && !allowBloodHeal )
             {
                 if (Player.statLife > lastLife)
                 {
@@ -163,7 +171,7 @@ namespace CAmod.Players
                     Player.statLife = lastLife;
                     // 기준 체력보다 증가한 모든 회복을 차단한다
 
-                    if(diff != 1) { 
+                    if(diff > 2) { 
                     CombatText.NewText(
      Player.getRect(),
      new Color(180, 30, 30),
@@ -180,6 +188,37 @@ namespace CAmod.Players
 
             }
 
+            if (bloodMageEquipped && !allowBloodHeal)
+            {
+                if (Player.statLife > lastLife)
+                {
+                    int diff = Player.statLife - lastLife;
+
+                    Player.statLife = lastLife;
+                    // 기준 체력보다 증가한 모든 회복을 차단한다
+
+                    if (diff > 2)
+                    {
+                        CombatText.NewText(
+         Player.getRect(),
+         new Color(180, 30, 30),
+         "-" + diff
+     );
+                    }
+                }
+
+                if (Player.statLife < lastLife)
+                {
+
+                    lastLife = Player.statLife;
+                }
+
+
+            }
+
+
+
+
             if (bloodMageEquipped)
             {
                 int missing2 = Player.statLifeMax2 - Player.statLife;
@@ -190,7 +229,7 @@ namespace CAmod.Players
                 );
                 // 잃은 체력 비율이다 (0~1)
 
-                float bonus = MathHelper.Lerp(0f, 0.10f, missingRatio2);
+                float bonus = MathHelper.Lerp(0f, 0.15f, missingRatio2);
                 // 최대 10%까지 증가한다
 
                 Player.GetDamage(DamageClass.Magic) += bonus;
@@ -453,7 +492,7 @@ namespace CAmod.Players
             int effectiveHeal = Math.Min(healPotential, missingLife);
 
             // ===== 여기서 실질 회복량 기준으로 쿨타임 확정 =====
-            int cooldown = CalculateVampCooldown(effectiveHeal);
+            int cooldown = effectiveHeal*60;
             vampCooldown = cooldown;
             // 구체가 날아가기 전에 이미 쿨타임이 예약된다
             // ===== 그로테스크한 흡혈 Dust 연출 =====
@@ -464,7 +503,7 @@ namespace CAmod.Players
             );
             // 실제 회복량이 최대 체력의 몇 %인지다
 
-            float scale = MathHelper.Lerp(1.0f, 2.0f, healRatio);
+            float scale = MathHelper.Lerp(0.5f, 2.5f, healRatio);
             // 회복량이 클수록 더 크게 튄다
 
             Vector2 origin = new Vector2(

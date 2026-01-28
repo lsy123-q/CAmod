@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CAmod")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6b50a5bbc5ad0c2f60c6ae8924dafda11a52f48b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2043f158cbf510b75696f58ff43d31fead61038d")]
 [assembly: System.Reflection.AssemblyProductAttribute("CAmod")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CAmod")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
