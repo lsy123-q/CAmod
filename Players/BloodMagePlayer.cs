@@ -55,6 +55,9 @@ namespace CAmod.Players
         public override void PostUpdate()
         {
 
+            if (Player.creativeGodMode) {
+                lastLife = Player.statLifeMax2;
+            }
 
 
             if(bloodMageEquipped == true) { 
@@ -162,7 +165,7 @@ namespace CAmod.Players
                 }
             }
 
-            if (vampCooldown > 0f  && !allowBloodHeal )
+            if (vampCooldown > 0f && !allowBloodHeal && !Player.creativeGodMode)
             {
                 if (Player.statLife > lastLife)
                 {
@@ -188,7 +191,7 @@ namespace CAmod.Players
 
             }
 
-            if (bloodMageEquipped && !allowBloodHeal)
+            if (bloodMageEquipped && !allowBloodHeal && !Player.creativeGodMode)
             {
                 if (Player.statLife > lastLife)
                 {
@@ -229,12 +232,17 @@ namespace CAmod.Players
                 );
                 // 잃은 체력 비율이다 (0~1)
 
-                float bonus = MathHelper.Lerp(0f, 0.15f, missingRatio2);
+                float bonus = MathHelper.Lerp(0f, 0.10f, missingRatio2);
                 // 최대 10%까지 증가한다
 
                 Player.GetDamage(DamageClass.Magic) += bonus;
                 // 마법 피해를 잃은 체력 비례로 증가시킨다
             }
+            if (Player.creativeGodMode)
+            {
+                lastLife = Player.statLifeMax2;
+            }
+
         }
         public override void UpdateLifeRegen()
         {

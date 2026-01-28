@@ -24,6 +24,7 @@ namespace CAmod.Items
         public override void UpdateAccessory(Player player, bool hideVisual)
         {
             player.GetModPlayer<BloodMagePlayer>().bloodMageEquipped = true;
+            player.GetDamage(DamageClass.Magic) += 0.05f;
             // Blood Mage 장신구 착용 플래그를 켠다
         }
 
@@ -79,7 +80,7 @@ namespace CAmod.Items
             tooltips.Add(new TooltipLine(Mod, "L1",
                 "Increases maximum life by 25%"));
             tooltips.Add(new TooltipLine(Mod, "L2",
-                "Magic damage increases by up to 10% based on missing health"));
+     "Magic damage is increased by 5%, and up to an additional 10% based on missing health"));
             tooltips.Add(new TooltipLine(Mod, "L3",
                 "Magic projectiles steal 10% of damage as life and mana"));
        
