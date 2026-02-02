@@ -118,7 +118,7 @@ namespace CAmod.Players
 
                 
             }
-            if (vampCooldown <= 0f) {
+            if (vampCooldown <= 0f&& bloodMageEquipped) {
 
                 Player.AddBuff(ModContent.BuffType<BloodMageOn>(), 1);
 

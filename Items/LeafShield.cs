@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System;
 using Microsoft.Xna.Framework;
 using CAmod.Systems;
+using Steamworks;
 namespace CAmod.Items
 {
     public class LeafShield : ModItem
@@ -48,12 +49,15 @@ namespace CAmod.Items
 
             float bonusMagicCrit = stage * 0.25f;
             // 추가 마법 치명타 확률이다
+            int bonusdefense = (int)(stage * 0.5f);
 
-            int bonusMana = stage * 5;
+            int bonusMana = stage * 10;
             // 추가 마나다
             float progress = (stage / 40f)*100f;
             float cooldownReductionSec = stage * 0.25f;
             // 쿨타임 감소 초 단위다 (30프레임 = 0.5초)
+
+            float lastcool = 20f - cooldownReductionSec;
 
             string keyText = KeySystem.leafshield.GetAssignedKeys().Count > 0
      ? KeySystem.leafshield.GetAssignedKeys()[0]
@@ -62,8 +66,7 @@ namespace CAmod.Items
 
             tooltips.Add(new TooltipLine(Mod, "L1",
                 $"Press [{keyText}] to use the Dryad NPC's Leaf Shield."));
-            tooltips.Add(new TooltipLine(Mod, "L2",
-              "Cooldown: 20 seconds."));
+       
 
             tooltips.Add(new TooltipLine(Mod, "L3",
                 "Magic projectiles inflict Dryad's Bane on enemies for 3 seconds."));
@@ -73,7 +76,7 @@ namespace CAmod.Items
                  "Provides light in the Abyss."));
 
             tooltips.Add(new TooltipLine(Mod, "L5",
-                "This accessory grows stronger as your journey progresses."));
+                "This accessory grows with each new boss you defeat."));
             // 성장형 장신구임을 설명한다
 
             tooltips.Add(new TooltipLine(Mod, "L6",
@@ -97,8 +100,12 @@ namespace CAmod.Items
                 $"+{bonusMana} mana"));
             // 성장으로 추가된 마나다
 
+            tooltips.Add(new TooltipLine(Mod, "L10",
+               $"+{bonusdefense} defense"));
+
+
             tooltips.Add(new TooltipLine(Mod, "L11",
-                $"Leaf Shield cooldown reduction: {cooldownReductionSec:F1} seconds"));
+                $"Leaf Shield cooldown reduction: {lastcool:F1} seconds"));
             // 성장으로 감소된 쿨타임이다
 
             float t = (float)(Math.Sin(Main.GlobalTimeWrappedHourly * 2.8f) * 0.5f + 0.5f);
