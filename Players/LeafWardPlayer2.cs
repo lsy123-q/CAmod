@@ -36,7 +36,7 @@ namespace CAmod.Players
             Player.GetCritChance(DamageClass.Magic) += count * 0.25f;
             // 보스 1종당 마법 치명타 0.25% 증가다
 
-            Player.statManaMax2 += count * 10;
+            Player.statManaMax2 += count * 5;
 
             Player.statDefense += (int)(count*0.5f);
             // 보스 1종당 최대 마나 10 증가다

@@ -47,8 +47,7 @@ namespace CAmod.Players
                 return;
 
 
-            int bonusLife = (int)(Player.statLifeMax * 0.25f);
-            Player.statLifeMax2 += bonusLife;
+         
            
            
         }
@@ -511,7 +510,7 @@ namespace CAmod.Players
             );
             // 실제 회복량이 최대 체력의 몇 %인지다
 
-            float scale = MathHelper.Lerp(0.5f, 2.5f, healRatio);
+            float scale = MathHelper.Lerp(0.5f, 1.75f, healRatio);
             // 회복량이 클수록 더 크게 튄다
 
             Vector2 origin = new Vector2(
@@ -520,7 +519,7 @@ namespace CAmod.Players
  );
             // 회복량에 따라 더스트 개수가 증가한다
 
-            for (int i = 0; i <25; i++)
+            for (int i = 0; i <35; i++)
             {
                 Vector2 vel = Main.rand.NextVector2Circular(1f, 1f) * scale;
 
@@ -541,7 +540,7 @@ namespace CAmod.Players
               
 
                 // === 생존시간 연장 핵심 ===
-                Main.dust[d].fadeIn = 1.5f + healRatio * 2.5f;
+                Main.dust[d].fadeIn = 5.0f + healRatio * 2.5f;
                 // 페이드인 시간을 늘려 소멸을 최대한 늦춘다
 
                 Main.dust[d].scale *= 1.2f;

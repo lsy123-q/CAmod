@@ -74,9 +74,11 @@ Projectile.Center,
             {
                 int healed = Math.Min(healPotential, player.statLifeMax2 - player.statLife);
                 float healRatio = (float)healed / player.statLifeMax2;
-                float scale = MathHelper.Lerp(0.5f, 2.5f, healRatio);
 
-                for (int i = 0; i < 15; i++)
+
+                float scale = MathHelper.Lerp(0.5f, 1.75f, healRatio);
+
+                for (int i = 0; i < 35;i++)
                 {
                     Vector2 vel = Main.rand.NextVector2Circular(1f, 1f) * scale;
 
@@ -97,7 +99,7 @@ Projectile.Center,
 
 
                     // === 생존시간 연장 핵심 ===
-                    Main.dust[d].fadeIn = 1.5f + healRatio * 2.5f;
+                    Main.dust[d].fadeIn = 5.0f+ healRatio * 2.5f  ;
                     // 페이드인 시간을 늘려 소멸을 최대한 늦춘다
 
                     Main.dust[d].scale *= 1.2f;
@@ -165,9 +167,10 @@ Projectile.Center,
         Projectile.localAI[0] = 1f;
         
     }
+                int healed = Math.Min(healPotential, player.statLifeMax2 - player.statLife);
+                float dustScale = 0.5f + MathF.Sqrt(healed) * 0.0395f;
+                dustScale = Math.Min(dustScale, 1.75f);
 
-    float dustScale = MathHelper.Lerp(0.5f, 2.5f, healRatio);
-              
                 for (int i = 1; i <= stepCount; i++)
                 {
                     float t = (i * interval) / distMove;

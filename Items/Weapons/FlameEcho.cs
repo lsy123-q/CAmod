@@ -39,7 +39,7 @@ namespace CAmod.Items.Weapons
                 Item.rare = ItemRarityID.Red;
                
             }
-
+            Item.value = Item.sellPrice(gold: 75);
             Item.UseSound = SoundID.Item20;
             Item.autoReuse = true;
             Item.shoot = ModContent.ProjectileType<Projectiles.FlameEcho_Controller>();

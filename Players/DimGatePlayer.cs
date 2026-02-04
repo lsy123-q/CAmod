@@ -98,7 +98,7 @@ namespace CAmod.Players
                     // 무적 중 재시전 시 즉시 종료한다
                     gateTime = 0;
                     endflag = true;
-                    gateCooldown = 60 * 30;
+                    gateCooldown = 60 * 25;
                     Player.dashDelay = 0;
 
 
@@ -138,7 +138,7 @@ namespace CAmod.Players
 
             // 자연 종료 시 종료 연출을 발생시킨다
             if (gateTime == 1) {
-                gateCooldown = 60 * 30;
+                gateCooldown = 60 * 25;
                 Player.dashDelay = 0;
                endflag = true;
                 SoundEngine.PlaySound(
@@ -183,7 +183,7 @@ namespace CAmod.Players
             
             if (Player.dashDelay < 0 && gateTime > 0 &&  gateTime < 270)
             {
-                gateCooldown = 60 * 30;
+                gateCooldown = 60 * 25;
                 gateTime = 0;
                 endflag = true;
                 SoundEngine.PlaySound(

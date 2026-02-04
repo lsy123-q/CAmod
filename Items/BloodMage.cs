@@ -25,6 +25,13 @@ namespace CAmod.Items
         {
             player.GetModPlayer<BloodMagePlayer>().bloodMageEquipped = true;
             player.GetDamage(DamageClass.Magic) += 0.05f;
+
+
+
+
+            player.statLifeMax2 += (int)(player.statLifeMax * 0.25);
+
+
             // Blood Mage 장신구 착용 플래그를 켠다
         }
 

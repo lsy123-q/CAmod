@@ -24,6 +24,7 @@ namespace CAmod.Items
             Item.rare = ModContent.RarityType<Rarities.AncientRarity>();
             Item.rare = ItemRarityID.LightRed;
             Item.value = Item.buyPrice(gold: 25);
+            Item.value = Item.sellPrice(gold: 25);
         }
 
         public override void UpdateAccessory(Player player, bool hideVisual)
@@ -51,7 +52,7 @@ namespace CAmod.Items
             // 추가 마법 치명타 확률이다
             int bonusdefense = (int)(stage * 0.5f);
 
-            int bonusMana = stage * 10;
+            int bonusMana = stage * 5;
             // 추가 마나다
             float progress = (stage / 40f)*100f;
             float cooldownReductionSec = stage * 0.25f;
