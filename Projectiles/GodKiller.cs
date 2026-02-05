@@ -93,7 +93,7 @@ namespace CAmod.Projectiles
         // ─────────────────────────────
         // 칼라미티 HomeInOnNPC 재현 함수
         // ─────────────────────────────
-        private static void HomeInOnNPC(
+        public static void HomeInOnNPC(
             Projectile projectile,
             bool ignoreTiles,
             float distanceRequired,

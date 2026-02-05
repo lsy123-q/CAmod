@@ -95,12 +95,17 @@ Items: {
 	}
 
 	BlazingRevenant: {
-		Tooltip: '''
-Launches wrathful Auric fireballs that relentlessly pursue enemies.
-Attack speed increases explosively in proportion to lost life.
-'''
-
+		Tooltip:
+			'''
+			Launches wrathful Auric fireballs that relentlessly pursue enemies.
+			Attack speed increases explosively in proportion to lost life.
+			'''
 		DisplayName: Blazing Revenant
+	}
+
+	DivineRetribution: {
+		DisplayName: Divine Retribution
+		Tooltip: ""
 	}
 }
 
@@ -154,6 +159,7 @@ Projectiles: {
 	LeafBlowerOrbit.DisplayName: Leaf Blower Orbit
 	GodKiller.DisplayName: God Killer
 	fire.DisplayName: fire
+	DivineRetributionSpear.DisplayName: Divine Retribution Spear
 }
 
 Configs: {
