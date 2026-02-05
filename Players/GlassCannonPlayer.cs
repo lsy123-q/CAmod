@@ -17,8 +17,8 @@ namespace CAmod.Players
         {
             if (!glassCannonEquipped)
                 return;
-
-            // ===== 최대 체력 25% 감소 =====
+            Player.GetDamage(DamageClass.Magic) += 0.25f;
+            // ===== 최대 체력 25% 감소  =====
             Player.statLifeMax2 = (int)(Player.statLifeMax2 * 0.75f);
             // 최종 최대 체력을 직접 깎는다
             Player.statDefense = (Player.statDefense * 0.75f);

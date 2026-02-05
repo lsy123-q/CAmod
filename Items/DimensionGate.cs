@@ -83,18 +83,19 @@ namespace CAmod.Items
 
             tooltips.Add(new TooltipLine(Mod, "L1", "15% increased magic damage"));
             tooltips.Add(new TooltipLine(Mod, "L2", "15% increased movement speed"));
-          
-            tooltips.Add(new TooltipLine(Mod, "L3",
-                "Press [KEY] to enter another dimension for 5 seconds"));
+            tooltips.Add(new TooltipLine(Mod, "L3", "All magic projectiles inflict God Slayer Inferno for 3 seconds on hit"));
             tooltips.Add(new TooltipLine(Mod, "L4",
-                "and become immune to all attacks."));
+                "Press [KEY] to enter another dimension for 5 seconds"));
             tooltips.Add(new TooltipLine(Mod, "L5",
-                "You cannot attack or dash while in another dimension."));
+                "and become immune to all attacks."));
             tooltips.Add(new TooltipLine(Mod, "L6",
-                "Press [KEY] again to leave early."));
-  
+                "You cannot attack or dash while in another dimension."));
             tooltips.Add(new TooltipLine(Mod, "L7",
-                "30 second cooldown, costs 400 mana."));
+                "Returning from another dimension fires 8 God Slayer Darts in all directions, each dealing 750 damage"));
+            tooltips.Add(new TooltipLine(Mod, "L7",
+                         "Press [KEY] again to leave early."));
+            tooltips.Add(new TooltipLine(Mod, "L8",
+                "25 second cooldown, costs 500 mana."));
 
             float t = (float)(Math.Sin(Main.GlobalTimeWrappedHourly * 2.5f) * 0.5f + 0.5f);
             Color blue = new Color(80, 140, 255);

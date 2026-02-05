@@ -10,6 +10,7 @@ using System;
 using System.Linq;
 using CAmod.Items;
 using CAmod.Buffs;
+using System.Reflection;
 namespace CAmod.Players
 {
     public class DimGatePlayer : ModPlayer
@@ -33,6 +34,33 @@ namespace CAmod.Players
             dimGateEquipped = false;
         }
 
+        public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+        {
+            if (!dimGateEquipped || target.friendly || damageDone <= 0)
+                return;
+
+            if (hit.DamageType != DamageClass.Magic)
+                return;
+
+
+            if (ModLoader.TryGetMod("CalamityMod", out Mod calamity))
+            {
+                try
+                {
+                   
+                    Type vulnType = calamity.Code.GetType("CalamityMod.Buffs.DamageOverTime.GodSlayerInferno");
+
+                    
+
+                    if (vulnType != null)
+                    {
+                        int vulnID = calamity.Find<ModBuff>(vulnType.Name).Type;
+                        target.AddBuff(vulnID, 180);
+                    }
+                }
+                catch { }
+            }
+        }
         public override void ModifyDrawInfo(ref PlayerDrawSet drawInfo)
         {
             float alpha;
@@ -50,7 +78,7 @@ namespace CAmod.Players
 
 
 
-                alpha = MathHelper.Lerp(0.05f, 1f, asd);
+                alpha = MathHelper.Lerp(0.01f, 1f, asd);
 
         
 
@@ -91,10 +119,13 @@ namespace CAmod.Players
                 gateCooldown--;
 
             // 단축키 입력 처리
-            if (KeySystem.DimGate.JustPressed && dimGateEquipped && Player.statManaMax2 >= 400)
+            if (KeySystem.DimGate.JustPressed && dimGateEquipped && Player.statManaMax2 >= 500)
             {
                 if (gateTime > 0 && gateTime < 270)
                 {
+
+                    
+
                     // 무적 중 재시전 시 즉시 종료한다
                     gateTime = 0;
                     endflag = true;
@@ -105,7 +136,7 @@ namespace CAmod.Players
                     SoundEngine.PlaySound(
                      new SoundStyle("CAmod/Sounds/close")
                      {
-                         Volume = 1.0f,
+                         Volume = 1.5f,
                          Pitch = 0.0f,
                          MaxInstances = 1
                      },
@@ -113,7 +144,7 @@ namespace CAmod.Players
                  );
                     dustprogress = 0;
                 }
-                else if (gateCooldown <= 0 && gateTime ==0 && Player.CheckMana(400, true))
+                else if (gateCooldown <= 0 && gateTime ==0 && Player.CheckMana(500, true))
                 {
                     // 새로 발동한다
                     
@@ -126,7 +157,7 @@ namespace CAmod.Players
                     SoundEngine.PlaySound(
                     new SoundStyle("CAmod/Sounds/open")
                     {
-                        Volume = 1.0f,
+                        Volume = 1.5f,
                         Pitch = 0.0f,
                         MaxInstances = 1
                     },
@@ -138,13 +169,15 @@ namespace CAmod.Players
 
             // 자연 종료 시 종료 연출을 발생시킨다
             if (gateTime == 1) {
+                
+
                 gateCooldown = 60 * 25;
                 Player.dashDelay = 0;
                endflag = true;
                 SoundEngine.PlaySound(
                     new SoundStyle("CAmod/Sounds/close")
                     {
-                        Volume = 1.0f,
+                        Volume = 1.5f,
                         Pitch = 0.0f,
                         MaxInstances = 1
                     },
@@ -183,6 +216,8 @@ namespace CAmod.Players
             
             if (Player.dashDelay < 0 && gateTime > 0 &&  gateTime < 270)
             {
+
+                
                 gateCooldown = 60 * 25;
                 gateTime = 0;
                 endflag = true;
@@ -276,6 +311,33 @@ namespace CAmod.Players
                 }
                 if (endprogress >= 10)
                 {
+
+                    if (Player.whoAmI == Main.myPlayer)
+                    {
+                        int projType = ModContent.ProjectileType<Projectiles.GodKiller>();
+                        int baseDamage = 750;
+                        int damage = (int)Player.GetTotalDamage(DamageClass.Magic).ApplyTo((float)baseDamage);
+                        float knockBack = 5f;
+                        float speed = 5f;
+                        int count = 8;
+
+                        for (int i = 0; i < count; i++)
+                        {
+                            float angle = MathHelper.TwoPi * (i + 0.5f) / count;
+                            Vector2 velocity = angle.ToRotationVector2() * speed;
+
+                            Projectile.NewProjectile(
+                                Player.GetSource_FromThis(),
+                                Player.Center,
+                                velocity,
+                                projType,
+                                damage,
+                                knockBack,
+                                Player.whoAmI
+                            );
+                        }
+                    }
+
                     endflag = false;
                     endprogress = 0;
                 }

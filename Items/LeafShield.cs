@@ -45,14 +45,14 @@ namespace CAmod.Items
             int stage = ward2.LeafShieldStage;
             // 현재 성장 단계다 (0~20)
 
-            float bonusMagicDamage = stage * 0.5f;
+            float bonusMagicDamage = stage * 0.5f + 10f;
             // 추가 마법 피해 퍼센트다
 
-            float bonusMagicCrit = stage * 0.25f;
+            float bonusMagicCrit = stage * 0.25f + 5f;
             // 추가 마법 치명타 확률이다
-            int bonusdefense = (int)(stage * 0.5f);
+            int bonusdefense = (int)(stage * 0.5f) + 10;
 
-            int bonusMana = stage * 5;
+            int bonusMana = stage * 5 + 100;
             // 추가 마나다
             float progress = (stage / 40f)*100f;
             float cooldownReductionSec = stage * 0.25f;

@@ -24,7 +24,7 @@ namespace CAmod.Items
         public override void UpdateAccessory(Player player, bool hideVisual)
         {
             player.GetModPlayer<BloodMagePlayer>().bloodMageEquipped = true;
-            player.GetDamage(DamageClass.Magic) += 0.05f;
+           
 
 
 
@@ -87,7 +87,7 @@ namespace CAmod.Items
             tooltips.Add(new TooltipLine(Mod, "L1",
                 "Increases maximum life by 25%"));
             tooltips.Add(new TooltipLine(Mod, "L2",
-     "Magic damage is increased by 5%, and up to an additional 10% based on missing health"));
+     "Increases magic damage by up to 25% in proportion to lost health."));
             tooltips.Add(new TooltipLine(Mod, "L3",
                 "Magic projectiles steal 10% of damage as life and mana"));
        

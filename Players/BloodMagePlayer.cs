@@ -231,7 +231,7 @@ namespace CAmod.Players
                 );
                 // 잃은 체력 비율이다 (0~1)
 
-                float bonus = MathHelper.Lerp(0f, 0.10f, missingRatio2);
+                float bonus = MathHelper.Lerp(0f, 0.25f, missingRatio2);
                 // 최대 10%까지 증가한다
 
                 Player.GetDamage(DamageClass.Magic) += bonus;

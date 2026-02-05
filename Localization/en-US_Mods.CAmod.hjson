@@ -88,6 +88,11 @@ Items: {
 		Tooltip: ""
 		DisplayName: The First Dryad's Blessing
 	}
+
+	OmegaManaPotion: {
+		DisplayName: Omega Mana Potion
+		Tooltip: ""
+	}
 }
 
 Keybinds: {
@@ -138,6 +143,7 @@ Projectiles: {
 	bomb.DisplayName: bomb
 	GlassCannonBonusHit.DisplayName: Glass Cannon Bonus Hit
 	LeafBlowerOrbit.DisplayName: Leaf Blower Orbit
+	GodKiller.DisplayName: God Killer
 }
 
 Configs: {
