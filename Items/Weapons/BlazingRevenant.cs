@@ -3,6 +3,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using CAmod.Projectiles;
+using System;
 namespace CAmod.Items.Weapons
 {
     public class BlazingRevenant : ModItem
@@ -50,10 +51,11 @@ namespace CAmod.Items.Weapons
             // 잃은 체력 비례로 useTime을 36~12로 만든다
             int max = player.statLifeMax2;
             int missing = max - player.statLife;
+            
             float ratio = max > 0 ? (float)missing / max : 0f; // 잃은 체력 비율이다 (0~1)
-
-            int use = (int)MathHelper.Lerp(60f, 12f, MathHelper.Clamp(ratio, 0f, 1f));
-            use = Utils.Clamp(use, 12, 60);
+ratio = MathF.Sqrt(MathHelper.Clamp(ratio, 0f, 1f)); // 초반 급가속, 후반 완만하게 만든다
+            int use = (int)MathHelper.Lerp(42f, 12f, MathHelper.Clamp(ratio, 0f, 1f));
+            use = Utils.Clamp(use, 12, 42);
 
             Item.useTime = use; // 사용시간을 갱신한다
             Item.useAnimation = use; // 애니메이션도 같이 갱신한다
