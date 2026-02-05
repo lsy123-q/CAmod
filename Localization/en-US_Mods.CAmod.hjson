@@ -95,11 +95,11 @@ Items: {
 	}
 
 	BlazingRevenant: {
-		Tooltip:
-			'''
-			Launches wrathful Auric fireballs that relentlessly pursue enemies.
-			Attack speed scales with missing life, increasing up to 3×.
-			'''
+		Tooltip: '''
+Launches wrathful Auric fireballs that relentlessly pursue enemies.
+Attack speed increases explosively in proportion to lost life.
+'''
+
 		DisplayName: Blazing Revenant
 	}
 }

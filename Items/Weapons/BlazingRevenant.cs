@@ -33,7 +33,8 @@ namespace CAmod.Items.Weapons
 
             Item.shoot = ModContent.ProjectileType<fire>(); // fire 투사체를 쏜다
             Item.shootSpeed = 10f; // 기본 속도다 (fire 내부에서 선회/호밍하니 너무 높게 안 준다)
-            Item.value = Item.buyPrice(0, 10, 0, 0);
+           
+            Item.value = Item.buyPrice(gold: 32);
             if (ModLoader.TryGetMod("CalamityMod", out Mod calamity))
             {
                 Item.rare = calamity.Find<ModRarity>("Violet").Type;
@@ -104,5 +105,28 @@ ratio = MathF.Sqrt(MathHelper.Clamp(ratio, 0f, 1f)); // 초반 급가속, 후반
 
             return false; // 기본 발사 막는다
         }
+
+        public override void AddRecipes()
+{
+    try
+    {
+        if (ModLoader.TryGetMod("CalamityMod", out Mod calamity))
+        {
+            Recipe recipe = CreateRecipe();
+
+            recipe.AddIngredient(calamity.Find<ModItem>("RecitationoftheBeast").Type, 1); // 야수의 영창 1개를 요구한다
+            recipe.AddIngredient(calamity.Find<ModItem>("AuricBar").Type, 5);            // 오릭 주괴 5개를 요구한다
+            recipe.AddIngredient(calamity.Find<ModItem>("YharonSoulFragment").Type, 5);  // 야론 영혼조각 5개를 요구한다
+
+            recipe.AddTile(calamity.Find<ModTile>("CosmicAnvil").Type); // 전우주의 모루에서 제작 가능하게 한다
+
+            recipe.Register();
+        }
+    }
+    catch
+    {
+        // 칼라미티 미설치/내부명 변경 등으로 등록이 실패하면 조합법을 생략한다
+    }
+}
     }
 }
