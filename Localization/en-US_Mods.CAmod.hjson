@@ -93,6 +93,15 @@ Items: {
 		DisplayName: Omega Mana Potion
 		Tooltip: ""
 	}
+
+	BlazingRevenant: {
+		Tooltip:
+			'''
+			Launches wrathful Auric fireballs that relentlessly pursue enemies.
+			Attack speed scales with missing life, increasing up to 5×.
+			'''
+		DisplayName: Blazing Revenant
+	}
 }
 
 Keybinds: {
@@ -144,6 +153,7 @@ Projectiles: {
 	GlassCannonBonusHit.DisplayName: Glass Cannon Bonus Hit
 	LeafBlowerOrbit.DisplayName: Leaf Blower Orbit
 	GodKiller.DisplayName: God Killer
+	fire.DisplayName: fire
 }
 
 Configs: {

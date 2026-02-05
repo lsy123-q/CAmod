@@ -115,7 +115,7 @@ namespace CAmod.Players
                 gateTime--;
 
             // 쿨타임 감소
-            if (gateCooldown > 0)
+            if (gateCooldown > 0&&dimGateEquipped)
                 gateCooldown--;
 
             // 단축키 입력 처리
@@ -147,7 +147,12 @@ namespace CAmod.Players
                 else if (gateCooldown <= 0 && gateTime ==0 && Player.CheckMana(500, true))
                 {
                     // 새로 발동한다
-                    
+                    // 무적 진입 시 기존 입력을 강제로 끊는다
+                    Player.controlUseItem = false;   // 좌클릭 차단한다
+                    Player.controlUseTile = false;   // 우클릭 차단한다
+                    Player.releaseUseItem = true;    // 눌림 상태를 해제한다
+                    Player.releaseUseTile = true;    // 눌림 상태를 해제한다
+
                     gateTime = 60 * 5;      // 5초 무적
                      // 15초 쿨타임
                     gateGeneration++;
