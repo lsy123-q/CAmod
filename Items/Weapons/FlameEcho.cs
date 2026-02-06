@@ -39,7 +39,7 @@ namespace CAmod.Items.Weapons
                 Item.rare = ItemRarityID.Red;
                
             }
-            Item.value = Item.sellPrice(gold: 75);
+            Item.value = Item.sellPrice(gold: 30);
             Item.UseSound = SoundID.Item20;
             Item.autoReuse = true;
             Item.shoot = ModContent.ProjectileType<Projectiles.FlameEcho_Controller>();
@@ -126,8 +126,7 @@ namespace CAmod.Items.Weapons
             {
                 Recipe recipe = CreateRecipe();
 
-                recipe.AddIngredient(
-                    calamity.Find<ModItem>("PurgeGuzzler").Type, 1);
+              
                 
 
                 recipe.AddIngredient(
@@ -135,7 +134,11 @@ namespace CAmod.Items.Weapons
 
                 recipe.AddIngredient(
                     calamity.Find<ModItem>("UelibloomBar").Type, 10);
+                recipe.AddIngredient(
+                        calamity.Find<ModItem>("UnholyEssence").Type, 10);
 
+                recipe.AddIngredient(
+                    calamity.Find<ModItem>("DivineGeode").Type, 10);
 
                 recipe.AddTile(TileID.LunarCraftingStation);
 

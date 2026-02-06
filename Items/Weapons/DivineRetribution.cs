@@ -36,7 +36,7 @@ namespace CAmod.Items.Weapons
             Item.height = 88;
             Item.useTime = 12;
             Item.useAnimation = 12;
-            
+            Item.value = Item.sellPrice(gold: 30);
             Item.noMelee = true;
             Item.knockBack = 3.5f;
             Item.useStyle = ItemUseStyleID.Shoot;
@@ -100,7 +100,7 @@ namespace CAmod.Items.Weapons
                 // 속도를 정규화한다
             }
 
-            int numProjectiles = 5;
+            int numProjectiles = Main.rand.Next(5, 7);
             // 한 번에 5발을 소환한다
 
             for (int i = 0; i < numProjectiles; i++)

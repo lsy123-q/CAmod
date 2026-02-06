@@ -34,7 +34,7 @@ namespace CAmod.Items.Weapons
             Item.shoot = ModContent.ProjectileType<fire>(); // fire 투사체를 쏜다
             Item.shootSpeed = 10f; // 기본 속도다 (fire 내부에서 선회/호밍하니 너무 높게 안 준다)
            
-            Item.value = Item.buyPrice(gold: 32);
+            Item.value = Item.sellPrice(gold: 48);
             if (ModLoader.TryGetMod("CalamityMod", out Mod calamity))
             {
                 Item.rare = calamity.Find<ModRarity>("Violet").Type;
@@ -55,8 +55,8 @@ namespace CAmod.Items.Weapons
             
             float ratio = max > 0 ? (float)missing / max : 0f; // 잃은 체력 비율이다 (0~1)
 ratio = MathF.Sqrt(MathHelper.Clamp(ratio, 0f, 1f)); // 초반 급가속, 후반 완만하게 만든다
-            int use = (int)MathHelper.Lerp(42f, 12f, MathHelper.Clamp(ratio, 0f, 1f));
-            use = Utils.Clamp(use, 12, 42);
+            int use = (int)MathHelper.Lerp(38f, 12f, MathHelper.Clamp(ratio, 0f, 1f));
+            use = Utils.Clamp(use, 12, 38);
 
             Item.useTime = use; // 사용시간을 갱신한다
             Item.useAnimation = use; // 애니메이션도 같이 갱신한다
