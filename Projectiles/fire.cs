@@ -371,7 +371,7 @@ namespace CAmod.Projectiles
                 }
             }
 
-            SoundEngine.PlaySound(SoundID.DD2_BetsyFireballImpact, Projectile.Center);
+            SoundEngine.PlaySound(SoundID.Item14, Projectile.Center);
         }
 
         private NPC FindClosestNPC(float maxDetectDistance)
