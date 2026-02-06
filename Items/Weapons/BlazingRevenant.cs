@@ -54,7 +54,7 @@ namespace CAmod.Items.Weapons
             int missing = max - player.statLife;
             
             float ratio = max > 0 ? (float)missing / max : 0f; // 잃은 체력 비율이다 (0~1)
-ratio = MathF.Sqrt(MathHelper.Clamp(ratio, 0f, 1f)); // 초반 급가속, 후반 완만하게 만든다
+            ratio = MathF.Pow(MathHelper.Clamp(ratio, 0f, 1f), 0.5f);
             int use = (int)MathHelper.Lerp(38f, 12f, MathHelper.Clamp(ratio, 0f, 1f));
             use = Utils.Clamp(use, 12, 38);
 
