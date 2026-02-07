@@ -57,7 +57,7 @@ namespace CAmod.Projectiles
             Projectile.penetrate = 1;      // 적 관통 1회다
             Projectile.tileCollide = false; // 타일 충돌 비활성화다
             Projectile.aiStyle = 0;
-            Projectile.scale = 0.5f;       // 초기 크기다
+            Projectile.scale = 0.8f;       // 초기 크기다
             Projectile.DamageType = DamageClass.Magic;
         }
 
