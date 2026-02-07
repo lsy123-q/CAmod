@@ -37,7 +37,7 @@ namespace CAmod.Items.Weapons
             Item.value = Item.sellPrice(gold: 48);
             if (ModLoader.TryGetMod("CalamityMod", out Mod calamity))
             {
-                Item.rare = calamity.Find<ModRarity>("Violet").Type;
+                Item.rare = calamity.Find<ModRarity>("BurnishedAuric").Type;
 
             }
             else
@@ -54,7 +54,7 @@ namespace CAmod.Items.Weapons
             int missing = max - player.statLife;
             
             float ratio = max > 0 ? (float)missing / max : 0f; // 잃은 체력 비율이다 (0~1)
-            ratio = MathF.Pow(MathHelper.Clamp(ratio, 0f, 1f), 0.5f);
+            ratio = MathF.Pow(MathHelper.Clamp(ratio, 0f, 1f), 0.375f);
             int use = (int)MathHelper.Lerp(38f, 12f, MathHelper.Clamp(ratio, 0f, 1f));
             use = Utils.Clamp(use, 12, 38);
 

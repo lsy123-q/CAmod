@@ -130,7 +130,7 @@ namespace CAmod.Items.Weapons
                 
 
                 recipe.AddIngredient(
-                    calamity.Find<ModItem>("Lazhar").Type, 1);
+                    calamity.Find<ModItem>("Photosynthesis").Type, 1);
 
                 recipe.AddIngredient(
                     calamity.Find<ModItem>("UelibloomBar").Type, 10);
