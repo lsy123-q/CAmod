@@ -32,7 +32,7 @@ namespace CAmod.Players
 
         public override void ProcessTriggers(Terraria.GameInput.TriggersSet triggersSet)
         {
-            if (KeySystem.leafshield.JustPressed && leafShieldEquipped && leafShieldCooldown <= 0)
+            if (KeySystem.leafshield.JustPressed && leafShieldEquipped && leafShieldCooldown <= 0 && leafflag == false && leafflag2 == false)
             {
                 SpawnLeaves();
 

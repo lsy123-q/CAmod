@@ -26,11 +26,12 @@ namespace CAmod.Items
             Item.value = Item.buyPrice(gold: 25);
             Item.value = Item.sellPrice(gold: 25);
         }
-
+       
         public override void UpdateAccessory(Player player, bool hideVisual)
         {
             player.GetModPlayer<LeafWardPlayer>().leafShieldEquipped = true;
             player.GetModPlayer<LeafWardPlayer2>().leafShieldEquipped = true;
+            
             // 착용 중임을 플래그로 기록한다
         }
 

@@ -22,13 +22,13 @@ namespace CAmod.Items
 
             
         }
-        
+       
 
         public override void UpdateAccessory(Player player, bool hideVisual)
         {
             player.GetModPlayer<DimGatePlayer>().dimGateEquipped = true;
             // 장신구를 착용했을 때만 차원 게이트 효과를 허용한다
-
+            
 
             player.GetDamage(DamageClass.Magic) += 0.15f;
             // 마법 데미지를 15% 증가시킨다

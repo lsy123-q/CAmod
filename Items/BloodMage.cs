@@ -24,8 +24,8 @@ namespace CAmod.Items
         public override void UpdateAccessory(Player player, bool hideVisual)
         {
             player.GetModPlayer<BloodMagePlayer>().bloodMageEquipped = true;
-           
 
+           
 
 
 
