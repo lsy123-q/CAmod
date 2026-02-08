@@ -19,6 +19,8 @@ namespace CAmod.Projectiles
         private float fadeout = 1f;
         private float fadecount = 255f;
 
+        private bool nope = false;
+
         private int dmgsave = 1;
         private bool homing = false;
         float count = 0f;
@@ -84,7 +86,7 @@ namespace CAmod.Projectiles
             }
 
             float value = Projectile.ai[2];
-            float detectRadius = 12000f;
+            float detectRadius = 2500f;
             float baseSpeed = 15f;
             NPC target = FindClosestNPC(detectRadius);
 
@@ -138,12 +140,19 @@ namespace CAmod.Projectiles
                 Projectile.alpha = (int)MathHelper.Lerp(255f, 0f, progress);
                 Projectile.friendly = false;
             }
-            else
+            else if (Projectile.timeLeft < 570 && Projectile.timeLeft > 60)
             {
                 Projectile.friendly = true;
                 Projectile.scale = externalScale;
                 Projectile.alpha = 0;
             }
+            else if ( Projectile.timeLeft <= 60)
+            {
+                Projectile.friendly = false;
+                
+            }
+
+
 
             // 회전 선회
             if (homing == false)
@@ -168,7 +177,7 @@ namespace CAmod.Projectiles
             Projectile.localAI[0] = speedFactor * turnFactor;
 
             // 호밍 로직 (0.5초 이후 활성화)
-            if (Projectile.timeLeft <= 570)
+            if (Projectile.timeLeft <= 570&&Projectile.timeLeft>60)
             {
                 float baseTurn = 10f;
 
@@ -195,8 +204,10 @@ namespace CAmod.Projectiles
 
                         float turnrotate = baseTurn / boost;
 
+                    
                         Projectile.velocity = (Projectile.velocity * (turnrotate - 1f) + move) / turnrotate;
                         Projectile.velocity *= boost;
+                        
                     }
                 }
                 else if (Projectile.timeLeft >= 60 && Projectile.timeLeft <= 540 && target == null)

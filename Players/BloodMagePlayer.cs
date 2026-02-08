@@ -384,9 +384,12 @@ namespace CAmod.Players
                 Main.dust[d].noGravity = false;
             }
 
-            int gorecount = lastdamage / 25;
-
-            for (int a = 0; a< gorecount; a++) { 
+                int gorecount = lastdamage / 25;
+                if (gorecount > 50)
+                {
+                    gorecount = 50;
+                }
+                for (int a = 0; a< gorecount; a++) { 
             SpawnHitGoreFromSource(npc.Center, hurtInfo);
             }
 
@@ -463,16 +466,19 @@ namespace CAmod.Players
                 );
 
                 Main.dust[d].noGravity = false;
-            }
+                }
 
 
-            int gorecount = lastdamage / 25;
+                int gorecount = lastdamage / 25;
+                if (gorecount > 50) {
+                    gorecount = 50;
+                }
 
-            for (int a = 0; a < gorecount; a++)
+                for (int a = 0; a < gorecount; a++)
             {
                 SpawnHitGoreFromSource(proj.Center, hurtInfo);
             }
-        }
+            }
         }
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -499,7 +505,7 @@ namespace CAmod.Players
             int effectiveHeal = Math.Min(healPotential, missingLife);
 
             // ===== 여기서 실질 회복량 기준으로 쿨타임 확정 =====
-            int cooldown = effectiveHeal*60;
+            int cooldown = effectiveHeal * 60;
             vampCooldown = cooldown;
             // 구체가 날아가기 전에 이미 쿨타임이 예약된다
             // ===== 그로테스크한 흡혈 Dust 연출 =====
@@ -519,7 +525,7 @@ namespace CAmod.Players
  );
             // 회복량에 따라 더스트 개수가 증가한다
 
-            for (int i = 0; i <35; i++)
+            for (int i = 0; i < 35; i++)
             {
                 Vector2 vel = Main.rand.NextVector2Circular(1f, 1f) * scale;
 
@@ -537,7 +543,7 @@ namespace CAmod.Players
                 // === 생존시간 연장 핵심 ===
 
                 Main.dust[d].noGravity = true;
-              
+
 
                 // === 생존시간 연장 핵심 ===
                 Main.dust[d].fadeIn = 5.0f + healRatio * 2.5f;
@@ -549,7 +555,7 @@ namespace CAmod.Players
 
             SoundStyle style = sounds[Main.rand.Next(sounds.Length)];
             style.Volume = 1f;
-            // 회복량이 적으면 작게, 많으면 크게 들린다
+
 
             SoundEngine.PlaySound(style, origin);
 
@@ -567,7 +573,15 @@ namespace CAmod.Players
                 healPotential
             );
             // 적 위치에서 흡혈 구체를 생성한다
+
+
+
+            
+
         }
+
+
+
 
         private int CalculateVampCooldown(int healPotential)
         {
