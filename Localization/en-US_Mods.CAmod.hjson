@@ -172,6 +172,20 @@ Configs: {
 			Tooltip: ��: Zombie �Ǵ� 3 �Ǵ� ModName/NPCName
 		}
 	}
+
+	UIConfig: {
+		DisplayName: U I Config
+
+		UIPosX: {
+			Label: UI X
+			Tooltip: ""
+		}
+
+		UIPosY: {
+			Label: UI Y
+			Tooltip: ""
+		}
+	}
 }
 
 NPCs.ControlledMonster.DisplayName: Controlled Monster

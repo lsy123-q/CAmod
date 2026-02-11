@@ -19,6 +19,9 @@ namespace CAmod.Players
         public int gateEndGrace = 0;
         public int gateTime;        // 무적 지속 시간
         public int gateCooldown;    // 쿨타임
+
+        public int gateCooldownmax = 60 * 25;    // 쿨타임
+
         public bool startflag = false;
         public bool endflag = false;
         public int progress = 0;
@@ -130,6 +133,9 @@ namespace CAmod.Players
                     gateTime = 0;
                     endflag = true;
                     gateCooldown = 60 * 25;
+
+                   
+
                     Player.dashDelay = 0;
 
 
@@ -158,6 +164,7 @@ namespace CAmod.Players
                     gateGeneration++;
                     startflag = true;
                     
+
 
                     SoundEngine.PlaySound(
                     new SoundStyle("CAmod/Sounds/open")
@@ -363,32 +370,7 @@ namespace CAmod.Players
 
             oldpos = currentCenter;
 
-            if (gateTime > 0)
-            {
-                int buffType = ModContent.BuffType<ToAnotherWorld>();
-                if (!Player.HasBuff(buffType))
-                    Player.AddBuff(buffType, gateTime);
-                else
-                {
-                    int idx = Player.FindBuffIndex(buffType);
-                    if (idx >= 0)
-                        Player.buffTime[idx] = gateTime;
-                }
-            }
-            else
-            {
-                if (gateCooldown > 0)
-                {
-                    
-                    Player.ClearBuff(ModContent.BuffType<ToAnotherWorld>());
-                    int buffType = ModContent.BuffType<DimensionGateCooltime>();
-                    Player.AddBuff(buffType, gateCooldown);
-                }
-                else
-                {
-                    Player.ClearBuff(ModContent.BuffType<DimensionGateCooltime>());
-                }
-            }
+            
         }
         public override void ModifyWeaponDamage(Item item, ref StatModifier damage)
         {

@@ -4,6 +4,7 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using CAmod.Projectiles;
 using System;
+
 namespace CAmod.Items.Weapons
 {
     public class BlazingRevenant : ModItem

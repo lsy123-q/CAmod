@@ -2,17 +2,17 @@
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
-using CAmod.Players;
 using CAmod.Projectiles;
-using CAmod.Buffs;
 using System;
 using System.Reflection;
-using Terraria.DataStructures;
 using Terraria.Audio;
 namespace CAmod.Players
 {
     public class BloodMagePlayer : ModPlayer
     {
+
+
+        public float vampCooldownMax; // UI용 최대 쿨타임을 저장한다
         public bool bloodMageEquipped;
         public int def;
         public float cachedRegenPerSecond;
@@ -101,15 +101,7 @@ namespace CAmod.Players
                     vampCooldown -= accel * (5f + cachedRegenPerSecond);
                
                 }
-            if (vampCooldown > 0f) {
-
-                Player.ClearBuff(ModContent.BuffType<BloodMageCooldown>());
-                Player.AddBuff(
-                        ModContent.BuffType<BloodMageCooldown>(),
-                        (int)MathF.Ceiling(vampCooldown / (accel * (5f + cachedRegenPerSecond)))
-                    );
-
-            }
+            
 
            if (vampCooldown <= 0f && bloodMageEquipped)
             {
@@ -117,14 +109,8 @@ namespace CAmod.Players
 
                 
             }
-            if (vampCooldown <= 0f&& bloodMageEquipped) {
-
-                Player.AddBuff(ModContent.BuffType<BloodMageOn>(), 1);
-
-                if (Player.HasBuff(ModContent.BuffType<BloodMageCooldown>()))
-                    Player.ClearBuff(ModContent.BuffType<BloodMageCooldown>());
-
-            }
+            
+            
 
             if (!Player.dead && bloodMageEquipped)
             {
@@ -507,6 +493,9 @@ namespace CAmod.Players
             // ===== 여기서 실질 회복량 기준으로 쿨타임 확정 =====
             int cooldown = effectiveHeal * 60;
             vampCooldown = cooldown;
+            vampCooldownMax = cooldown;
+
+
             // 구체가 날아가기 전에 이미 쿨타임이 예약된다
             // ===== 그로테스크한 흡혈 Dust 연출 =====
             float healRatio = MathHelper.Clamp(
@@ -523,7 +512,7 @@ namespace CAmod.Players
      Main.rand.NextFloat(target.position.X, target.position.X + target.width),
      Main.rand.NextFloat(target.position.Y, target.position.Y + target.height)
  );
-            // 회복량에 따라 더스트 개수가 증가한다
+           
 
             for (int i = 0; i < 35; i++)
             {

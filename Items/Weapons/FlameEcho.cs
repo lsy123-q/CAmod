@@ -46,7 +46,11 @@ namespace CAmod.Items.Weapons
             Item.shootSpeed = 12f;
 
         }
-        
+        public override Vector2? HoldoutOrigin()
+        {
+            return new Vector2(2f, 2f);
+            // 아이템을 쥐는 기준 위치다
+        }
 
 
         public override bool Shoot(
