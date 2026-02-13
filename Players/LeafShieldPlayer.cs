@@ -19,6 +19,7 @@ namespace CAmod.Players
         public int leafShieldTimer2;
         public bool leafShieldActive;
         public int leafShieldCooldown;
+        public int leafShieldCooldownmax; 
         public bool leafflag = false;
         public bool leafflag2 = false;
         public override void ResetEffects()
@@ -29,6 +30,7 @@ namespace CAmod.Players
            
 
         }
+        
 
         public override void ProcessTriggers(Terraria.GameInput.TriggersSet triggersSet)
         {
@@ -74,6 +76,7 @@ namespace CAmod.Players
             if (leafShieldTimer2 > 660) {
 
                 leafShieldCooldown = 60 * 20 - count2;
+                leafShieldCooldownmax = 60 * 20 - count2;
 
                 leafflag2 = false;
 
@@ -93,18 +96,7 @@ namespace CAmod.Players
                
 
             }
-            if (leafShieldCooldown > 0)
-            {
-
-                Player.AddBuff(
-                        ModContent.BuffType<Buffs.LeafShieldCooltime>(),
-                        leafShieldCooldown
-                    );
-            }
-            else {
-                Player.ClearBuff(ModContent.BuffType<LeafShieldCooltime>());
-
-            }
+           
 
 
             /*

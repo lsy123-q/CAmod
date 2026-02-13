@@ -19,17 +19,17 @@ namespace CAmod.Items.Weapons
             Item.width = 40;
             Item.height = 40;
 
-            Item.damage = 450; // 데미지 500이다
+            Item.damage = 450; 
             Item.DamageType = DamageClass.Magic; // 투사체가 Generic이라 맞춘다
             Item.knockBack = 3f;
             Item.crit = 0;
-            Item.mana = 15;
+            Item.mana = 40;
             Item.useStyle = ItemUseStyleID.Shoot; // 발사 무기 스타일이다
             Item.noMelee = true; // 근접 판정 안쓴다
             Item.autoReuse = true; // 자동사용 가능하게 한다
 
-            Item.useTime = 36; // 초기값이다 (실제로는 CanUseItem에서 매번 갱신한다)
-            Item.useAnimation = 36; // useTime과 동일하게 맞춘다
+            Item.useTime = 32; // 초기값이다 (실제로는 CanUseItem에서 매번 갱신한다)
+            Item.useAnimation = 32; // useTime과 동일하게 맞춘다
             Item.UseSound = SoundID.Item73;
 
             Item.shoot = ModContent.ProjectileType<fire>(); // fire 투사체를 쏜다
@@ -55,9 +55,9 @@ namespace CAmod.Items.Weapons
             int missing = max - player.statLife;
             
             float ratio = max > 0 ? (float)missing / max : 0f; // 잃은 체력 비율이다 (0~1)
-            ratio = MathF.Pow(MathHelper.Clamp(ratio, 0f, 1f), 0.375f);
-            int use = (int)MathHelper.Lerp(38f, 12f, MathHelper.Clamp(ratio, 0f, 1f));
-            use = Utils.Clamp(use, 12, 38);
+            ratio = MathF.Pow(MathHelper.Clamp(ratio, 0f, 1f), 0.5f);
+            int use = (int)MathHelper.Lerp(32f, 12f, MathHelper.Clamp(ratio, 0f, 1f));
+            use = Utils.Clamp(use, 12, 32);
 
             Item.useTime = use; // 사용시간을 갱신한다
             Item.useAnimation = use; // 애니메이션도 같이 갱신한다

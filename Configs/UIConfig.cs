@@ -13,7 +13,7 @@ namespace CAmod.Configs
         [Label("BloodMage UI X")]
         public float UIPosX;
 
-        [DefaultValue(830f)]
+        [DefaultValue(790f)]
         [Range(0f, 1080f)] // 화면 세로 최대치까지 허용한다
         [Label("BloodMage UI Y")]
         public float UIPosY;

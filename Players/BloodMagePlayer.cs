@@ -28,7 +28,7 @@ namespace CAmod.Players
 };
 
 
-        
+
         public override void ResetEffects()
         {
             wasBloodMageEquipped = bloodMageEquipped;
@@ -36,6 +36,9 @@ namespace CAmod.Players
             allowBloodHeal = false;
             // 기본적으로 모든 치유를 차단한다
         }
+
+        
+
         public override void OnRespawn()
         {
             lastLife = Player.statLifeMax2;
@@ -217,7 +220,7 @@ namespace CAmod.Players
                 );
                 // 잃은 체력 비율이다 (0~1)
 
-                float bonus = MathHelper.Lerp(0f, 0.25f, missingRatio2);
+                float bonus = MathHelper.Lerp(0f, 0.15f, missingRatio2);
                 // 최대 10%까지 증가한다
 
                 Player.GetDamage(DamageClass.Magic) += bonus;

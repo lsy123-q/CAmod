@@ -56,17 +56,10 @@ namespace CAmod.Items
                 "Healing potion effectiveness reduced by 25%"));
             tooltips.Add(new TooltipLine(Mod, "L4",
                 "Life regeneration effectiveness reduced by 25%"));
-         
-            tooltips.Add(new TooltipLine(Mod, "L5",
-                "Mana potion effectiveness increased by 25%"));
             tooltips.Add(new TooltipLine(Mod, "L6",
                 "Magic critical chance increased by 12.5%"));
             tooltips.Add(new TooltipLine(Mod, "L7",
                 "Magic attacks ignore 25 defense"));
-
-            tooltips.Add(new TooltipLine(Mod, "L8",
-              "Magic damage increased by 25%"));
-
             tooltips.Add(new TooltipLine(Mod, "L8",
                 "All magic attacks deal additional fixed damage equal to 25% of damage dealt"));
 

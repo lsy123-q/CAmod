@@ -17,7 +17,7 @@ namespace CAmod.Items.Consumables
             Item.height = 18;
             Item.useTurn = true;
             Item.maxStack = 9999;
-            Item.healMana = 600;
+            Item.healMana = 500;
             Item.useAnimation = 17;
             Item.useTime = 17;
             Item.useStyle = ItemUseStyleID.DrinkLiquid;

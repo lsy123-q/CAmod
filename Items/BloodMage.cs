@@ -87,7 +87,7 @@ namespace CAmod.Items
             tooltips.Add(new TooltipLine(Mod, "L1",
                 "Increases maximum life by 25%"));
             tooltips.Add(new TooltipLine(Mod, "L2",
-     "Increases magic damage by up to 25% in proportion to lost health."));
+     "Increases magic damage by up to 15% in proportion to lost health."));
             tooltips.Add(new TooltipLine(Mod, "L3",
                 "Magic projectiles steal 10% of damage as life and mana"));
        

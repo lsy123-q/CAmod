@@ -107,6 +107,11 @@ Items: {
 		DisplayName: Divine Retribution
 		Tooltip: ""
 	}
+
+	BloodGodHeart: {
+		DisplayName: Blood God Heart
+		Tooltip: ""
+	}
 }
 
 Keybinds: {
@@ -147,6 +152,11 @@ Buffs: {
 		Description: You can't use Leaf Shield for a while.
 		DisplayName: Leaf Shield Cooltime
 	}
+
+	BloodflareSoul: {
+		DisplayName: Bloodflare Soul
+		Description: Mods.CAmod.Buffs.BloodflareSoul.Description
+	}
 }
 
 Projectiles: {
@@ -160,6 +170,7 @@ Projectiles: {
 	GodKiller.DisplayName: God Killer
 	fire.DisplayName: fire
 	DivineRetributionSpear.DisplayName: Divine Retribution Spear
+	BloodflareSoul.DisplayName: Bloodflare Soul
 }
 
 Configs: {
