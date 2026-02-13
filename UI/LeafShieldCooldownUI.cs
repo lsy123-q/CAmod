@@ -23,6 +23,10 @@ namespace CAmod.UI
 
 
         }
+        private Vector2 GetDrawPosition()
+        {
+            return position + PositionOffset; // 실제 화면에 그려지는 위치를 반환한다
+        }
         public bool IsVisible()
         {
             Player player = Main.LocalPlayer;
@@ -37,24 +41,27 @@ namespace CAmod.UI
             var mp = player.GetModPlayer<LeafWardPlayer>();
 
             Texture2D tex = icon.Value;
+            Vector2 drawPos = GetDrawPosition();
+
             Rectangle hitbox = new Rectangle(
-                (int)position.X,
-                (int)position.Y,
+                (int)drawPos.X,
+                (int)drawPos.Y,
                 tex.Width,
                 tex.Height
             );
 
             // 좌클릭 시작
+            // 좌클릭 시작
             if (Main.mouseLeft && Main.mouseLeftRelease && hitbox.Contains(Main.MouseScreen.ToPoint()))
             {
                 dragging = true;
-                dragOffset = position - Main.MouseScreen;
+                dragOffset = drawPos - Main.MouseScreen; // 실제 그려진 위치 기준으로 잡는다
             }
 
             // 드래그 중
             if (dragging && Main.mouseLeft)
             {
-                position = Main.MouseScreen + dragOffset;
+                position = Main.MouseScreen + dragOffset - PositionOffset;
             }
 
             // 마우스 떼면 종료
@@ -84,13 +91,13 @@ namespace CAmod.UI
             float alpha = (mp.leafShieldCooldown > 0f) ? 0.60f : 0.75f; // 쿨이면 0.5f 아니면 0.75f
             spriteBatch.Draw(tex, position + PositionOffset, Color.White * alpha); ;
 
+            Vector2 drawPos = GetDrawPosition();
             Rectangle hitbox = new Rectangle(
-    (int)position.X,
-    (int)position.Y,
-    tex.Width,
-    tex.Height
-);
-
+                (int)drawPos.X,
+                (int)drawPos.Y,
+                tex.Width,
+                tex.Height
+            );
             if (hitbox.Contains(Main.MouseScreen.ToPoint()))
             {
                 Main.LocalPlayer.mouseInterface = true; // 아이템 클릭 방지

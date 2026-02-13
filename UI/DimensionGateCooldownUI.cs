@@ -23,6 +23,10 @@ namespace CAmod.UI
 
 
         }
+        private Vector2 GetDrawPosition()
+        {
+            return position + PositionOffset; // 실제 화면에 그려지는 위치를 반환한다
+        }
         public bool IsVisible()
         {
             Player player = Main.LocalPlayer;
@@ -31,15 +35,18 @@ namespace CAmod.UI
             // 지금 Draw에서 return하는 조건 그대로 복붙한다
             return mp.dimGateEquipped || mp.gateCooldown > 0f;
         }
+
         public override void Update(GameTime gameTime)
         {
             Player player = Main.LocalPlayer;
             var mp = player.GetModPlayer<DimGatePlayer>();
 
             Texture2D tex = icon.Value;
+            Vector2 drawPos = GetDrawPosition();
+
             Rectangle hitbox = new Rectangle(
-                (int)position.X,
-                (int)position.Y,
+                (int)drawPos.X,
+                (int)drawPos.Y,
                 tex.Width,
                 tex.Height
             );
@@ -48,13 +55,13 @@ namespace CAmod.UI
             if (Main.mouseLeft && Main.mouseLeftRelease && hitbox.Contains(Main.MouseScreen.ToPoint()))
             {
                 dragging = true;
-                dragOffset = position - Main.MouseScreen;
+                dragOffset = drawPos - Main.MouseScreen; // 실제 그려진 위치 기준으로 잡는다
             }
 
             // 드래그 중
             if (dragging && Main.mouseLeft)
             {
-                position = Main.MouseScreen + dragOffset;
+                position = Main.MouseScreen + dragOffset - PositionOffset;
             }
 
             // 마우스 떼면 종료
@@ -83,13 +90,13 @@ namespace CAmod.UI
             // 항상 아이콘 기본 그림
             float alpha = (mp.gateCooldown > 0f) ? 0.60f : 0.75f; // 쿨이면 0.5f 아니면 0.75f
             spriteBatch.Draw(tex, position + PositionOffset, Color.White * alpha); ;
-
+            Vector2 drawPos = GetDrawPosition();
             Rectangle hitbox = new Rectangle(
-    (int)position.X,
-    (int)position.Y,
-    tex.Width,
-    tex.Height
-);
+                (int)drawPos.X,
+                (int)drawPos.Y,
+                tex.Width,
+                tex.Height
+            );
 
             if (hitbox.Contains(Main.MouseScreen.ToPoint()))
             {
