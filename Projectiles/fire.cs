@@ -237,13 +237,13 @@ namespace CAmod.Projectiles
 
             Texture2D bodyTex = ModContent.Request<Texture2D>(Texture).Value;
             Texture2D headTex = ModContent.Request<Texture2D>("CAmod/Projectiles/fire_head").Value;
-
+            Texture2D tailTex = ModContent.Request<Texture2D>("CAmod/Projectiles/fire_tail").Value;
             int frameHeight = bodyTex.Height / Main.projFrames[Projectile.type];
             Rectangle sourceRect = new Rectangle(0, frameHeight * Projectile.frame, bodyTex.Width, frameHeight);
 
             // 동일 anchor다
             Vector2 origin = new Vector2(bodyTex.Width / 2, frameHeight * 0.85f);
-
+            Vector2 origin2 = new Vector2(bodyTex.Width / 2, frameHeight * 1f);
             float stretchFactor = Projectile.localAI[0];
             float growthFactor = Projectile.scale;
 
@@ -268,7 +268,12 @@ namespace CAmod.Projectiles
             {
                 Vector2 drawPos = Projectile.oldPos[i] + Projectile.Size / 2 - Main.screenPosition;
                 float progress = (float)i / (Projectile.oldPos.Length - 1);
+
+                // 뒤로 갈수록 투명해지는 컬러 설정
                 Color c = GetGradientColor(progress) * (0.8f * (1f - progress));
+
+                // 뒤로 갈수록 작아지는 배율 계산 (기존 스케일에 1.0 ~ 0.0 사이의 값을 곱함)
+                float trailScale = 1f - progress/4f;
 
                 Main.spriteBatch.Draw(
                     bodyTex,
@@ -277,7 +282,7 @@ namespace CAmod.Projectiles
                     c * fadeout,
                     Projectile.rotation,
                     origin,
-                    scaleBody ,
+                    scaleBody * trailScale, // 스케일 적용
                     SpriteEffects.None,
                     0.1f
                 );
@@ -289,7 +294,7 @@ namespace CAmod.Projectiles
                     c * fadeout,
                     Projectile.rotation,
                     origin,
-                    scaleHead ,
+                    scaleHead * trailScale, // 스케일 적용
                     SpriteEffects.None,
                     0.0f
                 );

@@ -112,6 +112,11 @@ Items: {
 		DisplayName: Blood God Heart
 		Tooltip: ""
 	}
+
+	AsteroidStaff: {
+		DisplayName: Asteroid Staff
+		Tooltip: ""
+	}
 }
 
 Keybinds: {
@@ -157,6 +162,11 @@ Buffs: {
 		DisplayName: Bloodflare Soul
 		Description: Mods.CAmod.Buffs.BloodflareSoul.Description
 	}
+
+	UltimateCool: {
+		Description: Mods.CAmod.Buffs.UltimateCool.Description
+		DisplayName: Ultimate Cool
+	}
 }
 
 Projectiles: {
@@ -171,6 +181,7 @@ Projectiles: {
 	fire.DisplayName: fire
 	DivineRetributionSpear.DisplayName: Divine Retribution Spear
 	BloodflareSoul.DisplayName: Bloodflare Soul
+	Magic.Asteroid.DisplayName: Asteroid
 }
 
 Configs: {
