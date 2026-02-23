@@ -20,7 +20,7 @@ namespace CAmod.Players
         public int gateTime;        // 무적 지속 시간
         public int gateCooldown;    // 쿨타임
 
-        public int gateCooldownmax = 60 * 25;    // 쿨타임
+        public int gateCooldownmax ;    // 쿨타임
 
         public bool startflag = false;
         public bool endflag = false;
@@ -131,11 +131,21 @@ namespace CAmod.Players
                     
 
                     // 무적 중 재시전 시 즉시 종료한다
-                    gateTime = 0;
+                    
                     endflag = true;
-                    gateCooldown = 60 * 25;
+                    int baseCooldown = 60 * 25; // 기본 쿨타임 25초다
+                    int maxReduce = 60 * 10; // 최대 감소량 10초다
 
-                   
+                    // 남은 지속시간 비율을 계산한다 (0~1)
+                    float ratio = gateTime / 270f;
+
+                    // 비례 감소량을 산출한다
+                    int reduce = (int)(maxReduce * ratio);
+
+                    // 최종 쿨타임을 계산한다
+                    gateCooldown = baseCooldown - reduce;
+                    gateCooldownmax = baseCooldown - reduce;
+                    gateTime = 0;
 
                     Player.dashDelay = 0;
 

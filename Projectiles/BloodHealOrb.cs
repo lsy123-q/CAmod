@@ -11,6 +11,7 @@ namespace CAmod.Projectiles
 {
     public class BloodHealOrb : ModProjectile
     {
+       
         public override void SetDefaults()
         {
             Projectile.width = 14;
@@ -27,7 +28,7 @@ namespace CAmod.Projectiles
 
         public override void AI()
         {
-
+          
             // 최초 소환 시점이다 (1회만 실행된다
             Lighting.AddLight(
 Projectile.Center,
@@ -48,7 +49,12 @@ Projectile.Center,
             }
 
             Player player = Main.player[ownerIndex];
-            if (!player.active || player.dead)
+
+            if (player.statLifeMax2 == player.statLife) {
+                Projectile.Kill();
+            }
+
+                if (!player.active || player.dead)
             {
                 Projectile.Kill();
                 return;
@@ -112,20 +118,23 @@ Projectile.Center,
                 var bmp = player.GetModPlayer<BloodMagePlayer>();
                 bmp.allowBloodHeal = true;
 
-               
-                player.statLife += healed;
-                bmp.lastLife = player.statLife;
+
+                bmp.lifeHealBuffer += healed;
                 // 체력 회복 후 기준 체력을 동기화한다
 
-                int manaHealed = Math.Min(healed, player.statManaMax2 - player.statMana);
-                player.statMana += manaHealed;
-                // 체력 회복량과 동일한 양만큼 마나를 회복한다
+                int manaToStore = healed;
+                bmp.manaHealBuffer += manaToStore;
 
+                
+
+                // 체력 회복량과 동일한 양만큼 마나를 회복한다
+                if (healed != 0) { 
                 CombatText.NewText(
     player.getRect(),
     new Color(180, 30, 30),
     "+" + healed
 );
+                }
                 Projectile.Kill();
                 return;
             }

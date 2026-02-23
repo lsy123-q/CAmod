@@ -88,7 +88,7 @@ namespace CAmod.UI
             Texture2D tex = icon.Value;
             Texture2D tex2 = mask.Value;
             // 항상 아이콘 기본 그림
-            float alpha = (mp.leafShieldCooldown > 0f) ? 0.60f : 0.75f; // 쿨이면 0.5f 아니면 0.75f
+            float alpha = 0.75f;
             spriteBatch.Draw(tex, position + PositionOffset, Color.White * alpha); ;
 
             Vector2 drawPos = GetDrawPosition();
@@ -116,18 +116,18 @@ namespace CAmod.UI
                 int maskHeight = (int)(tex2.Height * ratio);
 
                 Rectangle source = new Rectangle(
-                    0,
-                    tex2.Height - maskHeight,
+                                    0,
+                                    0,
+                                    tex2.Width,
+                                    maskHeight
+                                );
+
+                Rectangle dest = new Rectangle(
+                    (int)(position.X + PositionOffset.X),
+                    (int)(position.Y + PositionOffset.Y),
                     tex2.Width,
                     maskHeight
                 );
-
-                Rectangle dest = new Rectangle(
-    (int)(position.X + PositionOffset.X), // 오프셋을 더해준다
-    (int)(position.Y + PositionOffset.Y + tex2.Height - maskHeight),
-    tex2.Width,
-    maskHeight
-);
                 spriteBatch.Draw(tex2, dest, source, Color.Black * 0.65f);
 
 

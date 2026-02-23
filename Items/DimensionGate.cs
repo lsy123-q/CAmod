@@ -19,23 +19,96 @@ namespace CAmod.Items
             Item.height = 28;
             Item.accessory = true;
             Item.value = Item.sellPrice(gold: 25);
+            Item.rare = ModContent.RarityType<Rarities.ArcaneCosmic>();
 
-            
+
         }
-       
-
-        public override void UpdateAccessory(Player player, bool hideVisual)
+        public override void UpdateInventory(Player players)
         {
-            player.GetModPlayer<DimGatePlayer>().dimGateEquipped = true;
-            // 장신구를 착용했을 때만 차원 게이트 효과를 허용한다
-            
 
-            player.GetDamage(DamageClass.Magic) += 0.15f;
+
+            Player player = Main.LocalPlayer;
+            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+
+            int stage = ward2.LeafShieldStage;
+
+
+            float normalized = stage / 40f;
+            // 성장 단계를 0~1로 정규화한다
+
+            float priceGold = normalized * normalized * 40f;
+            // 정규화값을 제곱 후 40골드를 곱한다
+
+            int priceCopper = (int)(priceGold * 10000f);
+
+
+            int copper = priceCopper;
+            Item.value = Item.sellPrice(copper: priceCopper);
+
+            // 최종 판매가를 설정한다
+        }
+
+        public override void UpdateAccessory(Player player2, bool hideVisual)
+        {
+            player2.GetModPlayer<DimGatePlayer>().dimGateEquipped = true;
+            // 장신구를 착용했을 때만 차원 게이트 효과를 허용한다
+
+            player2.GetCritChance(DamageClass.Magic) += 5f;
+            player2.GetDamage(DamageClass.Magic) += 0.15f;
             // 마법 데미지를 15% 증가시킨다
 
-            player.moveSpeed += 0.15f;
-        }
+            player2.moveSpeed += 0.15f;
+            player2.maxRunSpeed *= 1.15f;
 
+
+            Player player = Main.LocalPlayer;
+            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+
+            int stage = ward2.LeafShieldStage;
+
+
+            float normalized = stage / 40f;
+            // 성장 단계를 0~1로 정규화한다
+
+            float priceGold = normalized * normalized * 40f;
+            // 정규화값을 제곱 후 40골드를 곱한다
+
+            int priceCopper = (int)(priceGold * 10000f);
+
+
+            int copper = priceCopper;
+            Item.value = Item.sellPrice(copper: priceCopper);
+        }
+        public override void UpdateVanity(Player player2)
+        {
+            Player player = Main.LocalPlayer;
+            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+
+            int stage = ward2.LeafShieldStage;
+
+
+            float normalized = stage / 40f;
+            // 성장 단계를 0~1로 정규화한다
+
+            float priceGold = normalized * normalized * 40f;
+            // 정규화값을 제곱 후 40골드를 곱한다
+
+            int priceCopper = (int)(priceGold * 10000f);
+
+
+            int copper = priceCopper;
+            Item.value = Item.sellPrice(copper: priceCopper);
+        }
+        public override bool PreDrawTooltipLine(DrawableTooltipLine line, ref int yOffset)
+        {
+            if (line.Mod == "Terraria" && line.Name == "ItemName")
+            {
+                Rarities.ArcaneCosmic.Draw(Item, line);
+                return false; // 기본 드로우를 막는다
+            }
+
+            return true; // 다른 줄은 기본 드로우한다
+        }
         public override void AddRecipes()
         {
             try
@@ -78,53 +151,35 @@ namespace CAmod.Items
         }
         public override void ModifyTooltips(List<TooltipLine> tooltips)
         {
-            tooltips.RemoveAll(l => l.Mod == "Terraria" && l.Name.StartsWith("Tooltip"));
-            // 기존 툴팁을 제거한다
+            
 
-            tooltips.Add(new TooltipLine(Mod, "L1", "15% increased magic damage"));
-            tooltips.Add(new TooltipLine(Mod, "L2", "15% increased movement speed"));
-            tooltips.Add(new TooltipLine(Mod, "L3", "All magic projectiles inflict God Slayer Inferno for 3 seconds on hit"));
-            tooltips.Add(new TooltipLine(Mod, "L4",
-                "Press [KEY] to enter another dimension for 5 seconds"));
-            tooltips.Add(new TooltipLine(Mod, "L5",
-                "and become immune to all attacks."));
-            tooltips.Add(new TooltipLine(Mod, "L6",
-                "You cannot attack or dash while in another dimension."));
-            tooltips.Add(new TooltipLine(Mod, "L7",
-                "Returning from another dimension fires 8 God Slayer Darts in all directions, each dealing 750 damage"));
-            tooltips.Add(new TooltipLine(Mod, "L7",
-                         "Press [KEY] again to leave early."));
-            tooltips.Add(new TooltipLine(Mod, "L8",
-                "25 second cooldown, costs 500 mana."));
-
-            float t = (float)(Math.Sin(Main.GlobalTimeWrappedHourly * 2.5f) * 0.5f + 0.5f);
-            Color blue = new Color(80, 140, 255);
-            Color purple = new Color(160, 90, 220);
-            Color animated = Color.Lerp(blue, purple, t);
-
-            foreach (var line in tooltips)
-            {
-                if (line.Mod == "Terraria" && line.Name == "ItemName")
-                {
-                    line.OverrideColor = animated;
-                    // 디멘션 게이트 이름을 파랑~보라로 왕복시킨다
-                }
-            }
+            
 
             // ===== 기존 [KEY] 치환 로직 유지 =====
             foreach (var line in tooltips)
+{
+    if (line.Text.Contains("[KEY]"))
+    {
+        string keyText = "[NONE]";
+
+        if (KeySystem.DimGate != null)
+        {
+            var keys = KeySystem.DimGate.GetAssignedKeys();
+            if (keys.Count > 0)
+                keyText = keys[0];
+        }
+
+        line.Text = line.Text.Replace("[KEY]", keyText);
+        // [KEY]를 실제 설정된 키로 치환한다
+    }
+}
+            int prefixIndex = tooltips.FindIndex(t => t.Name == "Prefix");
+
+            if (prefixIndex != -1)
             {
-                if (line.Mod == Mod.Name && line.Text.Contains("[KEY]"))
-                {
-                    string keyText;
-
-                    if (KeySystem.DimGate != null && KeySystem.DimGate.GetAssignedKeys().Count > 0)
-                        keyText = KeySystem.DimGate.GetAssignedKeys()[0];
-                    else
-                        keyText = "[NONE]";
-
-                    line.Text = line.Text.Replace("[KEY]", keyText);
-                }
+                TooltipLine prefixLine = tooltips[prefixIndex];
+                tooltips.RemoveAt(prefixIndex);
+                tooltips.Add(prefixLine);
             }
         }
 

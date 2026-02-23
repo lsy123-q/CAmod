@@ -30,7 +30,7 @@ namespace CAmod.Projectiles
             Projectile.DamageType = DamageClass.Magic;
             Projectile.extraUpdates = 1;
             Projectile.penetrate = 1;
-            Projectile.timeLeft = 900;
+            Projectile.timeLeft = 60*60;
             Projectile.usesLocalNPCImmunity = true; // 개별 면역 사용한다
             Projectile.localNPCHitCooldown = -1;    // 동일 NPC 1회만 타격한다
         }

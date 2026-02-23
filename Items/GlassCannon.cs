@@ -19,9 +19,35 @@ namespace CAmod.Items
             Item.width = 28;
             Item.height = 28;
             Item.accessory = true;
-            Item.rare = ModContent.RarityType<Rarities.AncientRarity>();
-            Item.value = Item.sellPrice(gold: 25);
+            Item.rare = ModContent.RarityType<Rarities.ArcaneGlass>();
+         
         }
+
+        public override void UpdateInventory(Player players)
+        {
+
+
+            Player player = Main.LocalPlayer;
+            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+
+            int stage = ward2.LeafShieldStage;
+
+
+            float normalized = stage / 40f;
+            // 성장 단계를 0~1로 정규화한다
+
+            float priceGold = normalized * normalized * 40f;
+            // 정규화값을 제곱 후 40골드를 곱한다
+
+            int priceCopper = (int)(priceGold * 10000f);
+
+
+            int copper = priceCopper;
+            Item.value = Item.sellPrice(copper: priceCopper);
+
+            // 최종 판매가를 설정한다
+        }
+
         public override void AddRecipes()
         {
             Recipe recipe = CreateRecipe();
@@ -40,28 +66,64 @@ namespace CAmod.Items
 
             recipe.Register();
         }
-        public override void UpdateAccessory(Player player, bool hideVisual)
+        public override void UpdateAccessory(Player player2, bool hideVisual)
         {
-            GlassCannonPlayer gPlayer = player.GetModPlayer<GlassCannonPlayer>();
+            GlassCannonPlayer gPlayer = player2.GetModPlayer<GlassCannonPlayer>();
             gPlayer.glassCannonEquipped = true;
             // 유리대포 장착 플래그를 켠다
+            Player player = Main.LocalPlayer;
+            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+
+            int stage = ward2.LeafShieldStage;
+
+
+            float normalized = stage / 40f;
+            // 성장 단계를 0~1로 정규화한다
+
+            float priceGold = normalized * normalized * 40f;
+            // 정규화값을 제곱 후 40골드를 곱한다
+
+            int priceCopper = (int)(priceGold * 10000f);
+
+
+            int copper = priceCopper;
+            Item.value = Item.sellPrice(copper: priceCopper);
+
+        }
+
+        public override void UpdateVanity(Player player2)
+        {
+            Player player = Main.LocalPlayer;
+            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+
+            int stage = ward2.LeafShieldStage;
+
+
+            float normalized = stage / 40f;
+            // 성장 단계를 0~1로 정규화한다
+
+            float priceGold = normalized * normalized * 40f;
+            // 정규화값을 제곱 후 40골드를 곱한다
+
+            int priceCopper = (int)(priceGold * 10000f);
+
+
+            int copper = priceCopper;
+            Item.value = Item.sellPrice(copper: priceCopper);
+        }
+        public override bool PreDrawTooltipLine(DrawableTooltipLine line, ref int yOffset)
+        {
+            if (line.Mod == "Terraria" && line.Name == "ItemName")
+            {
+                Rarities.ArcaneGlass.Draw(Item, line);
+                return false; // 기본 드로우를 막는다
+            }
+
+            return true; // 다른 줄은 기본 드로우한다
         }
         public override void ModifyTooltips(List<TooltipLine> tooltips)
         {
-            tooltips.RemoveAll(l => l.Mod == "Terraria" && l.Name.StartsWith("Tooltip"));
-
-            tooltips.Add(new TooltipLine(Mod, "L1", "Maximum life reduced by 25%"));
-            tooltips.Add(new TooltipLine(Mod, "L2", "Defense reduced by 25%"));
-            tooltips.Add(new TooltipLine(Mod, "L3",
-                "Healing potion effectiveness reduced by 25%"));
-            tooltips.Add(new TooltipLine(Mod, "L4",
-                "Life regeneration effectiveness reduced by 25%"));
-            tooltips.Add(new TooltipLine(Mod, "L6",
-                "Magic critical chance increased by 12.5%"));
-            tooltips.Add(new TooltipLine(Mod, "L7",
-                "Magic attacks ignore 25 defense"));
-            tooltips.Add(new TooltipLine(Mod, "L8",
-                "All magic attacks deal additional fixed damage equal to 25% of damage dealt"));
+            
 
             float t = (float)(Math.Sin(Main.GlobalTimeWrappedHourly * 2.2f) * 0.5f + 0.5f);
             Color white = Color.White;
@@ -74,6 +136,14 @@ namespace CAmod.Items
                     line.OverrideColor = Color.Lerp(white, sky, t);
                     // 유리대포 이름을 하양~하늘색으로 왕복시킨다
                 }
+            }
+            int prefixIndex = tooltips.FindIndex(t => t.Name == "Prefix");
+
+            if (prefixIndex != -1)
+            {
+                TooltipLine prefixLine = tooltips[prefixIndex];
+                tooltips.RemoveAt(prefixIndex);
+                tooltips.Add(prefixLine);
             }
         }
 

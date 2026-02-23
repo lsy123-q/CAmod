@@ -21,20 +21,87 @@ namespace CAmod.Items
             Item.width = 28;
             Item.height = 28;
             Item.accessory = true;
-            Item.rare = ModContent.RarityType<Rarities.AncientRarity>();
-            Item.rare = ItemRarityID.LightRed;
-            Item.value = Item.buyPrice(gold: 25);
-            Item.value = Item.sellPrice(gold: 25);
-        }
-       
-        public override void UpdateAccessory(Player player, bool hideVisual)
-        {
-            player.GetModPlayer<LeafWardPlayer>().leafShieldEquipped = true;
-            player.GetModPlayer<LeafWardPlayer2>().leafShieldEquipped = true;
+            Item.rare = ModContent.RarityType<Rarities.ArcaneGreen>();
             
-            // 착용 중임을 플래그로 기록한다
         }
+        public override void UpdateInventory(Player players)
+        {
+            
 
+            Player player = Main.LocalPlayer;
+            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+
+            int stage = ward2.LeafShieldStage;
+
+
+            float normalized = stage / 40f;
+            // 성장 단계를 0~1로 정규화한다
+
+            float priceGold = normalized * normalized * 40f;
+            // 정규화값을 제곱 후 40골드를 곱한다
+
+            int priceCopper = (int)(priceGold * 10000f);
+            
+
+            int copper = priceCopper;
+            Item.value = Item.sellPrice( copper: priceCopper);
+            
+            // 최종 판매가를 설정한다
+        }
+        public override void UpdateAccessory(Player player2, bool hideVisual)
+        {
+            player2.GetModPlayer<LeafWardPlayer>().leafShieldEquipped = true;
+            player2.GetModPlayer<LeafWardPlayer2>().leafShieldEquipped = true;
+
+
+            Player player = Main.LocalPlayer;
+            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+
+            int stage = ward2.LeafShieldStage;
+
+
+            float normalized = stage / 40f;
+            // 성장 단계를 0~1로 정규화한다
+
+            float priceGold = normalized * normalized * 40f;
+            // 정규화값을 제곱 후 40골드를 곱한다
+
+            int priceCopper = (int)(priceGold * 10000f);
+
+
+            int copper = priceCopper;
+            Item.value = Item.sellPrice(copper: priceCopper);
+        }
+        public override void UpdateVanity(Player player2)
+        {
+            Player player = Main.LocalPlayer;
+            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+
+            int stage = ward2.LeafShieldStage;
+
+
+            float normalized = stage / 40f;
+            // 성장 단계를 0~1로 정규화한다
+
+            float priceGold = normalized * normalized * 40f;
+            // 정규화값을 제곱 후 40골드를 곱한다
+
+            int priceCopper = (int)(priceGold * 10000f);
+
+
+            int copper = priceCopper;
+            Item.value = Item.sellPrice(copper: priceCopper);
+        }
+        public override bool PreDrawTooltipLine(DrawableTooltipLine line, ref int yOffset)
+        {
+            if (line.Mod == "Terraria" && line.Name == "ItemName")
+            {
+                Rarities.ArcaneGreen.Draw(Item, line);
+                return false; // 기본 드로우를 막는다
+            }
+
+            return true; // 다른 줄은 기본 드로우한다
+        }
         public override void ModifyTooltips(List<TooltipLine> tooltips)
         {
             tooltips.RemoveAll(l => l.Mod == "Terraria" && l.Name.StartsWith("Tooltip"));
@@ -46,14 +113,14 @@ namespace CAmod.Items
             int stage = ward2.LeafShieldStage;
             // 현재 성장 단계다 (0~20)
 
-            float bonusMagicDamage = stage * 0.5f ;
+            float bonusMagicDamage = stage * 0.5f + 10f;
             // 추가 마법 피해 퍼센트다
 
-            float bonusMagicCrit = stage * 0.25f ;
+            float bonusMagicCrit = stage * 0.25f + 5f;
             // 추가 마법 치명타 확률이다
-            int bonusdefense = (int)(stage * 0.5f) ;
+            int bonusdefense = (int)(stage * 0.5f) + 10;
 
-            int bonusMana = stage * 5;
+            int bonusMana = stage * 5 + 100;
             // 추가 마나다
             float progress = (stage / 40f)*100f;
             float cooldownReductionSec = stage * 0.25f;
@@ -110,20 +177,7 @@ namespace CAmod.Items
                 $"Leaf Shield cooldown reduction: {lastcool:F1} seconds"));
             // 성장으로 감소된 쿨타임이다
 
-            float t = (float)(Math.Sin(Main.GlobalTimeWrappedHourly * 2.8f) * 0.5f + 0.5f);
-            // 0~1 사이를 왕복하는 보간값이다
-
-            Color lightGreen = new Color(120, 255, 120);
-            Color lime = new Color(180, 255, 80);
-
-            foreach (var line in tooltips)
-            {
-                if (line.Mod == "Terraria" && line.Name == "ItemName")
-                {
-                    line.OverrideColor = Color.Lerp(lightGreen, lime, t);
-                    // 아이템 이름을 연두~라임색으로 왕복시킨다
-                }
-            }
+            
         }
 
 

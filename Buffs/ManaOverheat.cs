@@ -6,7 +6,7 @@ using Terraria.ModLoader;
 
 namespace CAmod.Buffs
 {
-    public class UltimateCool : ModBuff
+    public class ManaOverheat : ModBuff
     {
         public override void SetStaticDefaults()
         {

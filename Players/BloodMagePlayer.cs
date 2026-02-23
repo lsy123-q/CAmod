@@ -10,8 +10,15 @@ namespace CAmod.Players
 {
     public class BloodMagePlayer : ModPlayer
     {
+        public double manaHealBuffer; // 마나 회복 버퍼
+        public double manaHealPartial; // 소수점 누적
+        private const double ManaDecay = 0.0083333333333; // Chalice 동일값
 
+        public double lifeHealBuffer; // 체력 회복 총량을 저장한다
+        public double lifeHealPartial; // 소수점 누적용 변수다
+        private const double LifeHealDecay = 0.0166666666666; // 초당 50% 지수감쇠
 
+        private float vampAccelFrozen = 1f; // 쿨 시작 시점의 가속값을 저장한다
         public float vampCooldownMax; // UI용 최대 쿨타임을 저장한다
         public bool bloodMageEquipped;
         public int def;
@@ -37,8 +44,12 @@ namespace CAmod.Players
             // 기본적으로 모든 치유를 차단한다
         }
 
-        
 
+        public override void OnEnterWorld()
+        {
+            lastLife = Player.statLifeMax2;
+        }
+       
         public override void OnRespawn()
         {
             lastLife = Player.statLifeMax2;
@@ -50,24 +61,29 @@ namespace CAmod.Players
                 return;
 
 
-         
-           
-           
+
+
+
         }
         public override void PostUpdate()
         {
 
-            if (Player.creativeGodMode) {
+            if (Player.creativeGodMode)
+            {
                 lastLife = Player.statLifeMax2;
             }
 
 
-            if(bloodMageEquipped == true) { 
+            if (bloodMageEquipped == true)
+            {
 
-            cachedRegenPerSecond = (Player.lifeRegen > 0) ? (Player.lifeRegen / 2f) : 0f;
+                float regenPerSecond = Player.lifeRegen / 2f;
+
+                cachedRegenPerSecond = (regenPerSecond > -2.5f)
+                    ? regenPerSecond
+                    : -2.5f;
 
 
-            
 
 
             }
@@ -81,39 +97,41 @@ namespace CAmod.Players
 
             if (!bloodMageEquipped && wasBloodMageEquipped && vampCooldown > 0f)
             {
-              
+
                 // 쿨타임 도중 장신구를 해제하면 즉사한다
                 return;
             }
 
 
             int missing = Player.statLifeMax2 - Player.statLife;
-            
-                float missingRatio = MathHelper.Clamp(
-                    missing / (float)Player.statLifeMax2,
-                    0f,
-                    1f
-                );
-                // 현재 잃은 체력 비율이다
 
-                float accel = MathHelper.Lerp(1f, 2.0f, missingRatio);
+            float missingRatio = MathHelper.Clamp(
+                missing / (float)Player.statLifeMax2,
+                0f,
+                1f
+            );
+            // 현재 잃은 체력 비율이다
+
+            float accel = MathHelper.Lerp(1f, 2.0f, MathF.Pow(missingRatio, 1.5f));
 
 
-                if (vampCooldown > 0f && bloodMageEquipped)
-                {
-                    vampCooldown -= accel * (5f + cachedRegenPerSecond);
-               
-                }
-            
+            if (vampCooldown > 0f && bloodMageEquipped)
+            {
+                float finalAccel = Math.Max(accel, vampAccelFrozen);
+                // 현재 가속과 시작 가속 중 더 높은 값 사용
 
-           if (vampCooldown <= 0f && bloodMageEquipped)
+                vampCooldown -= finalAccel * (2.5f + cachedRegenPerSecond);
+            }
+
+
+            if (vampCooldown <= 0f && bloodMageEquipped)
             {
                 vampCooldown = 0f;
 
-                
+
             }
-            
-            
+
+
 
             if (!Player.dead && bloodMageEquipped)
             {
@@ -162,16 +180,18 @@ namespace CAmod.Players
                     Player.statLife = lastLife;
                     // 기준 체력보다 증가한 모든 회복을 차단한다
 
-                    if(diff > 2) { 
-                    CombatText.NewText(
-     Player.getRect(),
-     new Color(180, 30, 30),
-     "-" + diff
- );
+                    if (diff > 2)
+                    {
+                        CombatText.NewText(
+         Player.getRect(),
+         new Color(180, 30, 30),
+         "-" + diff
+     );
                     }
                 }
 
-                if (Player.statLife < lastLife) {
+                if (Player.statLife < lastLife)
+                {
 
                     lastLife = Player.statLife;
                 }
@@ -223,13 +243,81 @@ namespace CAmod.Players
                 float bonus = MathHelper.Lerp(0f, 0.15f, missingRatio2);
                 // 최대 10%까지 증가한다
 
-                Player.GetDamage(DamageClass.Magic) += bonus;
+                Player.GetCritChance(DamageClass.Magic) += bonus * 100f;
                 // 마법 피해를 잃은 체력 비례로 증가시킨다
             }
             if (Player.creativeGodMode)
             {
                 lastLife = Player.statLifeMax2;
             }
+            // 마나 지수 회복
+            if (manaHealBuffer > 0)
+            {
+                
+
+                
+                    double amountThisFrame = manaHealBuffer * ManaDecay;
+                    manaHealPartial += amountThisFrame;
+
+                    int manaToGain = (int)manaHealPartial;
+
+                    if (manaToGain > 0)
+                    {
+                    int applied = manaToGain;
+
+                        Player.statMana += applied;
+                        manaHealPartial -= applied;
+                        manaHealBuffer -= applied;
+
+                        if (manaHealBuffer < 0)
+                            manaHealBuffer = 0;
+                    }
+                
+            }
+            if (lifeHealBuffer > 0 && Player.statLife >= Player.statLifeMax2)
+            {
+                int wasted = (int)lifeHealBuffer;
+                // 남은 회복량을 정수 기준으로 계산한다
+
+                lifeHealBuffer = 0;
+                lifeHealPartial = 0;
+
+                // 회복 1당 60프레임 쿨을 단축한다
+                vampCooldown -= wasted * 60f;
+
+                if (vampCooldown < 0f)
+                    vampCooldown = 0f;
+            }
+            // 🔥 체력 지수 회복은 별도 처리해야 한다
+            if (lifeHealBuffer > 0 && !Player.dead)
+            {
+                int space2 = Player.statLifeMax2 - Player.statLife;
+
+                if (space2 > 0)
+                {
+                    double amountThisFrame = lifeHealBuffer * LifeHealDecay;
+                    lifeHealPartial += amountThisFrame;
+
+                    int lifeToGain = (int)lifeHealPartial;
+
+                    if (lifeToGain > 0)
+                    {
+                        int applied = Math.Min(lifeToGain, space2);
+
+                        Player.statLife += applied;
+                        lifeHealPartial -= applied;
+                        lifeHealBuffer -= applied;
+
+                        lastLife = Player.statLife;
+
+                        if (lifeHealBuffer < 0)
+                            lifeHealBuffer = 0;
+                    }
+                }
+            }
+
+
+
 
         }
         public override void UpdateLifeRegen()
@@ -240,56 +328,7 @@ namespace CAmod.Players
     
         
 
-        private void SpawnHitGoreFromSource(Vector2 sourceCenter, Player.HurtInfo hurtInfo)
-        {
-            if (Main.netMode == NetmodeID.Server)
-                return;
-
-            int[] gorePool =
-            {
-        669, 135, 671, 877,1128,1129,1130,1221
-    };
-            // 위키에서 선별한 고어 ID 풀이다
-
-            int goreType = gorePool[Main.rand.Next(gorePool.Length)];
-            // 랜덤으로 하나 선택한다
-
-            float damageRatio = MathHelper.Clamp(
-                hurtInfo.Damage / (float)Player.statLifeMax2,
-                0f,
-                1f
-            );
-            // 받은 피해가 최대 체력 대비 몇 %인지다
-
-            
-            
-
-            Vector2 dir = Player.Center - sourceCenter;
-            // 공격자 위치 기준으로 반대 방향(밀려나가는 방향)을 만든다
-
-            if (dir.LengthSquared() < 0.0001f)
-                dir = new Vector2(-hurtInfo.HitDirection, -0.2f);
-            // 위치가 겹치거나 정보가 없을 때만 HitDirection으로 대체한다
-
-            dir.Normalize();
-            dir.Y -= 0.25f;
-            dir.Normalize();
-            // 약간 위로 튀는 느낌을 준다
-
-            Vector2 vel =
-                dir * MathHelper.Lerp(2.5f, 5.0f, damageRatio) +
-                Main.rand.NextVector2Circular(0.8f, 0.8f);
-            // 기본 방향을 유지하면서 랜덤만 소량 섞는다
-
-            Gore.NewGore(
-                Player.GetSource_Misc("BloodMageHit"),
-                Player.Center,
-                vel,
-                goreType,
-                0.5f
-            );
-            // 플레이어 위치에서 고어가 반대방향으로 튄다
-        }
+        
 
         public override void OnHitByNPC(NPC npc, Player.HurtInfo hurtInfo)
         {
@@ -331,63 +370,61 @@ namespace CAmod.Players
         1f
     );
 
-                
+
 
 
 
 
 
                 // 받은 피해가 최대 체력 대비 몇 %인지다
-                int bloodcount = lastdamage / 2;
-            float dustScale = MathHelper.Lerp(0.8f, 2.0f, damageRatio);
-            // 데미지가 클수록 더 크게 튄다
+               
+                float dustScale = MathHelper.Lerp(0.8f, 1.5f, damageRatio);
+                // 데미지가 클수록 더 크게 튄다
+                
+                Vector2 hitDir = Player.Center - npc.Center;
+                // 공격자가 있는 쪽 → 맞은 방향이다
 
-            Vector2 hitDir = Player.Center - npc.Center;
-            // 공격자가 있는 쪽 → 맞은 방향이다
+                if (hitDir.LengthSquared() < 0.0001f)
+                    hitDir = new Vector2(hurtInfo.HitDirection, 0f);
+                // 예외 상황 대비용 보정이다
 
-            if (hitDir.LengthSquared() < 0.0001f)
-                hitDir = new Vector2(hurtInfo.HitDirection, 0f);
-            // 예외 상황 대비용 보정이다
+                hitDir.Normalize();
 
-            hitDir.Normalize();
-
-            for (int i = 0; i < 25; i++)
-            {
-                Vector2 vel =
-                    hitDir * Main.rand.NextFloat(2.5f, 5.0f) +
-                    Main.rand.NextVector2Circular(0.6f, 0.6f);
-                // 맞은 방향을 중심으로 퍼지게 만든다
-
-                int d = Dust.NewDust(
-                    Player.Center,
-                    0,
-                    0,
-                    DustID.Blood,
-                    vel.X,
-                    vel.Y,
-                    100,
-                    default,
-                    dustScale
-                );
-
-                Main.dust[d].noGravity = false;
-            }
-
-                int gorecount = lastdamage / 25;
-                if (gorecount > 50)
+                for (int i = 0; i < 25; i++)
                 {
-                    gorecount = 50;
+                    Vector2 vel =
+                        hitDir * Main.rand.NextFloat(2.5f, 5.0f) +
+                        Main.rand.NextVector2Circular(0.6f, 0.6f);
+                    // 맞은 방향을 중심으로 퍼지게 만든다
+
+                    int d = Dust.NewDust(
+                        Player.Center,
+                        0,
+                        0,
+                        DustID.Blood,
+                        vel.X,
+                        vel.Y,
+                        100,
+                        default,
+                        dustScale
+                    );
+
+                    Main.dust[d].noGravity = false;
+                    Main.dust[d].fadeIn = 8f;
                 }
-                for (int a = 0; a< gorecount; a++) { 
-            SpawnHitGoreFromSource(npc.Center, hurtInfo);
+
+               
+
             }
 
-           }
+           
+
         }
 
         public override void OnHitByProjectile(Projectile proj, Player.HurtInfo hurtInfo)
         {
-            if (bloodMageEquipped) {
+            if (bloodMageEquipped)
+            {
                 int lastdamage = hurtInfo.Damage;
                 try
                 {
@@ -421,53 +458,48 @@ namespace CAmod.Players
     0f,
     1f
 );
-            // 받은 피해가 최대 체력 대비 몇 %인지다
+                // 받은 피해가 최대 체력 대비 몇 %인지다
 
-            float dustScale = MathHelper.Lerp(0.8f, 2.0f, damageRatio);
-            // 데미지가 클수록 더 크게 튄다
+                float dustScale = MathHelper.Lerp(0.8f, 1.5f, damageRatio);
+                // 데미지가 클수록 더 크게 튄다
 
-            Vector2 hitDir = Player.Center - proj.Center;
-            // 공격자가 있는 쪽 → 맞은 방향이다
+                Vector2 hitDir = Player.Center - proj.Center;
+                // 공격자가 있는 쪽 → 맞은 방향이다
 
-            if (hitDir.LengthSquared() < 0.0001f)
-                hitDir = new Vector2(hurtInfo.HitDirection, 0f);
-            // 예외 상황 대비용 보정이다
-            int bloodcount = lastdamage / 2;
-            hitDir.Normalize();
+                if (hitDir.LengthSquared() < 0.0001f)
+                    hitDir = new Vector2(hurtInfo.HitDirection, 0f);
+                // 예외 상황 대비용 보정이다
+              
+                hitDir.Normalize();
 
-            for (int i = 0; i < 25; i++)
-            {
-                Vector2 vel =
-                    hitDir * Main.rand.NextFloat(2.5f, 5.0f) +
-                    Main.rand.NextVector2Circular(0.6f, 0.6f);
-                // 맞은 방향을 중심으로 퍼지게 만든다
+                for (int i = 0; i < 25; i++)
+                {
+                    Vector2 vel =
+                        hitDir * Main.rand.NextFloat(2.5f, 5.0f) +
+                        Main.rand.NextVector2Circular(0.6f, 0.6f);
+                    // 맞은 방향을 중심으로 퍼지게 만든다
 
-                int d = Dust.NewDust(
-                    Player.Center,
-                    0,
-                    0,
-                    DustID.Blood,
-                    vel.X,
-                    vel.Y,
-                    100,
-                    default,
-                    dustScale
-                );
+                    int d = Dust.NewDust(
+                        Player.Center,
+                        0,
+                        0,
+                        DustID.Blood,
+                        vel.X,
+                        vel.Y,
+                        100,
+                        default,
+                        dustScale
+                    );
 
-                Main.dust[d].noGravity = false;
+                    Main.dust[d].noGravity = false;
+                    Main.dust[d].fadeIn = 8f;
                 }
 
 
-                int gorecount = lastdamage / 25;
-                if (gorecount > 50) {
-                    gorecount = 50;
-                }
 
-                for (int a = 0; a < gorecount; a++)
-            {
-                SpawnHitGoreFromSource(proj.Center, hurtInfo);
             }
-            }
+
+            
         }
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
@@ -475,14 +507,25 @@ namespace CAmod.Players
             if (!bloodMageEquipped || target.friendly || damageDone <= 0)
                 return;
 
+            if (cachedRegenPerSecond <= -2.5f) {
+                return;
+            }
+
+            if (Player.statLife + lifeHealBuffer >= Player.statLifeMax2)
+            {
+                return;
+            }
+
             if (hit.DamageType != DamageClass.Magic)
                 return;
 
             if (vampCooldown > 0)
                 return;
             // 이미 쿨타임이면 흡혈 자체를 허용하지 않는다
+            float lostLifeValue = 5f + (float)(Player.statLife / Player.statLifeMax2) * 5f;
 
-            int healPotential = damageDone / 10;
+
+            float healPotential = (float)damageDone / lostLifeValue;
             if (healPotential <= 0)
                 return;
 
@@ -491,12 +534,21 @@ namespace CAmod.Players
                 return;
 
             // 실질적으로 회복 가능한 양만 사용한다
-            int effectiveHeal = Math.Min(healPotential, missingLife);
+            float effectiveHeal = Math.Min(healPotential, missingLife);
 
             // ===== 여기서 실질 회복량 기준으로 쿨타임 확정 =====
-            int cooldown = effectiveHeal * 60;
+            float cooldown = (float)effectiveHeal * 60;
             vampCooldown = cooldown;
             vampCooldownMax = cooldown;
+
+            float missing = Player.statLifeMax2 - Player.statLife;
+            float missingRatio = MathHelper.Clamp(
+                (float)missing / Player.statLifeMax2,
+                0f,
+                1f
+            );
+
+            vampAccelFrozen = MathHelper.Lerp(1f, 2f, MathF.Pow(missingRatio, 1.5f));
 
 
             // 구체가 날아가기 전에 이미 쿨타임이 예약된다

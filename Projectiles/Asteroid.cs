@@ -23,8 +23,8 @@ namespace CAmod.Projectiles
 
         public override void SetDefaults()
         {
-            Projectile.width = 24;
-            Projectile.height = 24;
+            Projectile.width = 28;
+            Projectile.height = 28;
             Projectile.friendly = true;
             Projectile.tileCollide = false;
             Projectile.DamageType = DamageClass.Magic;

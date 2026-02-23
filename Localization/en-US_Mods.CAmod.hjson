@@ -14,11 +14,14 @@ Items: {
 		Tooltip:
 			'''
 			15% increases Magic damage 
+			5% increases Magic critical chance
 			15% increased Movement speed
+			All magic projectiles inflict God Slayer Inferno for 3 seconds on hit
 			Press [KEY] to enter another dimension for 5 seconds and become immune to all attacks.
 			You cannot attack or dash while in another dimension.
-			If you press [KEY] again when you are in another dimension, you can leave early.
-			This effect has a 30 second cooldown and uses 400 mana.
+			If you press [KEY] again when you are in another dimension, you can leave early.	
+			Returning from another dimension fires 8 God Slayer Darts in all directions, each dealing 750 damage
+			This effect has a 25 second cooldown and uses 500 mana.
 			'''
 	}
 
@@ -31,16 +34,10 @@ Items: {
 		DisplayName: Porphyria
 		Tooltip:
 			'''
-			increased max life by 25%
-			Magic damage is increased by up to 10% based on missing health
-			Magic projectiles restore life and mana equal to 10% of the damage dealt
-
-			This ability has a cooldown
-			The cooldown increases with higher healing amounts and is reduced by higher life regeneration
-			The cooldown is further reduced in proportion to missing health
-
-			You cannot recover life by any means other than this ability
-			Unequipping this accessory during its cooldown results in instant death
+			Increases maximum life by 25%.
+			Increases magic critical chance by up to 15% based on missing health.
+			All healing is replaced with a unique energy steal effect, triggered exclusively by magic projectile hits.
+			Its efficiency scales with life regeneration and missing life, and ignores the Moon Bite debuff.
 			'''
 	}
 
@@ -58,7 +55,6 @@ Items: {
 			Healing potion effectiveness is reduced by 25%
 			Life regeneration effectiveness is reduced by 25%
 			magic attacks ignore 25 defense
-			Mana potion effectiveness is increased by 25%
 			increased magic critical chance by 12.5%
 			All magic attacks deal additional fixed damage equal to 25% of the damage dealt
 			'''
@@ -110,7 +106,13 @@ Items: {
 
 	BloodGodHeart: {
 		DisplayName: Blood God Heart
-		Tooltip: ""
+		Tooltip:
+			'''
+			+10% damage
+			+10% maximum life
+			When taking fatal damage, releases 16 Empowered Bloodflare Souls and survives with 10 life
+			Cooldown is 60 seconds, and during the cooldown, life regeneration +2
+			'''
 	}
 
 	AsteroidStaff: {
@@ -159,13 +161,18 @@ Buffs: {
 	}
 
 	BloodflareSoul: {
-		DisplayName: Bloodflare Soul
-		Description: Mods.CAmod.Buffs.BloodflareSoul.Description
+		DisplayName: Bloodflare Soul's whisper
+		Description: Increased life regeneration
 	}
 
 	UltimateCool: {
 		Description: Mods.CAmod.Buffs.UltimateCool.Description
 		DisplayName: Ultimate Cool
+	}
+
+	ManaOverheat: {
+		DisplayName: Mana Overheat
+		Description: Mods.CAmod.Buffs.ManaOverheat.Description
 	}
 }
 

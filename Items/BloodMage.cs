@@ -17,25 +17,93 @@ namespace CAmod.Items
             Item.width = 28;
             Item.height = 28;
             Item.value = Item.buyPrice(gold: 10);
-            Item.rare = ModContent.RarityType<Rarities.AncientRarity>();
-            Item.value = Item.sellPrice(gold: 25);
+            Item.rare = ModContent.RarityType<Rarities.ArcaneRed>();
+            
         }
-       
-        public override void UpdateAccessory(Player player, bool hideVisual)
+        public override void UpdateInventory(Player players)
         {
-            player.GetModPlayer<BloodMagePlayer>().bloodMageEquipped = true;
+
+
+            Player player = Main.LocalPlayer;
+            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+
+            int stage = ward2.LeafShieldStage;
+
+
+            float normalized = stage / 40f;
+            // 성장 단계를 0~1로 정규화한다
+
+            float priceGold = normalized * normalized * 40f;
+            // 정규화값을 제곱 후 40골드를 곱한다
+
+            int priceCopper = (int)(priceGold * 10000f);
+
+
+            int copper = priceCopper;
+            Item.value = Item.sellPrice(copper: priceCopper);
+
+            // 최종 판매가를 설정한다
+        }
+        public override void UpdateVanity(Player player2)
+        {
+            Player player = Main.LocalPlayer;
+            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+
+            int stage = ward2.LeafShieldStage;
+
+
+            float normalized = stage / 40f;
+            // 성장 단계를 0~1로 정규화한다
+
+            float priceGold = normalized * normalized * 40f;
+            // 정규화값을 제곱 후 40골드를 곱한다
+
+            int priceCopper = (int)(priceGold * 10000f);
+
+
+            int copper = priceCopper;
+            Item.value = Item.sellPrice(copper: priceCopper);
+        }
+        public override void UpdateAccessory(Player player2, bool hideVisual)
+        {
+            player2.GetModPlayer<BloodMagePlayer>().bloodMageEquipped = true;
 
            
 
 
 
-            player.statLifeMax2 += (int)(player.statLifeMax * 0.25);
+            player2.statLifeMax2 += (int)(player2.statLifeMax * 0.25);
+
+            Player player = Main.LocalPlayer;
+            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+
+            int stage = ward2.LeafShieldStage;
 
 
+            float normalized = stage / 40f;
+            // 성장 단계를 0~1로 정규화한다
+
+            float priceGold = normalized * normalized * 40f;
+            // 정규화값을 제곱 후 40골드를 곱한다
+
+            int priceCopper = (int)(priceGold * 10000f);
+
+
+            int copper = priceCopper;
+            Item.value = Item.sellPrice(copper: priceCopper);
             // Blood Mage 장신구 착용 플래그를 켠다
         }
 
-  
+        public override bool PreDrawTooltipLine(DrawableTooltipLine line, ref int yOffset)
+        {
+            if (line.Mod == "Terraria" && line.Name == "ItemName")
+            {
+                Rarities.ArcaneRed.Draw(Item, line);
+                return false; // 기본 드로우를 막는다
+            }
+
+            return true; // 다른 줄은 기본 드로우한다
+        }
 
         public override void AddRecipes()
         {
@@ -80,42 +148,7 @@ namespace CAmod.Items
         }
 
 
-        public override void ModifyTooltips(List<TooltipLine> tooltips)
-        {
-            tooltips.RemoveAll(l => l.Mod == "Terraria" && l.Name.StartsWith("Tooltip"));
-
-            tooltips.Add(new TooltipLine(Mod, "L1",
-                "Increases maximum life by 25%"));
-            tooltips.Add(new TooltipLine(Mod, "L2",
-     "Increases magic damage by up to 15% in proportion to lost health."));
-            tooltips.Add(new TooltipLine(Mod, "L3",
-                "Magic projectiles steal 10% of damage as life and mana"));
-       
-            tooltips.Add(new TooltipLine(Mod, "L4",
-                "This ability has a cooldown"));
-            tooltips.Add(new TooltipLine(Mod, "L5",
-                "Cooldown increases with higher healing amounts"));
-            tooltips.Add(new TooltipLine(Mod, "L6",
-                "Cooldown is reduced by life regeneration and missing health"));
         
-            tooltips.Add(new TooltipLine(Mod, "L7",
-                "You cannot recover life by any means other than this ability"));
-            tooltips.Add(new TooltipLine(Mod, "L8",
-                "Unequipping during cooldown results in instant death"));
-
-            float t = (float)(Math.Sin(Main.GlobalTimeWrappedHourly * 2.8f) * 0.5f + 0.5f);
-            Color red = new Color(220, 60, 60);
-            Color purple = new Color(150, 70, 190);
-
-            foreach (var line in tooltips)
-            {
-                if (line.Mod == "Terraria" && line.Name == "ItemName")
-                {
-                    line.OverrideColor = Color.Lerp(red, purple, t);
-                    // 블러드메이지 이름을 빨강~보라로 왕복시킨다
-                }
-            }
-        }
 
     }
 }

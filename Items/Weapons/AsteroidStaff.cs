@@ -47,7 +47,7 @@ namespace CAmod.Items.Weapons
         {
             // 플레이어의 커스텀 쿨타임 필드를 가져옴
 
-            int debuffType = ModContent.BuffType<UltimateCool>();
+            int debuffType = ModContent.BuffType<ManaOverheat>();
             if (!player.HasBuff(debuffType) && base.CanUseItem(player))
             {
                 player.AddBuff(debuffType, 15 * 60);

@@ -57,7 +57,11 @@ namespace CAmod.Players
 
             return false;
         }
-
+        public override void OnRespawn()
+        {
+            bloodHeartCooldown = 0; // 부활 시 혈심장 쿨타임을 0으로 초기화한다
+           
+        }
         // ─────────────────────────────
         // 성배 "다음 틱" 실제 감소량 계산
         // ─────────────────────────────
@@ -149,7 +153,8 @@ namespace CAmod.Players
             );
 
             reviveInvulnTimer = 60; // 1초 하드 무적
-
+            Player.immune = true; // 플레이어를 무적 상태로 만든다
+            Player.immuneTime = 60; // 60틱 = 1초 동안 무적을 부여한다
             ClearChaliceBuffer();
         }
 
