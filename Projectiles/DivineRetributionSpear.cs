@@ -161,16 +161,16 @@ namespace CAmod.Projectiles
 
             for (int i = 0; i < 6; i++)
             {
-                Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, 244);
+                Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.CopperCoin);
             }
 
             for (int i = 0; i < 10; i++)
             {
-                int d = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, 244);
+                int d = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.CopperCoin);
                 Main.dust[d].noGravity = true;
                 Main.dust[d].velocity *= 3f;
 
-                d = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, 244);
+                d = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.CopperCoin);
                 Main.dust[d].noGravity = true;
                 Main.dust[d].velocity *= 2f;
             }

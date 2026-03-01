@@ -20,16 +20,20 @@ namespace CAmod.Players
                 return;
            
             // ===== 최대 체력 25% 감소  =====
-            Player.statLifeMax2 = (int)(Player.statLifeMax2 * 0.75f);
+            Player.statLifeMax2 -= (int)(Player.statLifeMax * 0.25f);
             // 최종 최대 체력을 직접 깎는다
             Player.statDefense = (Player.statDefense * 0.75f);
             // 방어력을 25% 감소시킨다
 
             Player.GetCritChance(DamageClass.Magic) += 12.5f;
             Player.GetArmorPenetration(DamageClass.Magic) += 25f;
+            Player.GetDamage(DamageClass.Magic) += 0.25f;
+            Player.moveSpeed += 0.25f;
+            Player.maxRunSpeed += 0.25f;
 
-           
-           
+            Player.jumpSpeedBoost += 0.25f;
+
+
         }
         public override void GetHealLife(Item item, bool quickHeal, ref int healValue)
         {
@@ -53,8 +57,10 @@ namespace CAmod.Players
             if (hit.DamageType != DamageClass.Magic)
                 return;
             // 마법 피해가 아니면 즉시 차단한다
+            if (!Main.rand.NextBool(4))
+                return;
 
-            int bonusDamage = (int)(damageDone * 0.25f);
+            int bonusDamage = damageDone;
             // 최종 피해 기준 25%를 산출한다
 
             if (bonusDamage <= 0)

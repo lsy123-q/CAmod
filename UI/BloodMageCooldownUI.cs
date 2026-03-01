@@ -78,8 +78,8 @@ namespace CAmod.UI
             Player player = Main.LocalPlayer;
             var mp = player.GetModPlayer<BloodMagePlayer>();
 
-            if (!mp.bloodMageEquipped && mp.vampCooldown <= 0f)
-                return;
+            if (mp.vampCooldown <= 0f)
+                return; // 쿨타임이 없으면 UI를 그리지 않는다
 
 
             var config = ModContent.GetInstance<UIConfig>();

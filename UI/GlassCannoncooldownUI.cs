@@ -24,7 +24,7 @@ namespace CAmod.UI
 
 
         }
-
+        /*
         private Vector2 GetDrawPosition()
         {
             return position + PositionOffset; // 실제 화면에 그려지는 위치를 반환한다
@@ -112,6 +112,6 @@ namespace CAmod.UI
 
             // 쿨이 있을 때만 마스크 표시
             
-        }
+        }*/
     }
 }

@@ -54,6 +54,7 @@ Items: {
 			defense is reduced by 25%
 			Healing potion effectiveness is reduced by 25%
 			Life regeneration effectiveness is reduced by 25%
+			Movement speed related stats +25%
 			magic attacks ignore 25 defense
 			increased magic critical chance by 12.5%
 			All magic attacks deal additional fixed damage equal to 25% of the damage dealt
@@ -67,7 +68,11 @@ Items: {
 
 	AncientEmblem: {
 		DisplayName: Ancient Emblem
-		Tooltip: ""
+		Tooltip:
+			'''
+			Remnants of ancient magic. 
+			Materials for arcane accessory.
+			'''
 	}
 
 	MonsterController: {
@@ -117,6 +122,31 @@ Items: {
 
 	AsteroidStaff: {
 		DisplayName: Asteroid Staff
+		Tooltip: ""
+	}
+
+	Pyromancer: {
+		DisplayName: Pyromancer
+		Tooltip:
+			'''
+			Magic projectiles brand enemies with a Flame Sigil on hit (up to 1000 stacks).
+			The strength of the Flame Sigil scales with your Magic damage and Magic critical strike chance, 
+			and ignores debuff immunity.
+			When the Flame Sigil reaches maximum stacks,
+			multiple types of burning debuffs are inflicted on the target.
+			+2.5% final Magic damage for each burning debuff applied to the target.
+			Current maximum Sigil damage: [fire]
+			Applied final Magic damage bonus: +[damage]%
+			'''
+	}
+
+	ArcaneHook123: {
+		DisplayName: Arcane Hook123
+		Tooltip: ""
+	}
+
+	ArcaneHook: {
+		DisplayName: Arcane Hook
 		Tooltip: ""
 	}
 }
@@ -189,6 +219,10 @@ Projectiles: {
 	DivineRetributionSpear.DisplayName: Divine Retribution Spear
 	BloodflareSoul.DisplayName: Bloodflare Soul
 	Magic.Asteroid.DisplayName: Asteroid
+	HolyFlame.DisplayName: Holy Flame
+	ArcaneHookProj.DisplayName: Arcane Hook Proj
+	ArcaneHookCore.DisplayName: Arcane Hook Core
+	ArcaneHookDamage.DisplayName: Arcane Hook Damage
 }
 
 Configs: {

@@ -36,7 +36,23 @@ namespace CAmod.Players
         {
             dimGateEquipped = false;
         }
-       
+        public override void OnRespawn()
+        {
+            gateTime = 0;          // 무적 시간을 초기화한다
+            gateCooldown = 0;      // 쿨타임을 초기화한다
+            gateCooldownmax = 0;   // 최대 쿨타임을 초기화한다
+
+            startflag = false;     // 시작 연출 플래그를 초기화한다
+            endflag = false;       // 종료 연출 플래그를 초기화한다
+
+            progress = 0;          // 시작 연출 진행도를 초기화한다
+            endprogress = 0;       // 종료 연출 진행도를 초기화한다
+            dustprogress = 0;      // 더스트 진행도를 초기화한다
+
+            gateEndGrace = 0;      // 종료 유예 시간을 초기화한다
+
+            // 사망 후 부활 시 차원 게이트의 모든 액티브 상태를 리셋한다
+        }
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {

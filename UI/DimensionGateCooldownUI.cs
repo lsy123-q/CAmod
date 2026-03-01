@@ -78,7 +78,7 @@ namespace CAmod.UI
             Player player = Main.LocalPlayer;
             var mp = player.GetModPlayer<DimGatePlayer>();
 
-            if (!mp.dimGateEquipped && mp.gateCooldown <= 0f)
+            if (mp.gateCooldown <= 0f)
                 return;
 
 

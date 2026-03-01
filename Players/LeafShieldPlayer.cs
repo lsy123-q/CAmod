@@ -22,15 +22,28 @@ namespace CAmod.Players
         public int leafShieldCooldownmax; 
         public bool leafflag = false;
         public bool leafflag2 = false;
+        public bool leafShieldVisible;
         public override void ResetEffects()
         {
             leafShieldEquipped = false;
             leafShieldActive = false;
+            leafShieldVisible = false;
 
-           
 
         }
-        
+        public override void OnRespawn()
+        {
+            leafflag = false;
+            leafflag2 = false;
+
+            leafShieldTimer = 0;
+            leafShieldTimer2 = 0;
+
+            leafShieldCooldown = 0;
+            leafShieldCooldownmax = 0;
+
+            // 사망 시 리프실드 활성 상태와 쿨을 초기화한다
+        }
 
         public override void ProcessTriggers(Terraria.GameInput.TriggersSet triggersSet)
         {
@@ -51,6 +64,63 @@ namespace CAmod.Players
             ApplyAbyssLayerLight_Reflection(Player);
                 
             }
+
+            int lostLife = Player.statLifeMax2 - Player.statLife;
+
+
+            try
+            {
+                var modPlayersField =
+                    typeof(Player).GetField("modPlayers", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                var modPlayersList =
+                    modPlayersField?.GetValue(Player) as System.Collections.IEnumerable;
+
+                if (modPlayersList != null)
+                {
+                    foreach (var mp in modPlayersList)
+                    {
+                        if (mp.GetType().FullName == "CalamityMod.CalPlayer.CalamityPlayer")
+                        {
+                            var bufferField =
+                                mp.GetType().GetField("chaliceBleedoutBuffer",
+                                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+                            if (bufferField != null)
+                            {
+                                double buffer = (double)bufferField.GetValue(mp);
+
+                                if (buffer > 0)
+                                    lostLife += (int)buffer; // 현재 누적 출혈량을 손실 체력에 더한다
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // 구조 변경 대비 무시한다
+            }
+
+
+            float regenPerSecond = Player.lifeRegen / 2f;
+            float regenDuringShield = regenPerSecond * 11f * 0.6f;
+
+            if (leafShieldEquipped
+                && lostLife >= regenDuringShield + 33f
+                && leafShieldCooldown <= 0
+                && !leafflag
+                && !leafflag2
+                && leafShieldVisible)
+            {
+                SpawnLeaves(); // 리프를 생성한다
+
+                leafflag = true;
+                leafflag2 = true;
+            }
+
             int count = Player.GetModPlayer<LeafWardPlayer2>().LeafShieldStage;
             int count2 = count * 15;
             if (leafflag == true) {
@@ -350,10 +420,12 @@ namespace CAmod.Players
 
         private void ApplyLeafShieldAura()
         {
+            if (!Player.active || Player.dead)
+                return;
             float radius = GetLeafShieldRadius();
             float radiusSq = radius * radius;
             Vector2 center = Player.Center;
-
+            
             // === NPC 대상 처리 ===
             for (int i = 0; i < Main.maxNPCs; i++)
             {
@@ -365,15 +437,16 @@ namespace CAmod.Players
                 if (Vector2.DistanceSquared(center, npc.Center) > radiusSq)
                     continue;
 
-                if (npc.friendly || npc.townNPC)
-                {
-                    npc.AddBuff(BuffID.DryadsWard, 60);
-                    // 아군(NPC)에게 드라이어드의 축복을 부여한다
-                }
-                else
+                if (npc.damage > 0 && !npc.friendly && !npc.townNPC)
                 {
                     npc.AddBuff(BuffID.DryadsWardDebuff, 60);
-                    // 적에게 드라이어드의 베놈을 부여한다
+                    // 공격 능력이 있는 적에게만 디버프를 건다
+                }
+                // 🟢 아군 판정
+                else if (npc.friendly || npc.townNPC)
+                {
+                    npc.AddBuff(BuffID.DryadsWard, 60);
+                    // 아군 NPC에게 버프를 건다
                 }
             }
 
@@ -396,8 +469,10 @@ namespace CAmod.Players
         private void SpawnLeafShieldDust(float radius)
         {
             // 연출 밀도 제어용 확률이다
+            if (!Player.active || Player.dead)
+                return;
 
-            for(int i =0; i<radius/100; i++) {
+            for (int i =0; i<radius/100; i++) {
 
                 if (Main.rand.NextBool(10) == false)
                     continue;
@@ -477,6 +552,8 @@ namespace CAmod.Players
 
         private void SpawnLeaves()
         {
+            if (!Player.active || Player.dead)
+                return;
             int owner = Player.whoAmI;
 
             // === 반경 100px / 시계방향 ===

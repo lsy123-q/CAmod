@@ -112,15 +112,12 @@ namespace CAmod.Players
             );
             // 현재 잃은 체력 비율이다
 
-            float accel = MathHelper.Lerp(1f, 2.0f, MathF.Pow(missingRatio, 1.5f));
+            float accel = MathHelper.Lerp(1f, 2.0f, missingRatio);
 
 
             if (vampCooldown > 0f && bloodMageEquipped)
             {
-                float finalAccel = Math.Max(accel, vampAccelFrozen);
-                // 현재 가속과 시작 가속 중 더 높은 값 사용
-
-                vampCooldown -= finalAccel * (2.5f + cachedRegenPerSecond);
+                vampCooldown -= accel * (2.5f + cachedRegenPerSecond);
             }
 
 
@@ -178,15 +175,21 @@ namespace CAmod.Players
                     int diff = Player.statLife - lastLife;
 
                     Player.statLife = lastLife;
-                    // 기준 체력보다 증가한 모든 회복을 차단한다
 
-                    if (diff > 2)
+                    // 🔥 현재 프레임 기준 자연 체젠량을 계산한다
+                    float regenPerSecond = Player.lifeRegen / 2f;
+                    int naturalRegenInt = (int)Math.Floor(regenPerSecond / 60f);
+
+                    // 최소 자연회복 허용량을 1로 보정한다
+                    naturalRegenInt = Math.Max(naturalRegenInt, 1);
+
+                    if (diff > naturalRegenInt)
                     {
                         CombatText.NewText(
-         Player.getRect(),
-         new Color(180, 30, 30),
-         "-" + diff
-     );
+                            Player.getRect(),
+                            new Color(180, 30, 30),
+                            "-" + diff
+                        );
                     }
                 }
 
@@ -522,11 +525,11 @@ namespace CAmod.Players
             if (vampCooldown > 0)
                 return;
             // 이미 쿨타임이면 흡혈 자체를 허용하지 않는다
-            float lostLifeValue = 5f + (float)(Player.statLife / Player.statLifeMax2) * 5f;
+            float lostLifeValue = 10f;
 
 
             float healPotential = (float)damageDone / lostLifeValue;
-            if (healPotential <= 0)
+            if ((int)healPotential <= 0)
                 return;
 
             int missingLife = Player.statLifeMax2 - Player.statLife;
@@ -548,8 +551,7 @@ namespace CAmod.Players
                 1f
             );
 
-            vampAccelFrozen = MathHelper.Lerp(1f, 2f, MathF.Pow(missingRatio, 1.5f));
-
+          
 
             // 구체가 날아가기 전에 이미 쿨타임이 예약된다
             // ===== 그로테스크한 흡혈 Dust 연출 =====

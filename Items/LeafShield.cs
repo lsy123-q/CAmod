@@ -52,6 +52,14 @@ namespace CAmod.Items
         {
             player2.GetModPlayer<LeafWardPlayer>().leafShieldEquipped = true;
             player2.GetModPlayer<LeafWardPlayer2>().leafShieldEquipped = true;
+            var modPlayer = player2.GetModPlayer<LeafWardPlayer>();
+
+            modPlayer.leafShieldEquipped = true;
+
+            if (!hideVisual)
+                modPlayer.leafShieldVisible = true;
+
+
 
 
             Player player = Main.LocalPlayer;
@@ -113,14 +121,14 @@ namespace CAmod.Items
             int stage = ward2.LeafShieldStage;
             // 현재 성장 단계다 (0~20)
 
-            float bonusMagicDamage = stage * 0.5f + 10f;
+            float bonusMagicDamage = stage * 0.5f + 5f;
             // 추가 마법 피해 퍼센트다
 
-            float bonusMagicCrit = stage * 0.25f + 5f;
+            float bonusMagicCrit = stage * 0.25f + 2.5f;
             // 추가 마법 치명타 확률이다
-            int bonusdefense = (int)(stage * 0.5f) + 10;
+            int bonusdefense = (int)(stage * 0.5f) + 5;
 
-            int bonusMana = stage * 5 + 100;
+            int bonusMana = stage * 5 + 50;
             // 추가 마나다
             float progress = (stage / 40f)*100f;
             float cooldownReductionSec = stage * 0.25f;
@@ -174,7 +182,7 @@ namespace CAmod.Items
 
 
             tooltips.Add(new TooltipLine(Mod, "L11",
-                $"Leaf Shield cooldown reduction: {lastcool:F1} seconds"));
+                $"Leaf Shield cooltime: {lastcool:F1} seconds"));
             // 성장으로 감소된 쿨타임이다
 
             

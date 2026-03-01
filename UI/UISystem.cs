@@ -95,12 +95,12 @@ namespace CAmod.UI
            leafUI.Draw(Main.spriteBatch, gt);
            offsetX += 40;
        }
-
+       /*
        if (glassUI != null && glassState.IsVisible())
        {
            glassState.PositionOffset = new Vector2(offsetX, 0);
            glassUI.Draw(Main.spriteBatch, gt);
-       }
+       }*/
 
        return true;
    }

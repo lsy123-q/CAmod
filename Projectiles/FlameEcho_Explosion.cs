@@ -28,13 +28,38 @@ namespace CAmod.Projectiles
             Projectile.tileCollide = false;
             Projectile.ignoreWater = true;
 
-            Projectile.DamageType = DamageClass.Magic;
             // 무기 데미지 타입을 따른다
         }
 
         public override void AI()
         {
-            
+            // 플레이어의 가장 높은 클래스 보정치를 따른다
+            Player player = Main.player[Projectile.owner];
+
+            DamageClass[] classes = new DamageClass[]
+            {
+    DamageClass.Melee,
+    DamageClass.Ranged,
+    DamageClass.Magic,
+    DamageClass.Summon
+            };
+
+            float bestBonus = 0f;
+            DamageClass bestClass = DamageClass.Default;
+
+            foreach (var dc in classes)
+            {
+                float bonus = player.GetTotalDamage(dc).ApplyTo(1f);
+                // 해당 클래스의 최종 배율을 계산한다
+
+                if (bonus > bestBonus)
+                {
+                    bestBonus = bonus;
+                    bestClass = dc;
+                }
+            }
+
+            Projectile.DamageType = bestClass;
         }
         public override void ModifyHitNPC(
     NPC target,

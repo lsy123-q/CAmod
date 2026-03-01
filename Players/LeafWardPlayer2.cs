@@ -30,17 +30,17 @@ namespace CAmod.Players
 
             int count = LeafShieldStage;
 
-            Player.GetDamage(DamageClass.Magic) += count * 0.005f + 0.1f;
+            Player.GetDamage(DamageClass.Magic) += count * 0.005f + 0.05f;
             
             // 보스 1종당 마법 피해 0.5% 증가다
 
-            Player.GetCritChance(DamageClass.Magic) += count * 0.25f + 5f;
+            Player.GetCritChance(DamageClass.Magic) += count * 0.25f + 2.5f;
             
             // 보스 1종당 마법 치명타 0.25% 증가다
 
-            Player.statManaMax2 += count * 5 + 100;
+            Player.statManaMax2 += count * 5 + 50;
           
-            Player.statDefense += (int)(count * 0.5f) + 10;
+            Player.statDefense += (int)(count * 0.5f) + 5;
        
             // 보스 1종당 최대 마나 10 증가다
         }

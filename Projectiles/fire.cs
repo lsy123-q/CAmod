@@ -89,7 +89,7 @@ namespace CAmod.Projectiles
             float detectRadius = 2500f;
             float baseSpeed = 15f;
             NPC target = FindClosestNPC(detectRadius);
-
+            
             // Dust
             for (int i = 0; i < 2; i++)
             {
@@ -262,7 +262,8 @@ namespace CAmod.Projectiles
                 SpriteEffects.None,
                 0.1f
             );
-
+            
+            
             // 잔상
             for (int i = 1; i < Projectile.oldPos.Length; i++)
             {

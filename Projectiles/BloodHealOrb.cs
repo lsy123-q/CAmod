@@ -119,8 +119,9 @@ Projectile.Center,
                 bmp.allowBloodHeal = true;
 
 
-                bmp.lifeHealBuffer += healed;
-                // 체력 회복 후 기준 체력을 동기화한다
+                player.statLife += healed; // 즉시 체력을 회복한다
+                bmp.lastLife = player.statLife; // 기준 체력을 동기화한다
+              
 
                 int manaToStore = healed;
                 bmp.manaHealBuffer += manaToStore;
