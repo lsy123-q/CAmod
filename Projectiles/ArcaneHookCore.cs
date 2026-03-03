@@ -17,8 +17,8 @@ namespace CAmod.Projectiles
         public static Asset<Texture2D> ChainTex;
         public bool hookPulling;
         private const float AcquireRadius = 150f;
-        private const float LaunchSpeed = 15f;
-        private const float ChaseSpeed = 16f;
+        private const float LaunchSpeed = 20f;
+        private const float ChaseSpeed = 5f;
         private const float PullPlayerSpeed = 28f;
         private const float PullNpcSpeed = 20f;
 
@@ -36,21 +36,22 @@ namespace CAmod.Projectiles
         private bool recalling = false;
         private Vector2 launchStartPos;
         private Vector2 launchDir;
-        private const float MaxRange = 880f;
+        private const float MaxRange = 1000f;
         private bool playedFixSound = false;
         private bool jumpReleasedAfterFix = false;
-
+        private bool hookReleasedAfterFix = false;
         private long lastDamageSpawnTick = -1;
-
+        public static Asset<Texture2D> FixedCoreTex; // 고정 상태용 코어 텍스처이다
         public override void SetStaticDefaults()
         {
             ChainTex = ModContent.Request<Texture2D>("CAmod/Projectiles/ArcaneHookChain");
+            FixedCoreTex = ModContent.Request<Texture2D>("CAmod/Projectiles/jaw");
         }
 
         public override void SetDefaults()
         {
-            Projectile.width = 2;
-            Projectile.height = 2;
+            Projectile.width = 26;
+            Projectile.height = 26;
             Projectile.friendly = true;
             Projectile.hostile = false;
             Projectile.tileCollide = false;
@@ -85,13 +86,18 @@ namespace CAmod.Projectiles
 
         public override void AI()
         {
+
             Player player = Main.player[Projectile.owner];
+            if (fixedState && !player.controlHook)
+            {
+                hookReleasedAfterFix = true; // 고정 이후에 키를 뗐다고 기록한다
+            }
             float distFromPlayer = Vector2.Distance(player.MountedCenter, Projectile.Center);
             if (!fixedState && !recalling)
             {
                 Projectile.timeLeft = 120;
             }
-            if (!fixedState)
+            if (!fixedState&& !recalling)
             {
                 SpawnWaterDust();
             }
@@ -106,6 +112,8 @@ namespace CAmod.Projectiles
             {
                 jumpReleasedAfterFix = false;
                 fixedState = true;
+                
+                hookReleasedAfterFix = false; 
                 if (!playedFixSound)
                 {
                     SoundEngine.PlaySound(SoundID.Item10, Projectile.Center);
@@ -215,12 +223,23 @@ namespace CAmod.Projectiles
                 if (trackedNPC != -1)
                 {
                     NPC t = Main.npc[trackedNPC];
+
+                    float immediateDistSq = Vector2.DistanceSquared(Projectile.Center, t.Center);
+                    float immediateRange = Math.Max(t.width, t.height) * 0.4f;
+
+                    if (immediateDistSq <= immediateRange * immediateRange)
+                    {
+                        // 강제 고정한다
+                        Projectile.Center = t.Center;
+                        CheckNPCHitAndFix();
+                    }
+
                     Vector2 to = t.Center - Projectile.Center;
 
                     if (to.LengthSquared() > 4f)
                     {
                         to.Normalize();
-                        Projectile.velocity = to * ChaseSpeed;
+                        Projectile.velocity = to * LaunchSpeed; // 추적 중에도 초기 발사 속도를 사용한다
                     }
                 }
 
@@ -230,6 +249,7 @@ namespace CAmod.Projectiles
             // 고정 상태 처리
             if (fixedState)
             {
+             
                 if (grabbedNPC != -1)
                 {
                     NPC npc = Main.npc[grabbedNPC];
@@ -255,7 +275,8 @@ namespace CAmod.Projectiles
                     // 일반 NPC를 납치한 상태에서 갈고리키를 누르면 회수한다
                     if (Projectile.owner == Main.myPlayer &&
                         grabbedNPC != -1 &&
-                        Main.player[Projectile.owner].controlHook)
+                        Main.player[Projectile.owner].controlHook&&
+                        hookReleasedAfterFix)
                     {
                         var mp = player.GetModPlayer<ArcaneHookPlayer>();
 
@@ -408,7 +429,21 @@ namespace CAmod.Projectiles
 
                 Vector2 closest = n.Hitbox.ClosestPointInRect(Projectile.Center);
                 float dSq = Vector2.DistanceSquared(closest, Projectile.Center);
+                Vector2 toNpc = n.Center - Projectile.Center;
 
+                // 발사 방향이 거의 0이 되는 상황 방어한다
+                if (Projectile.velocity.LengthSquared() > 0.001f)
+                {
+                    Vector2 forward = Projectile.velocity;
+                    forward.Normalize();
+
+                    toNpc.Normalize();
+
+                    float dot = Vector2.Dot(forward, toNpc);
+
+                    if (dot <= 0f)
+                        continue; // 후방 180도면 추적 대상에서 제외한다
+                }
                 if (dSq <= bestDistSq)
                 {
                     bestDistSq = dSq;
@@ -442,7 +477,22 @@ namespace CAmod.Projectiles
                 }
                 else
                 {
+                    // 기본 히트박스 충돌 체크한다
                     hit = Projectile.Hitbox.Intersects(n.Hitbox);
+
+                    // 🔥 작은 몬스터 보정용 거리 체크 추가한다
+                    if (!hit)
+                    {
+                        float dist = Vector2.Distance(Projectile.Center, n.Center);
+
+                        // 몬스터 크기에 비례해서 판정 반경 보정한다
+                        float extraRange = Math.Max(n.width, n.height) * 0.5f;
+
+                        if (dist <= 6f + extraRange)
+                        {
+                            hit = true; // 거리 기반으로 강제 고정한다
+                        }
+                    }
                 }
 
                 if (!hit)
@@ -450,6 +500,7 @@ namespace CAmod.Projectiles
 
                 jumpReleasedAfterFix = false;
                 fixedState = true;
+                hookReleasedAfterFix = false;
                 if (!playedFixSound)
                 {
                     SoundEngine.PlaySound(
@@ -514,11 +565,21 @@ namespace CAmod.Projectiles
             Vector2 toCore = Projectile.Center - player.Center;
             float dist = toCore.Length();
             var mp = player.GetModPlayer<ArcaneHookPlayer>();
-            if (dist > 4f)
+
+            // 코어 방향 벡터를 정규화한다
+            Vector2 dir = toCore;
+            if (dir.LengthSquared() > 0.001f)
+                dir.Normalize();
+
+            // 코어 바로 앞 20px 지점을 목표로 한다
+            Vector2 targetPos = Projectile.Center - dir * 20f;
+
+            float targetDist = Vector2.Distance(player.Center, targetPos);
+
+            if (targetDist > 4f)
             {
-                toCore.Normalize();
                 mp.hookPulling = true;
-                mp.hookTarget = Projectile.Center;
+                mp.hookTarget = targetPos; // 코어 중심이 아니라 앞 20px 지점이다
                 mp.hookSpeed = PullPlayerSpeed;
             }
             else
@@ -580,7 +641,18 @@ namespace CAmod.Projectiles
             if (ChainTex == null || !ChainTex.IsLoaded)
                 return true;
 
-            Texture2D coreTex = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
+            Texture2D coreTex;
+
+            if (fixedState && FixedCoreTex != null && FixedCoreTex.IsLoaded)
+            {
+                coreTex = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value; // 기본 스프라이트 사용한다
+            }
+            else
+            {
+                
+
+                coreTex = FixedCoreTex.Value; // 고정 상태일 때 다른 코어 스프라이트 사용한다
+            }
             Vector2 origin = coreTex.Size() / 2f;
             origin.Y -= 4f;
             Player player = Main.player[Projectile.owner];
@@ -600,7 +672,8 @@ namespace CAmod.Projectiles
                 return true;
 
             Vector2 direction = diff / length;
-            float segmentLength = chainTexture.Height;
+            float chainScale = 0.8f; // 체인 전체 30% 축소 스케일이다
+            float segmentLength = chainTexture.Height * chainScale; // 스케일 적용한 실제 길이로 계산한다
             int segments = (int)(length / segmentLength);
             float rotation = direction.ToRotation() - MathHelper.PiOver2;
 
@@ -621,7 +694,7 @@ namespace CAmod.Projectiles
                     light,
                     rotation,
                     chainTexture.Size() / 2f,
-                    1f,
+                     chainScale, // 동일 스케일 사용한다,
                     SpriteEffects.None,
                     0
                 );
@@ -634,7 +707,7 @@ namespace CAmod.Projectiles
                 lightColor,
                 Projectile.rotation,
                 origin,
-                Projectile.scale,
+                Projectile.scale*0.8f,
                 SpriteEffects.None,
                 0
             );
@@ -659,19 +732,18 @@ namespace CAmod.Projectiles
         }
         private void SpawnWaterDust()
         {
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 40; i++)
             {
                 int d = Dust.NewDust(
-                    Projectile.Center - new Vector2(10f),
-                    20,
-                    20,
-                    DustID.Water,
-                    Main.rand.NextFloat(-5f, 5f),
-                    Main.rand.NextFloat(-5f, 5f),
-                    150,
-                    default,
-                    1.2f
-                );
+    Projectile.position, // 투사체 좌상단 기준이다
+    Projectile.width,    // 히트박스 가로 크기이다
+    Projectile.height,   // 히트박스 세로 크기이다
+    DustID.Water,
+    Main.rand.NextFloat(-10f, 10f),
+    Main.rand.NextFloat(-10f, 10f),
+    150,
+    default,
+    1.2f);
                 Main.dust[d].noGravity = false;
             }
         }

@@ -29,7 +29,7 @@ namespace CAmod.Projectiles
             // 플레이어 기준 바깥 방향으로 넉백 방향을 결정한다
 
             target.velocity.X = hitDirection * hit.Knockback;
-
+            target.AddBuff(BuffID.Confused, 180); // 혼란 3초를 건다
             try
             {
                 Mod calamity = ModLoader.GetMod("CalamityMod");
@@ -59,7 +59,7 @@ namespace CAmod.Projectiles
 
             NPC target = Main.npc[targetIndex];
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 40; i++)
             {
                 int d = Dust.NewDust(
     target.position,          // NPC 히트박스 좌상단이다

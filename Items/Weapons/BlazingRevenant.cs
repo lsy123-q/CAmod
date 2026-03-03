@@ -9,6 +9,7 @@ namespace CAmod.Items.Weapons
 {
     public class BlazingRevenant : ModItem
     {
+        private static float globalRotationOffset = 0f;
         public override void SetStaticDefaults()
         {
             // 표시명/툴팁은 Localization 쓰면 됨
@@ -23,13 +24,13 @@ namespace CAmod.Items.Weapons
             Item.DamageType = DamageClass.Magic; // 투사체가 Generic이라 맞춘다
             Item.knockBack = 3f;
             Item.crit = 0;
-            Item.mana = 40;
+            Item.mana = 30;
             Item.useStyle = ItemUseStyleID.Shoot; // 발사 무기 스타일이다
             Item.noMelee = true; // 근접 판정 안쓴다
             Item.autoReuse = true; // 자동사용 가능하게 한다
 
-            Item.useTime = 32; // 초기값이다 (실제로는 CanUseItem에서 매번 갱신한다)
-            Item.useAnimation = 32; // useTime과 동일하게 맞춘다
+            Item.useTime = 12; // 초기값이다 (실제로는 CanUseItem에서 매번 갱신한다)
+            Item.useAnimation = 12; // useTime과 동일하게 맞춘다
             Item.UseSound = SoundID.Item73;
 
             Item.shoot = ModContent.ProjectileType<fire>(); // fire 투사체를 쏜다
@@ -50,17 +51,7 @@ namespace CAmod.Items.Weapons
 
         public override bool CanUseItem(Player player)
         {
-            // 잃은 체력 비례로 useTime을 36~12로 만든다
-            int max = player.statLifeMax2;
-            int missing = max - player.statLife;
-            
-            float ratio = max > 0 ? (float)missing / max : 0f; // 잃은 체력 비율이다 (0~1)
-            ratio = MathF.Pow(MathHelper.Clamp(ratio, 0f, 1f), 0.5f);
-            int use = (int)MathHelper.Lerp(32f, 12f, MathHelper.Clamp(ratio, 0f, 1f));
-            use = Utils.Clamp(use, 12, 32);
-
-            Item.useTime = use; // 사용시간을 갱신한다
-            Item.useAnimation = use; // 애니메이션도 같이 갱신한다
+           
 
             return base.CanUseItem(player);
         }
@@ -71,16 +62,24 @@ namespace CAmod.Items.Weapons
             if (player.whoAmI != Main.myPlayer)
                 return false; // 중복 소환 방지한다
 
-            int count = 8; // 8개 소환한다
+          
             float speed = Item.shootSpeed;
-      
-        
+            int max = player.statLifeMax2;
+            int missing = max - player.statLife;
+            float ratio = max > 0 ? (float)missing / max : 0f;
+            
+
+            // 발사 개수를 8 ~ 20으로 스케일한다
+            int count = (int)MathHelper.Lerp(3f, 9f, ratio);
+            count = Utils.Clamp(count, 3, 9);
+
 
             // 🔹 전체 투사체가 공유하는 선회값이다
-            
+
             for (int i = 0; i < count; i++)
             {
-                float angle = MathHelper.TwoPi * i / count; // 원형으로 균등 분배한다
+                float angle = MathHelper.TwoPi * i / count + globalRotationOffset;
+               
                 Vector2 v = angle.ToRotationVector2() * speed;
                 int spinValue = Main.rand.NextBool()
     ? Main.rand.Next(4, 9)     // 4 ~ 8
@@ -103,7 +102,7 @@ namespace CAmod.Items.Weapons
                     spinValue // ai[2] : 선회각 보정값이다
                 );
             }
-
+            globalRotationOffset += MathHelper.Pi;
             return false; // 기본 발사 막는다
         }
 
