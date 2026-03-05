@@ -40,7 +40,7 @@ namespace CAmod.Items.Weapons
                
             }
             Item.value = Item.sellPrice(gold: 30);
-            Item.UseSound = SoundID.Item20;
+            Item.UseSound = SoundID.Item73;
             Item.autoReuse = true;
             Item.shoot = ModContent.ProjectileType<Projectiles.FlameEcho_Controller>();
             Item.shootSpeed = 12f;

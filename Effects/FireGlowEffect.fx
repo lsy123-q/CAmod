@@ -1,74 +1,84 @@
-sampler2D uImage0 : register(s0);
+sampler uImage0 : register(s0);
 
-float4 uColor; // (r,g,b,a) 발광색이다
-float uIntensity; // 발광 강도이다
-float uBlurRadius; // 블러 반경(픽셀 단위 느낌)이다
-float uTime; // 시간이다
-float2 uTextureSize; // 텍스처 크기(px)이다
-
-float4x4 MatrixTransform;
-
-struct VertexInput
+float2 uImageSize0; // (texWidth, texHeight)
+float uThicknessPx; // 10.0
+float4 uOutlineColor; // (r,g,b,a) 0~1
+float uOpacity; // 1.0
+float4x4 MatrixTransform; // SpriteBatch가 자동으로 넣는 변환행렬이다
+struct VSInput
 {
     float4 Position : POSITION0;
-    float2 TexCoord : TEXCOORD0;
     float4 Color : COLOR0;
+    float2 TexCoord : TEXCOORD0;
 };
 
-struct VertexOutput
+struct VSOutput
 {
     float4 Position : SV_POSITION;
-    float2 TexCoord : TEXCOORD0;
     float4 Color : COLOR0;
+    float2 TexCoord : TEXCOORD0;
 };
 
-VertexOutput VertexShaderFunction(VertexInput input)
+VSOutput VertexShaderFunction(VSInput input)
 {
-    VertexOutput output;
-    output.Position = mul(input.Position, MatrixTransform); // SpriteBatch 변환을 적용한다
-    output.TexCoord = input.TexCoord;
-    output.Color = input.Color;
-    return output;
+    VSOutput o;
+    o.Position = mul(input.Position, MatrixTransform); // 화면좌표를 클립좌표로 변환한다
+    o.Color = input.Color;
+    o.TexCoord = input.TexCoord;
+    return o;
 }
 
-float4 PixelShaderFunction(VertexOutput input) : COLOR0
+float4 PixelShaderFunction(VSOutput i) : COLOR0
 {
-    float2 uv = input.TexCoord;
+    float2 texel = 1.0 / max(uImageSize0, float2(1.0, 1.0));
 
-    // 텍셀 크기를 텍스처 크기 기반으로 만든다
-    float2 texel = (1.0 / max(uTextureSize, 1.0)) * uBlurRadius;
+    float4 src = tex2D(uImage0, i.TexCoord);
+    float a0 = src.a;
 
-    float4 original = tex2D(uImage0, uv);
+    // 2링으로 블러 느낌 만든다 (가볍게)
+    float r1 = uThicknessPx * 0.55;
+    float r2 = uThicknessPx * 1.00;
 
-    // 4방향 블러(가벼운 편)이다
-    float4 b = 0;
-    b += tex2D(uImage0, uv + float2(texel.x, 0));
-    b += tex2D(uImage0, uv + float2(-texel.x, 0));
-    b += tex2D(uImage0, uv + float2(0, texel.y));
-    b += tex2D(uImage0, uv + float2(0, -texel.y));
-    b *= 0.25;
+    float sum = 0.0;
+    float wsum = 0.0;
 
-    // 펄스는 아주 약하게만 준다
-    float pulse = 1.0 + sin(uTime * 3.0) * 0.08;
+    // 8방향 샘플링한다
+    // (cos/sin 대신 상수 방향을 직접 써도 되지만 ps_2_0 const 제한 피하려고 각도 계산을 쓴다)
+    for (int k = 0; k < 8; k++)
+    {
+        float angle = 6.2831853 * (k / 8.0); // 2PI * (k/8) 이다
+        float2 dir = float2(cos(angle), sin(angle));
 
-    // 알파 기반으로 바깥쪽만 발광시키는 값이다
-    float edge = saturate((b.a - original.a) * 4.0);
+        float a1 = tex2D(uImage0, i.TexCoord + dir * texel * r1).a;
+        float a2 = tex2D(uImage0, i.TexCoord + dir * texel * r2).a;
 
-    float3 glowRGB = uColor.rgb * (uIntensity * pulse) * edge;
+        float w1 = 0.60;
+        float w2 = 0.40;
 
-    float4 result;
-    result.rgb = original.rgb + glowRGB; // 쉐이더 내부에서 더한다
-    result.a = saturate(original.a + edge * 0.35); // 알파를 살짝 올린다
+        sum += a1 * w1 + a2 * w2;
+        wsum += w1 + w2;
+    }
 
-    // 스프라이트 입력 색을 곱한다
-    result *= input.Color;
+    float blurA = sum / max(wsum, 0.0001);
 
-    return result;
+    // 내부는 지우고 외곽만 남긴다
+    float outlineA = saturate(blurA - a0);
+
+    float4 col = uOutlineColor;
+    col.a *= outlineA * uOpacity;
+
+    // 프리멀티플라이드 알파로 만든다
+    col.rgb *= col.a;
+
+    // 스프라이트 배치 컬러(조명색) 곱한다
+    col *= i.Color;
+
+    return col;
 }
 
 technique Technique1
 {
-    pass Pass1
+    pass P0
     {
         VertexShader = compile vs_2_0 VertexShaderFunction();
         PixelShader = compile ps_2_0 PixelShaderFunction();

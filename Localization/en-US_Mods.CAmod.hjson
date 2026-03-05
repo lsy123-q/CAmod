@@ -149,6 +149,11 @@ Items: {
 		DisplayName: Arcane Hook
 		Tooltip: ""
 	}
+
+	Lazhar: {
+		DisplayName: Lazhar
+		Tooltip: ""
+	}
 }
 
 Keybinds: {
@@ -218,11 +223,18 @@ Projectiles: {
 	fire.DisplayName: fire
 	DivineRetributionSpear.DisplayName: Divine Retribution Spear
 	BloodflareSoul.DisplayName: Bloodflare Soul
-	Magic.Asteroid.DisplayName: Asteroid
+
+	Magic: {
+		Asteroid.DisplayName: Asteroid
+		LazharSolarBeam.DisplayName: Lazhar Solar Beam
+	}
+
 	HolyFlame.DisplayName: Holy Flame
 	ArcaneHookProj.DisplayName: Arcane Hook Proj
 	ArcaneHookCore.DisplayName: Arcane Hook Core
 	ArcaneHookDamage.DisplayName: Arcane Hook Damage
+	FlameEcho_ChainNode.DisplayName: Flame Echo_ Chain Node
+	FuckYou.DisplayName: Fuck You
 }
 
 Configs: {

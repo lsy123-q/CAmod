@@ -61,16 +61,7 @@ namespace CAmod.Projectiles
 
             Projectile.DamageType = bestClass;
         }
-        public override void ModifyHitNPC(
-    NPC target,
-    ref NPC.HitModifiers modifiers)
-        {
-            if (target.realLife != -1)
-            {
-                modifiers.FinalDamage *= 0.5f;
-                // 지렁이 세그먼트라면 데미지를 50% 감소시킨다
-            }
-        }
+        
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             int buffTime = 180;

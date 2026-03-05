@@ -5,6 +5,7 @@ using Terraria.ID;
 using System.Collections.Generic;
 using Terraria.Audio;
 using System;
+using Terraria.DataStructures;
 
 namespace CAmod.Projectiles
 {
@@ -19,10 +20,31 @@ namespace CAmod.Projectiles
         private const float AltSearchRange = 125f;
         private Vector2 previousPos;
         // 이전 전이 위치를 저장한다
-
+        private int chainIndex = 0;
         private HashSet<int> hitCache = new HashSet<int>();
+        private int chainGroup;
         // 전이 대상으로 이미 사용된 NPC를 저장한다
+        public override void OnSpawn(IEntitySource source)
+        {
+            chainGroup = Main.rand.Next();
+            // 시전마다 고유 체인 그룹을 생성한다
 
+            Projectile.NewProjectile(
+                Projectile.GetSource_FromThis(),
+                Projectile.Center,
+                Vector2.Zero,
+                ModContent.ProjectileType<FlameEcho_ChainNode>(),
+                0,
+                0f,
+                Projectile.owner,
+                chainIndex,
+                chainGroup
+            );
+            // 첫 체인 노드를 생성한다
+
+            chainIndex++;
+            // 체인 인덱스를 증가시킨다
+        }
         public override void SetDefaults()
         {
             Projectile.width = 10;
@@ -71,13 +93,27 @@ namespace CAmod.Projectiles
 
             hitCache.Add(nextTarget);
             chainCount++;
-
+            Projectile.damage = (int)(Projectile.damage * 0.975f); // 전이될 때마다 데미지를 10% 곱연산 감소한다
             Projectile.Center = npc.Center;
             // 컨트롤러 위치를 타겟 NPC 위치로 이동시킨다
+            Projectile.NewProjectile(
+    Projectile.GetSource_FromThis(),
+    npc.Center,
+    Vector2.Zero,
+    ModContent.ProjectileType<FlameEcho_ChainNode>(),
+    0,
+    0f,
+    Projectile.owner,
+    chainIndex,
+    chainGroup
+);
+            // 전이 위치에 체인 노드 투사체를 생성한다
 
-            DrawDustLine(previousPos, npc.Center);
+            chainIndex++;
+            // 체인 인덱스를 증가시킨다
+
             // 전이 경로를 Dust 선분으로 그린다
-           Vector2 chainDir = npc.Center - previousPos;
+            Vector2 chainDir = npc.Center - previousPos;
 if (chainDir.LengthSquared() > 100f)
     chainDir.Normalize();
 else
@@ -271,40 +307,6 @@ else
             // 점과 선분 사이의 최소 거리를 계산한다
         }
 
-        private void DrawDustLine(Vector2 start, Vector2 end)
-        {
-            Vector2 dir = end - start;
-            float length = dir.Length();
-
-            if (length <= 0f)
-                return;
-
-            dir.Normalize();
-
-            float step = 6f;
-            // Dust 간격이다
-            
-            for (float i = 0; i < length; i += step)
-            {
-                Vector2 pos = start + dir * i;
-                int dustType = Main.rand.Next(2);
-                if (dustType == 0)
-                {
-                    dustType = 244;
-                }
-                else
-                {
-                    dustType = 246;
-                }
-                int heatGold = Dust.NewDust(pos, 1, 1, dustType, 0f, 0f, 0, default, 1f);
-                Main.dust[heatGold].scale = Main.rand.Next(70, 110) * 0.013f;
-                Main.dust[heatGold].velocity *= 0.2f;
-                Main.dust[heatGold].noGravity = true;
-                Main.dust[heatGold].fadeIn = 1.5f;
-                Main.dust[heatGold].noLight = false;
-                Main.dust[heatGold].rotation = Main.rand.NextFloat(MathHelper.TwoPi);
-                // 골드 코인 더스트로 금빛 전이 선분을 만든다
-            }
-        }
+        
     }
 }
