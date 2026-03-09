@@ -34,8 +34,39 @@ namespace CAmod.Items
             var mp = player.GetModPlayer<BloodGodHeartPlayer>();
 
             mp.bloodHeartEquipped = true; // 장착 상태 등록한다
-            player.GetDamage(DamageClass.Generic) += 0.10f; // 마법 피해 15% 증가한다
-            player.statLifeMax2 += (int)(player.statLifeMax * 0.1f);
+            player.GetDamage(DamageClass.Magic) += 0.10f; // 마법 피해 15% 증가한다
+            player.statLifeMax2 += (int)(player.statLifeMax * 0.10f);
         }
+
+        public override void AddRecipes()
+        {
+            Recipe recipe = CreateRecipe();
+
+           
+            try
+            {
+      
+                if (ModLoader.TryGetMod("CalamityMod", out Mod calamity))
+                {
+                   
+
+                    if (calamity.TryFind("NebulousCore", out ModItem NebulousCore))
+                        recipe.AddIngredient(NebulousCore.Type, 1);
+
+                    if (calamity.TryFind("BloodPact", out ModItem bloodPact))
+                        recipe.AddIngredient(bloodPact.Type, 1);
+
+                    if (calamity.TryFind("AuricBar", out ModItem auricBar))
+                        recipe.AddIngredient(auricBar.Type, 5);
+                    // 전우주의 모루
+                    if (calamity.TryFind("CosmicAnvil", out ModTile cosmicAnvil))
+                        recipe.AddTile(cosmicAnvil.Type);
+                }
+
+                recipe.Register();
+            }
+            catch { }
+        }
+
     }
 }

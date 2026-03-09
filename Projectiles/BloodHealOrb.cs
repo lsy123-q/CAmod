@@ -3,10 +3,10 @@ using System;
 using Terraria;
 using Terraria.ModLoader;
 using CAmod.Players;
-using CAmod.Players;
+
 using Terraria.ID;
 using Terraria.Graphics.Shaders;
-using Terraria.Audio;
+
 namespace CAmod.Projectiles
 {
     public class BloodHealOrb : ModProjectile

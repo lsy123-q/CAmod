@@ -91,7 +91,7 @@ namespace CAmod.Projectiles
             for (float i = 0; i <= length; i += step)
             {
                 Vector2 pos = start + dir * i;
-                if (Main.rand.NextBool(15)) // 약 16% 확률
+                if (Main.rand.NextBool(20)) // 약 16% 확률
                 {
                     int dustType = Main.rand.NextBool() ? 244 : 246;
                     // dust 타입을 244 또는 246 중 하나로 선택한다

@@ -152,9 +152,9 @@ namespace CAmod.Players
                 Player.Center
             );
 
-            reviveInvulnTimer = 60; // 1초 하드 무적
+            reviveInvulnTimer = 120; // 1초 하드 무적
             Player.immune = true; // 플레이어를 무적 상태로 만든다
-            Player.immuneTime = 60; // 60틱 = 1초 동안 무적을 부여한다
+            Player.immuneTime = 120; // 60틱 = 1초 동안 무적을 부여한다
             ClearChaliceBuffer();
         }
 

@@ -113,7 +113,7 @@ Items: {
 		DisplayName: Blood God Heart
 		Tooltip:
 			'''
-			+10% damage
+			+10% magic damage
 			+10% maximum life
 			When taking fatal damage, releases 16 Empowered Bloodflare Souls and survives with 10 life
 			Cooldown is 60 seconds, and during the cooldown, life regeneration +2
@@ -153,6 +153,11 @@ Items: {
 	Lazhar: {
 		DisplayName: Lazhar
 		Tooltip: ""
+	}
+
+	RuneBolt: {
+		Tooltip: ""
+		DisplayName: Rune Bolt
 	}
 }
 
@@ -235,6 +240,7 @@ Projectiles: {
 	ArcaneHookDamage.DisplayName: Arcane Hook Damage
 	FlameEcho_ChainNode.DisplayName: Flame Echo_ Chain Node
 	FuckYou.DisplayName: Fuck You
+	RuneBoltProj.DisplayName: Rune Bolt Proj
 }
 
 Configs: {

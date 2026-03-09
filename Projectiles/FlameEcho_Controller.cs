@@ -199,6 +199,9 @@ else
                 if (!n.active)
                     continue;
 
+                if (n.catchItem > 0)
+                    continue; // 크리터는 제외한다
+
                 if (n.friendly || n.dontTakeDamage)
                     continue;
 
@@ -273,7 +276,7 @@ else
 
                 if (!n.active)
                     continue;
-
+                
                 if (n.friendly || n.dontTakeDamage)
                     continue;
 
