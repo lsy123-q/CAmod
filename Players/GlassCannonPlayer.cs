@@ -1,12 +1,19 @@
 ﻿using Terraria;
 using Terraria.ModLoader;
 using CAmod.Projectiles;
+using Terraria.Audio;
 namespace CAmod.Players
 {
     public class GlassCannonPlayer : ModPlayer
     {
         public bool glassCannonEquipped;
-
+        private static readonly SoundStyle BonusHitSound = new SoundStyle("CAmod/Sounds/bonushit")
+        {
+            Variants = new int[] { 1, 2, 3 }, // bonushit1,2,3 랜덤 재생
+            MaxInstances = 18,
+            Volume = 0.4f,
+            Pitch = 0.4f
+        };
         public override void ResetEffects()
         {
             glassCannonEquipped = false;
@@ -53,7 +60,8 @@ namespace CAmod.Players
         {
             if (!glassCannonEquipped)
                 return;
-
+            if (Main.myPlayer != Player.whoAmI)
+                return;
             if (hit.DamageType != DamageClass.Magic)
                 return;
             // 마법 피해가 아니면 즉시 차단한다
@@ -66,15 +74,26 @@ namespace CAmod.Players
             if (bonusDamage <= 0)
                 return;
 
-            Projectile.NewProjectile(
-                Player.GetSource_OnHit(target),
-                target.Center,
-                Microsoft.Xna.Framework.Vector2.Zero,
-                ModContent.ProjectileType<GlassCannonBonusHit>(),
-                bonusDamage,
-                0f,
-                Player.whoAmI
-            );
+            int proj = Projectile.NewProjectile(
+    Player.GetSource_OnHit(target),
+    target.Center,
+    Microsoft.Xna.Framework.Vector2.Zero,
+    ModContent.ProjectileType<GlassCannonBonusHit>(),
+    bonusDamage,
+    0f,
+    Player.whoAmI
+);
+
+            // 타겟 id를 ai[0]에 저장한다
+            Main.projectile[proj].ai[0] = target.whoAmI;
+            Main.projectile[proj].netUpdate = true;
+            for (int j = 0; j < 3; j++)
+            {
+                SoundEngine.PlaySound(BonusHitSound, target.Center);
+            }// 타격 위치에서 랜덤 사운드 출력한다
+
+
+
             // 추가 고정 피해를 투사체로 전송한다
         }
 

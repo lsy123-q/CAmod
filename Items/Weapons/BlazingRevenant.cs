@@ -20,7 +20,7 @@ namespace CAmod.Items.Weapons
             Item.width = 40;
             Item.height = 40;
 
-            Item.damage = 450; 
+            Item.damage = 375; 
             Item.DamageType = DamageClass.Magic; // 투사체가 Generic이라 맞춘다
             Item.knockBack = 3f;
             Item.crit = 0;
@@ -32,7 +32,7 @@ namespace CAmod.Items.Weapons
             Item.useTime = 12; // 초기값이다 (실제로는 CanUseItem에서 매번 갱신한다)
             Item.useAnimation = 12; // useTime과 동일하게 맞춘다
             Item.UseSound = SoundID.Item73;
-
+            Item.channel = true;
             Item.shoot = ModContent.ProjectileType<fire>(); // fire 투사체를 쏜다
             Item.shootSpeed = 10f; // 기본 속도다 (fire 내부에서 선회/호밍하니 너무 높게 안 준다)
            
@@ -67,10 +67,10 @@ namespace CAmod.Items.Weapons
             int max = player.statLifeMax2;
             int missing = max - player.statLife;
             float ratio = max > 0 ? (float)missing / max : 0f;
-            
+
 
             // 발사 개수를 8 ~ 20으로 스케일한다
-            int count = (int)MathHelper.Lerp(3f, 9f, ratio);
+            int count = (int)Math.Round(MathHelper.Lerp(3f, 9f, ratio));
             count = Utils.Clamp(count, 3, 9);
 
 

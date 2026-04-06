@@ -35,7 +35,8 @@ Items: {
 		Tooltip:
 			'''
 			Increases maximum life by 25%.
-			Increases magic critical chance by up to 15% based on missing health.
+			Increases magic critical damage by up to 20% based on missing health
+			Increases magic critical chance by up to 10% based on missing health.
 			All healing is replaced with a unique energy steal effect, triggered exclusively by magic projectile hits.
 			Its efficiency scales with life regeneration and missing life, and ignores the Moon Bite debuff.
 			'''
@@ -57,7 +58,7 @@ Items: {
 			Movement speed related stats +25%
 			magic attacks ignore 25 defense
 			increased magic critical chance by 12.5%
-			All magic attacks deal additional fixed damage equal to 25% of the damage dealt
+			All magic attacks have a 25% chance to trigger an additional hit.
 			'''
 	}
 
@@ -166,7 +167,11 @@ Keybinds: {
 	"Monster Control.DisplayName": Monster  Control
 	SummonControlledMonster.DisplayName: Summon Controlled Monster
 	"Leaf Ward.DisplayName": Leaf  Ward
-	"Leaf Shield..DisplayName": Leaf  Shield.
+
+	"Leaf Shield": {
+		.DisplayName: Leaf  Shield.
+		DisplayName: Leaf  Shield
+	}
 }
 
 Buffs: {

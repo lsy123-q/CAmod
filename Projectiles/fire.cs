@@ -53,7 +53,7 @@ namespace CAmod.Projectiles
             Projectile.width = 32;
             Projectile.height = 32;
             Projectile.friendly = true;
-            Projectile.DamageType = DamageClass.Generic;
+           
             Projectile.timeLeft = 600;
             Projectile.ignoreWater = true;
             Projectile.penetrate = 1;      // 적 관통 1회다
@@ -186,7 +186,7 @@ namespace CAmod.Projectiles
                     homing = true;
                     Vector2 move = target.Center - Projectile.Center;
                     float distance = move.Length();
-
+                    
                     if (distance > 0f)
                     {
                         move.Normalize();

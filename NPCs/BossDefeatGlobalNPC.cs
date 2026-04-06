@@ -12,7 +12,6 @@ namespace CAmod.Globals
         {
             if (!MajorBoss25Filter.IsValid(npc))
                 return;
-            
 
             if (Main.netMode == NetmodeID.MultiplayerClient)
                 return;
@@ -28,10 +27,13 @@ namespace CAmod.Globals
 
                 if (leaf.defeatedBossTypes.Contains(npc.type))
                     continue;
-                // 이미 이 보스를 잡았으면 무시한다
+                // 이미 잡은 보스면 무시한다
 
                 leaf.defeatedBossTypes.Add(npc.type);
-                // 이 캐릭터의 최초 처치 보스로 기록한다
+                // 최초 처치 기록 추가한다
+
+                leaf.SyncPlayer();
+                // 🔥 여기 추가 - 클라에 동기화 보낸다
             }
         }
     }

@@ -152,7 +152,7 @@ namespace CAmod.Projectiles
                 float t = 1f - (Projectile.timeLeft / 60f);
                 // 0 → 1로 진행된다
 
-                radius *= MathHelper.Lerp(1f, 1.5f, t);
+                radius *= MathHelper.Lerp(1f, 3.5f, t*t);
                 // 회전하는 반경 자체가 1.5배까지 커진다
             
 
