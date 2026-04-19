@@ -5,6 +5,7 @@ using CAmod.Players;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using System;
+using CAmod.Systems;
 namespace CAmod.Items
 {
     public class GlassCannon : ModItem
@@ -28,9 +29,9 @@ namespace CAmod.Items
 
 
             Player player = Main.LocalPlayer;
-            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+           
 
-            int stage = ward2.LeafShieldStage;
+            int stage = LeafWardSystem.GetStage();
 
 
             float normalized = stage / 40f;
@@ -72,9 +73,9 @@ namespace CAmod.Items
             gPlayer.glassCannonEquipped = true;
             // 유리대포 장착 플래그를 켠다
             Player player = Main.LocalPlayer;
-            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+            
 
-            int stage = ward2.LeafShieldStage;
+            int stage = LeafWardSystem.GetStage(); 
 
 
             float normalized = stage / 40f;
@@ -94,9 +95,9 @@ namespace CAmod.Items
         public override void UpdateVanity(Player player2)
         {
             Player player = Main.LocalPlayer;
-            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+           
 
-            int stage = ward2.LeafShieldStage;
+            int stage = LeafWardSystem.GetStage(); 
 
 
             float normalized = stage / 40f;

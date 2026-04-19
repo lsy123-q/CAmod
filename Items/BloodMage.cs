@@ -7,6 +7,7 @@ using Terraria.ID;
 using System.Collections.Generic;
 using System;
 using Microsoft.Xna.Framework;
+using CAmod.Systems;
 namespace CAmod.Items
 {
     public class BloodMage : ModItem
@@ -25,9 +26,9 @@ namespace CAmod.Items
 
 
             Player player = Main.LocalPlayer;
-            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+          
 
-            int stage = ward2.LeafShieldStage;
+            int stage = LeafWardSystem.GetStage();
 
 
             float normalized = stage / 40f;
@@ -47,9 +48,9 @@ namespace CAmod.Items
         public override void UpdateVanity(Player player2)
         {
             Player player = Main.LocalPlayer;
-            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+           
 
-            int stage = ward2.LeafShieldStage;
+            int stage = LeafWardSystem.GetStage();
 
 
             float normalized = stage / 40f;
@@ -75,9 +76,9 @@ namespace CAmod.Items
             player2.statLifeMax2 += (int)(player2.statLifeMax * 0.25);
 
             Player player = Main.LocalPlayer;
-            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+           
 
-            int stage = ward2.LeafShieldStage;
+            int stage = LeafWardSystem.GetStage(); 
 
 
             float normalized = stage / 40f;

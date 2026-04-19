@@ -53,7 +53,7 @@ namespace CAmod.Projectiles
             Projectile.width = 32;
             Projectile.height = 32;
             Projectile.friendly = true;
-           
+            Projectile.ArmorPenetration = 50;
             Projectile.timeLeft = 600;
             Projectile.ignoreWater = true;
             Projectile.penetrate = 1;      // 적 관통 1회다
@@ -274,8 +274,12 @@ namespace CAmod.Projectiles
                 Color c = GetGradientColor(progress) * (0.8f * (1f - progress));
 
                 // 뒤로 갈수록 작아지는 배율 계산 (기존 스케일에 1.0 ~ 0.0 사이의 값을 곱함)
-                float trailScale = 1f - progress/4f;
+              
+                float t = progress;
+                float curved = t * t; // 초반 급격히 증가하는 커브 (ease-in)
 
+                // 뒤로 갈수록 작아지는 배율 (초반 급격히 감소, 후반 완만)
+                float trailScale = 1f - curved / 4f;
                 Main.spriteBatch.Draw(
                     bodyTex,
                     drawPos,

@@ -51,7 +51,7 @@ namespace CAmod.Players
             {
                 SpawnLeaves();
 
-                int count = Player.GetModPlayer<LeafWardPlayer2>().LeafShieldStage;
+                int count = LeafWardSystem.GetStage(); 
                 int count2 = count * 15;
 
               leafflag = true;
@@ -121,7 +121,7 @@ namespace CAmod.Players
                 leafflag2 = true;
             }
 
-            int count = Player.GetModPlayer<LeafWardPlayer2>().LeafShieldStage;
+            int count = LeafWardSystem.GetStage(); 
             int count2 = count * 15;
             if (leafflag == true) {
                 leafShieldTimer++;

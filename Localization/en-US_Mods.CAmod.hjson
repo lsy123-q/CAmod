@@ -160,6 +160,16 @@ Items: {
 		Tooltip: ""
 		DisplayName: Rune Bolt
 	}
+
+	UltraCosmicDivide: {
+		Tooltip: ""
+		DisplayName: Ultra Cosmic Divide
+	}
+
+	HarmonyCycle: {
+		Tooltip: ""
+		DisplayName: Harmony Cycle
+	}
 }
 
 Keybinds: {
@@ -172,6 +182,8 @@ Keybinds: {
 		.DisplayName: Leaf  Shield.
 		DisplayName: Leaf  Shield
 	}
+
+	"Harmony Cycle Toggle.DisplayName": Harmony  Cycle  Toggle
 }
 
 Buffs: {
@@ -219,6 +231,11 @@ Buffs: {
 		DisplayName: Mana Overheat
 		Description: Mods.CAmod.Buffs.ManaOverheat.Description
 	}
+
+	CosmicDivideCooltime: {
+		DisplayName: Cosmic Divide Cooltime
+		Description: Mods.CAmod.Buffs.CosmicDivideCooltime.Description
+	}
 }
 
 Projectiles: {
@@ -246,6 +263,11 @@ Projectiles: {
 	FlameEcho_ChainNode.DisplayName: Flame Echo_ Chain Node
 	FuckYou.DisplayName: Fuck You
 	RuneBoltProj.DisplayName: Rune Bolt Proj
+	UltraCosmicBeam.DisplayName: Ultra Cosmic Beam
+	CosmicAttack.DisplayName: Cosmic Attack
+	UltraCosmicDoGBeam.DisplayName: Ultra Cosmic Do G Beam
+	CosmicAttackHitbox.DisplayName: Cosmic Attack Hitbox
+	ExoProj.DisplayName: Exo Proj
 }
 
 Configs: {
@@ -274,4 +296,7 @@ Configs: {
 	}
 }
 
-NPCs.ControlledMonster.DisplayName: Controlled Monster
+NPCs: {
+	ControlledMonster.DisplayName: Controlled Monster
+	AdaptationSensorNPC.DisplayName: Adaptation Sensor N P C
+}

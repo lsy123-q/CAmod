@@ -29,9 +29,9 @@ namespace CAmod.Items
             
 
             Player player = Main.LocalPlayer;
-            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+            
 
-            int stage = ward2.LeafShieldStage;
+            int stage = LeafWardSystem.GetStage();
 
 
             float normalized = stage / 40f;
@@ -48,45 +48,58 @@ namespace CAmod.Items
             
             // 최종 판매가를 설정한다
         }
-        public override void UpdateAccessory(Player player2, bool hideVisual)
+        public override void UpdateAccessory(Player player, bool hideVisual)
         {
-            player2.GetModPlayer<LeafWardPlayer>().leafShieldEquipped = true;
-            player2.GetModPlayer<LeafWardPlayer2>().leafShieldEquipped = true;
-            var modPlayer = player2.GetModPlayer<LeafWardPlayer>();
+            var modPlayer = player.GetModPlayer<LeafWardPlayer>();
 
             modPlayer.leafShieldEquipped = true;
+            // 리프 실드 착용 상태 적용한다
 
             if (!hideVisual)
                 modPlayer.leafShieldVisible = true;
+            // 시각 효과 활성화한다
 
+            int count = LeafWardSystem.GetStage();
+            // 월드 기준 성장값이다
 
+            // =========================
+            // 스탯 적용
+            // =========================
 
+            player.GetDamage(DamageClass.Magic) += count * 0.005f + 0.05f;
+            // 보스당 0.5% + 기본 5% 마법 피해 증가다
 
-            Player player = Main.LocalPlayer;
-            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+            player.GetCritChance(DamageClass.Magic) += count * 0.25f + 2.5f;
+            // 보스당 0.25% + 기본 2.5% 치명타 증가다
 
-            int stage = ward2.LeafShieldStage;
+            player.statManaMax2 += count * 5 + 50;
+            // 보스당 5 + 기본 50 마나다
 
+            player.statDefense += (int)(count * 0.5f) + 5;
+            // 보스당 0.5 + 기본 5 방어력이다
 
-            float normalized = stage / 40f;
-            // 성장 단계를 0~1로 정규화한다
+            // =========================
+            // 가격 계산
+            // =========================
+
+            float normalized = count / 40f;
+            // 성장률 정규화다
 
             float priceGold = normalized * normalized * 40f;
-            // 정규화값을 제곱 후 40골드를 곱한다
+            // 제곱 성장 가격이다
 
             int priceCopper = (int)(priceGold * 10000f);
 
-
-            int copper = priceCopper;
             Item.value = Item.sellPrice(copper: priceCopper);
+            // 아이템 가격 적용한다
         }
         public override void UpdateVanity(Player player2)
         {
             Player player = Main.LocalPlayer;
-            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+           
 
-            int stage = ward2.LeafShieldStage;
-
+            int stage = LeafWardSystem.GetStage();
+            
 
             float normalized = stage / 40f;
             // 성장 단계를 0~1로 정규화한다
@@ -116,9 +129,9 @@ namespace CAmod.Items
             // 기존 바닐라 툴팁을 전부 제거한다
 
             Player player = Main.LocalPlayer;
-            var ward2 = player.GetModPlayer<LeafWardPlayer2>();
+          
 
-            int stage = ward2.LeafShieldStage;
+            int stage = LeafWardSystem.GetStage();
             // 현재 성장 단계다 (0~20)
 
             float bonusMagicDamage = stage * 0.5f + 5f;

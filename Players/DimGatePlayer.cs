@@ -87,7 +87,7 @@ namespace CAmod.Players
             float asd = 1f;
 
             if (gateTime>0) {
-                asd = 1 - (dustprogress / 30f);
+                asd = 1 - (dustprogress / 20f);
             }
 
             else if (endprogress >= 0 && endflag == true)
@@ -138,8 +138,14 @@ namespace CAmod.Players
             if (gateCooldown > 0&&dimGateEquipped)
                 gateCooldown--;
 
-            // 단축키 입력 처리
-            if (KeySystem.DimGate.JustPressed && dimGateEquipped && Player.statManaMax2 >= 500)
+
+            float costMult = Player.manaCost;  // 현재 무기 기준 마나 코스트 계산한다
+            int finalCost = (int)(500 * costMult); // 500에 코스트 배율 적용한다
+
+
+
+                // 단축키 입력 처리
+                if (KeySystem.DimGate.JustPressed && dimGateEquipped && Player.statManaMax2 >= finalCost)
             {
                 if (gateTime > 0 && gateTime < 270)
                 {
@@ -208,8 +214,8 @@ namespace CAmod.Players
 
             // 자연 종료 시 종료 연출을 발생시킨다
             if (gateTime == 1) {
-                
 
+                gateCooldownmax = 60 * 25; // 추가
                 gateCooldown = 60 * 25;
                 Player.dashDelay = 0;
                endflag = true;
@@ -278,7 +284,7 @@ namespace CAmod.Players
             {
                 progress++;
                 dustprogress++;
-                if (progress < 30)
+                if (progress < 20)
                 {
 
                     SpawnGateStartDust(progress,Player.Center);
@@ -309,7 +315,7 @@ namespace CAmod.Players
 
                 }
 
-                if (progress >= 30) { 
+                if (progress >= 20) { 
                     startflag = false;
                     progress = 0;
                 }
@@ -455,11 +461,11 @@ namespace CAmod.Players
             if (speed == 0) {
                 speed = 1;
             }
-            int count = (int)(10f * (1f - (speed / 60f))) ;
+            int count = (int)(20f * (1f - (speed / 60f))) ;
             if (count == 0) {
                 count = 1;
             }
-            float radius = 120* (1f-(speed/30f));
+            float radius = 120* (1f-(speed/20f));
 
             float size = ((speed + 100f) / 100f)*2;
 
@@ -475,7 +481,7 @@ namespace CAmod.Players
                 
 
 
-                Vector2 vel = offset.SafeNormalize(Vector2.Zero) * -5f * (1f - (speed / 30f)); ; // 안쪽으로 수축한다
+                Vector2 vel = offset.SafeNormalize(Vector2.Zero) * -5f * (1f - (speed / 20f)); ; // 안쪽으로 수축한다
                 
                 Dust d = Dust.NewDustPerfect(
                     pos + offset,

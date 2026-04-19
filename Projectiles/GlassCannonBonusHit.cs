@@ -41,11 +41,7 @@ namespace CAmod.Projectiles
 
 
             struck = true;
-            if (Main.netMode == NetmodeID.MultiplayerClient)
-            {
-                Projectile.Kill();
-                return;
-            }
+            
 
             int targetIndex = (int)Projectile.ai[0];
             // ai[0]에 저장된 타겟 id를 가져온다
