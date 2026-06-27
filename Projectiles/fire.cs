@@ -53,7 +53,7 @@ namespace CAmod.Projectiles
             Projectile.width = 32;
             Projectile.height = 32;
             Projectile.friendly = true;
-            Projectile.ArmorPenetration = 50;
+            
             Projectile.timeLeft = 600;
             Projectile.ignoreWater = true;
             Projectile.penetrate = 1;      // 적 관통 1회다

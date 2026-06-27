@@ -25,7 +25,7 @@ namespace CAmod.Items.Weapons
         {
             Item.width = 42;
             Item.height = 20;
-            Item.damage = 5000;
+            Item.damage = 10000;
             Item.DamageType = DamageClass.Magic;
             Item.mana = 100;
             Item.useTime = 30;

@@ -32,6 +32,10 @@ namespace CAmod.Players
 
         public bool dimGateEquipped;
         public int endprogress = 0;
+        private float startDustRandomRot;
+        private float endDustRandomRot;
+        private float startDustDir;
+        private float endDustDir;
         public override void ResetEffects()
         {
             dimGateEquipped = false;
@@ -98,7 +102,7 @@ namespace CAmod.Players
 
 
 
-                alpha = MathHelper.Lerp(0.01f, 1f, asd);
+                alpha = MathHelper.Lerp(0.05f, 1f, asd);
 
         
 
@@ -157,7 +161,8 @@ namespace CAmod.Players
                     endflag = true;
                     int baseCooldown = 60 * 25; // 기본 쿨타임 25초다
                     int maxReduce = 60 * 10; // 최대 감소량 10초다
-
+                    endDustRandomRot = Main.rand.NextFloat(MathHelper.TwoPi);
+                    endDustDir = Main.rand.NextBool() ? 1f : -1f; // 방향 고정한다
                     // 남은 지속시간 비율을 계산한다 (0~1)
                     float ratio = gateTime / 270f;
 
@@ -191,13 +196,14 @@ namespace CAmod.Players
                     Player.controlUseTile = false;   // 우클릭 차단한다
                     Player.releaseUseItem = true;    // 눌림 상태를 해제한다
                     Player.releaseUseTile = true;    // 눌림 상태를 해제한다
-
+                    Player.immune = true;
+                    Player.immuneTime = 1;
                     gateTime = 60 * 5;      // 5초 무적
                      // 15초 쿨타임
                     gateGeneration++;
                     startflag = true;
-                    
-
+                    startDustRandomRot = Main.rand.NextFloat(MathHelper.TwoPi);
+                    startDustDir = Main.rand.NextBool() ? 1f : -1f; // 방향 고정한다
 
                     SoundEngine.PlaySound(
                     new SoundStyle("CAmod/Sounds/open")
@@ -219,6 +225,8 @@ namespace CAmod.Players
                 gateCooldown = 60 * 25;
                 Player.dashDelay = 0;
                endflag = true;
+                endDustRandomRot = Main.rand.NextFloat(MathHelper.TwoPi);
+                endDustDir = Main.rand.NextBool() ? 1f : -1f; // 방향 고정한다
                 SoundEngine.PlaySound(
                     new SoundStyle("CAmod/Sounds/close")
                     {
@@ -266,6 +274,8 @@ namespace CAmod.Players
                 gateCooldown = 60 * 25;
                 gateTime = 0;
                 endflag = true;
+                endDustRandomRot = Main.rand.NextFloat(MathHelper.TwoPi);
+                endDustDir = Main.rand.NextBool() ? 1f : -1f; // 방향 고정한다
                 SoundEngine.PlaySound(
                     new SoundStyle("CAmod/Sounds/close")
                     {
@@ -452,37 +462,74 @@ namespace CAmod.Players
             }
         }
 
-       
-        
+        public override bool CanBeHitByProjectile(Projectile proj)
+        {
+            if (gateTime > 0 && gateTime < 270)
+            {
+                return false; // 무적 중에는 투사체 피격 자체를 부정한다
+            }
+
+            return true;
+        }
+
+        public override bool CanBeHitByNPC(NPC npc, ref int cooldownSlot)
+        {
+            if (gateTime > 0 && gateTime < 270)
+            {
+                return false; // 무적 중에는 NPC 접촉 피격 자체를 부정한다
+            }
+
+            return true;
+        }
+
         // ================= 연출 =================
 
         private void SpawnGateStartDust(int speed, Vector2 pos)
         {
-            if (speed == 0) {
+            if (speed == 0)
+            {
                 speed = 1;
             }
-            int count = (int)(20f * (1f - (speed / 60f))) ;
-            if (count == 0) {
+
+            int count = (int)(20f * (1f - (speed / 60f)));
+            if (count == 0)
+            {
                 count = 1;
             }
-            float radius = 120* (1f-(speed/20f));
 
-            float size = ((speed + 100f) / 100f)*2;
+            // 반지름 음수 방지한다
+            float t = MathHelper.Clamp(speed / 20f, 0f, 1f);
+            float radius = 130 * (1f - t);
+
+            float size = ((speed + 100f) / 100f) * 2;
+
+            // =========================
+            // 20프레임 동안 180도 회전한다
+            // =========================
+            float rotation = startDustRandomRot + MathHelper.TwoPi * t * startDustDir;
+
 
             for (int i = 0; i < count; i++)
             {
-                float rot = MathHelper.TwoPi * i / count;
-                Vector2 offset = Main.rand.NextVector2Unit() * radius;
+                float baseRot = MathHelper.TwoPi * i / count;
 
-                int type = DustID.FireworksRGB; // RGB 폭죽을 사용한다
+                // 1. 먼저 "고정된 아스테로이드 형태" 만든다
+                float x = (float)Math.Pow(Math.Cos(baseRot), 3);
+                float y = (float)Math.Pow(Math.Sin(baseRot), 3);
+
+                Vector2 offset = new Vector2(x, y) * radius;
+
+                // 2. 그 결과를 통째로 회전시킨다
+                offset = offset.RotatedBy(rotation); // 전체를 한 번 더 돌린다
+
+                int type = DustID.FireworksRGB;
+
                 Color color = Main.rand.NextBool()
-                    ? new Color(170, 80, 255)   // 보라색이다
-                    : new Color(80, 160, 255);  // 파란색이다
-                
+                    ? new Color(170, 80, 255)
+                    : new Color(80, 160, 255);
 
+                Vector2 vel = offset.SafeNormalize(Vector2.Zero) * -5f * (1f - t); // 안쪽으로 수축한다
 
-                Vector2 vel = offset.SafeNormalize(Vector2.Zero) * -5f * (1f - (speed / 20f)); ; // 안쪽으로 수축한다
-                
                 Dust d = Dust.NewDustPerfect(
                     pos + offset,
                     type,
@@ -491,59 +538,85 @@ namespace CAmod.Players
                     default,
                     1.0f * size
                 );
+
                 d.scale *= 0.7f;
-                d.alpha *= 2;
-                d.color = color; // 색을 강제로 적용한다
+                d.alpha *= 1;
+                d.color = color;
                 d.velocity.Y /= 1.125f;
                 d.rotation = Main.rand.NextFloat(MathHelper.TwoPi);
                 d.noGravity = true;
             }
         }
 
-       
-        private void SpawnGateEndDust(Vector2 pos,int speed)
+
+        private void SpawnGateEndDust(Vector2 pos, int speed)
         {
-            if (speed == 0) {
+            if (speed == 0)
+            {
                 speed = 1;
             }
 
-            float asd2 = speed / 10f;
+            int count = 20;
 
-            int count = 15;
+            // =========================
+            // 0~1 정규화한다
+            // =========================
+            float t = MathHelper.Clamp(speed / 10f, 0f, 1f);
 
-            
-            float radius = 120 * (speed / 10f);
+            // =========================
+            // 발산이므로 반지름 증가
+            // =========================
+            float radius = 45 * t;
+
             float size = ((speed + 100f) / 100f) * 2;
+
+            // =========================
+            // 회전 (시작과 동일하게 180도)
+            // =========================
+            float rotation = endDustRandomRot + MathHelper.Pi * t * endDustDir;
+
+            float lastspeed = MathHelper.Lerp(2.0f, 2.5f, t);
+
             for (int i = 0; i < count; i++)
             {
-                float rot = MathHelper.TwoPi * i / count;
-                Vector2 offset = Main.rand.NextVector2Unit() * radius;
+                float baseRot = MathHelper.TwoPi * i / count;
 
-                int type = DustID.FireworksRGB; // RGB 폭죽을 사용한다
+                // =========================
+                // 아스테로이드 형태 만든다
+                // =========================
+                float x = (float)Math.Pow(Math.Cos(baseRot), 3);
+                float y = (float)Math.Pow(Math.Sin(baseRot), 3);
+
+                Vector2 offset = new Vector2(x, y) * radius;
+
+                // =========================
+                // 전체 회전 적용한다
+                // =========================
+                offset = offset.RotatedBy(rotation);
+
+                int type = DustID.FireworksRGB;
+
                 Color color = Main.rand.NextBool()
-                    ? new Color(170, 80, 255)   // 보라색이다
-                    : new Color(80, 160, 255);  // 파란색이다
+                    ? new Color(170, 80, 255)
+                    : new Color(80, 160, 255);
 
-                float asd =  speed/10f;
-
-                
-
-                float lastspeed = MathHelper.Lerp(2.5f, 5f, asd);
-
-
-                Vector2 vel = offset.SafeNormalize(Vector2.Zero) * lastspeed; // 바깥으로 팽창한다
+                // =========================
+                // 바깥으로 발산한다
+                // =========================
+                Vector2 vel = offset.SafeNormalize(Vector2.Zero) * lastspeed;
 
                 Dust d = Dust.NewDustPerfect(
-                    pos,
+                    pos + offset, // 위치도 퍼지게 바꾼다
                     type,
                     vel,
                     150,
                     default,
                     1f * size
                 );
+
                 d.scale *= 0.7f;
                 d.alpha *= 2;
-                d.color = color; // 색을 강제로 적용한다
+                d.color = color;
                 d.velocity.Y /= 1.125f;
                 d.rotation = Main.rand.NextFloat(MathHelper.TwoPi);
                 d.noGravity = true;

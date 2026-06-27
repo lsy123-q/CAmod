@@ -14,15 +14,25 @@ namespace CAmod.Projectiles
         private const int SearchInterval = 6;   // 6프레임마다 탐색한다
         private const int MaxChainCount = 15;   // 최대 전이 횟수다
         private const float SearchRange = 1250f; // 탐색 반경이다
+
         private int lockedTarget = -1;
         private int frameTimer = 0;
         private int chainCount = 0;
+
         private const float AltSearchRange = 125f;
+
         private Vector2 previousPos;
         // 이전 전이 위치를 저장한다
+
         private int chainIndex = 0;
+
         private HashSet<int> hitCache = new HashSet<int>();
+
         private int chainGroup;
+
+        private int totalHitCount = 0;
+        // 전체 타격 판정 발생 횟수다
+
         // 전이 대상으로 이미 사용된 NPC를 저장한다
         public override void OnSpawn(IEntitySource source)
         {
@@ -45,6 +55,7 @@ namespace CAmod.Projectiles
             chainIndex++;
             // 체인 인덱스를 증가시킨다
         }
+
         public override void SetDefaults()
         {
             Projectile.width = 10;
@@ -70,21 +81,30 @@ namespace CAmod.Projectiles
             frameTimer = 0;
             // 탐색 주기가 되었으므로 타이머를 초기화한다
 
-            if (chainCount >= MaxChainCount)
+            if (totalHitCount >= 20)
             {
-                Projectile.Kill(); // 최대 전이 횟수에 도달하면 종료한다
+                Projectile.Kill();
                 return;
             }
+            // 타격 횟수 제한 도달시 다음 전이를 중단한다
+
+            if (chainCount >= MaxChainCount)
+            {
+                Projectile.Kill();
+                return;
+            }
+            // 최대 전이 횟수에 도달하면 종료한다
+
             Vector2 dir = Vector2.Zero;
 
-          
             int nextTarget = FindNextTarget();
 
             if (nextTarget == -1)
             {
-                Projectile.Kill(); // 더 이상 타겟이 없으면 종료한다
+                Projectile.Kill();
                 return;
             }
+            // 더 이상 타겟이 없으면 종료한다
 
             NPC npc = Main.npc[nextTarget];
 
@@ -92,21 +112,27 @@ namespace CAmod.Projectiles
             // 현재 위치를 이전 위치로 저장한다
 
             hitCache.Add(nextTarget);
+
             chainCount++;
-            Projectile.damage = (int)(Projectile.damage * 0.975f); // 전이될 때마다 데미지를 10% 곱연산 감소한다
+
+            Projectile.damage =
+                (int)(Projectile.damage * 0.975f);
+            // 전이될 때마다 데미지를 감소시킨다
+
             Projectile.Center = npc.Center;
             // 컨트롤러 위치를 타겟 NPC 위치로 이동시킨다
+
             Projectile.NewProjectile(
-    Projectile.GetSource_FromThis(),
-    npc.Center,
-    Vector2.Zero,
-    ModContent.ProjectileType<FlameEcho_ChainNode>(),
-    0,
-    0f,
-    Projectile.owner,
-    chainIndex,
-    chainGroup
-);
+                Projectile.GetSource_FromThis(),
+                npc.Center,
+                Vector2.Zero,
+                ModContent.ProjectileType<FlameEcho_ChainNode>(),
+                0,
+                0f,
+                Projectile.owner,
+                chainIndex,
+                chainGroup
+            );
             // 전이 위치에 체인 노드 투사체를 생성한다
 
             chainIndex++;
@@ -114,32 +140,49 @@ namespace CAmod.Projectiles
 
             // 전이 경로를 Dust 선분으로 그린다
             Vector2 chainDir = npc.Center - previousPos;
-if (chainDir.LengthSquared() > 100f)
-    chainDir.Normalize();
-else
-    chainDir = Vector2.Zero;
-            SoundEngine.PlaySound(SoundID.Item14, npc.Center);
 
+            if (chainDir.LengthSquared() > 100f)
+                chainDir.Normalize();
+            else
+                chainDir = Vector2.Zero;
+
+            SoundEngine.PlaySound(
+                SoundID.Item14,
+                npc.Center
+            );
 
             for (int i2 = 0; i2 < 75; i2++)
             {
-                float offsetAngle = MathHelper.TwoPi * i2 / 75f;
+                float offsetAngle =
+                    MathHelper.TwoPi * i2 / 75f;
+
                 int dustType = Main.rand.Next(2);
+
                 if (dustType == 0)
-                {
                     dustType = 244;
-                }
                 else
-                {
                     dustType = 246;
-                }
+
                 // asteroid(둥근 4엽) 파라메트릭 곡선이다
-                float unitOffsetX = (float)Math.Pow(Math.Cos(offsetAngle), 3d);
-                float unitOffsetY = (float)Math.Pow(Math.Sin(offsetAngle), 3d);
+                float unitOffsetX =
+                    (float)Math.Pow(
+                        Math.Cos(offsetAngle),
+                        3d
+                    );
+
+                float unitOffsetY =
+                    (float)Math.Pow(
+                        Math.Sin(offsetAngle),
+                        3d
+                    );
+
                 float dir2 = chainDir.ToRotation();
+
                 Vector2 puffDustVelocity =
-                    new Vector2(unitOffsetX, unitOffsetY)
-                    .RotatedBy(dir2) * 5f;
+                    new Vector2(
+                        unitOffsetX,
+                        unitOffsetY
+                    ).RotatedBy(dir2) * 5f;
                 // 벡터 자체를 커서 방향으로 회전시킨다
 
                 Dust gold = Dust.NewDustPerfect(
@@ -152,15 +195,21 @@ else
                 gold.fadeIn = 1.2f;
                 gold.noGravity = true;
                 gold.velocity *= 0.65f;
-                gold.rotation = Main.rand.NextFloat(MathHelper.TwoPi);
+                gold.rotation =
+                    Main.rand.NextFloat(
+                        MathHelper.TwoPi
+                    );
                 // 골드 코인 더스트로 회전된 아스테로이드 연출을 만든다
             }
-
 
             SpawnExplosion(npc, chainDir);
             // 전이 대상에게 폭발 투사체를 소환한다
 
-            SpawnExplosionAlongLine(previousPos, npc.Center, chainDir);
+            SpawnExplosionAlongLine(
+                previousPos,
+                npc.Center,
+                chainDir
+            );
             // 전이 선분에 닿은 모든 NPC에게 폭발 투사체를 소환한다
         }
 
@@ -168,17 +217,22 @@ else
         {
             int result = -1;
 
-            bool altMode = Projectile.ai[0] == 1f;
-            bool isFirstChain = chainCount == 0;
+            bool altMode =
+                Projectile.ai[0] == 1f;
+
+            bool isFirstChain =
+                chainCount == 0;
 
             // ===== 기준점 =====
-            Vector2 origin = isFirstChain
+            Vector2 origin =
+                isFirstChain
                 ? Main.MouseWorld
                 : Projectile.Center;
             // 첫 전이는 좌/우 동일하게 마우스 기준이다
 
             // ===== 전이 반경 =====
             float range;
+
             if (isFirstChain || !altMode)
                 range = SearchRange;
             else
@@ -187,10 +241,11 @@ else
 
             // ===== 거리 기준 =====
             float bestDist;
+
             if (isFirstChain || altMode)
-                bestDist = float.MaxValue; // 최근접이다
+                bestDist = float.MaxValue;
             else
-                bestDist = 0f;             // 좌클릭 2번째부터 최원이다
+                bestDist = 0f;
 
             for (int i = 0; i < Main.maxNPCs; i++)
             {
@@ -200,22 +255,45 @@ else
                     continue;
 
                 if (n.catchItem > 0)
-                    continue; // 크리터는 제외한다
+                    continue;
+                // 크리터는 제외한다
 
                 if (n.friendly || n.dontTakeDamage)
                     continue;
 
                 // 첫 전이는 좌/우 동일하게 중복 방지한다
                 // 이후 전이는 좌클릭만 중복 방지한다
-                if ((!altMode || isFirstChain) && hitCache.Contains(i))
+                if ((!altMode || isFirstChain)
+                    && hitCache.Contains(i))
                     continue;
 
-                float dist = Vector2.Distance(origin, n.Center);
+                Player player =
+                    Main.player[Projectile.owner];
+
+                // 플레이어 기준 1000 이내가 아니면 제외한다
+                if (Vector2.Distance(
+                    player.Center,
+                    n.Center
+                ) > 1000f)
+                    continue;
+
+                float dist =
+                    Vector2.Distance(
+                        origin,
+                        n.Center
+                    );
 
                 if (dist > range)
                     continue;
 
-                if (!Collision.CanHitLine(origin, 1, 1, n.Center, 1, 1))
+                if (!Collision.CanHitLine(
+                    origin,
+                    1,
+                    1,
+                    n.Center,
+                    1,
+                    1
+                ))
                     continue;
 
                 if (isFirstChain || altMode)
@@ -241,31 +319,33 @@ else
             return result;
         }
 
+        private void SpawnExplosion(
+            NPC npc,
+            Vector2 dir
+        )
+        {
+            totalHitCount++;
+            // 폭발 판정 발생 횟수를 증가시킨다
 
+            Projectile.NewProjectile(
+                Projectile.GetSource_FromThis(),
+                npc.Center,
+                Vector2.Zero,
+                ModContent.ProjectileType<FlameEcho_Explosion>(),
+                Projectile.damage,
+                0f,
+                Projectile.owner,
+                dir.X,
+                dir.Y
+            );
+            // ai[0], ai[1]에 전이 방향을 전달한다
+        }
 
-
-
-
-
-
-
-        private void SpawnExplosion(NPC npc, Vector2 dir)
-{
-    Projectile.NewProjectile(
-        Projectile.GetSource_FromThis(),
-        npc.Center,
-        Vector2.Zero,
-        ModContent.ProjectileType<FlameEcho_Explosion>(),
-        Projectile.damage,
-        0f,
-        Projectile.owner,
-        dir.X,
-        dir.Y
-    );
-    // ai[0], ai[1]에 전이 방향을 전달한다
-}
-
-        private void SpawnExplosionAlongLine(Vector2 start, Vector2 end, Vector2 dir)
+        private void SpawnExplosionAlongLine(
+            Vector2 start,
+            Vector2 end,
+            Vector2 dir
+        )
         {
             float lineRadius = 16f;
             // 선분 판정 반경이다
@@ -276,7 +356,7 @@ else
 
                 if (!n.active)
                     continue;
-                
+
                 if (n.friendly || n.dontTakeDamage)
                     continue;
 
@@ -284,32 +364,64 @@ else
                     continue;
                 // 전이 대상은 이미 처리했으므로 제외한다
 
-                float dist = DistancePointToLine(n.Center, start, end);
+                float dist =
+                    DistancePointToLine(
+                        n.Center,
+                        start,
+                        end
+                    );
 
                 if (dist > lineRadius)
                     continue;
+
+               
+                // 최대 타격 횟수 도달시 추가 폭발 생성을 중단한다
 
                 SpawnExplosion(n, dir);
                 // 선분에 닿은 NPC 위치에 폭발 투사체를 소환한다
             }
         }
 
-        private float DistancePointToLine(Vector2 point, Vector2 lineStart, Vector2 lineEnd)
+        private float DistancePointToLine(
+            Vector2 point,
+            Vector2 lineStart,
+            Vector2 lineEnd
+        )
         {
-            Vector2 line = lineEnd - lineStart;
-            float length = line.Length();
+            Vector2 line =
+                lineEnd - lineStart;
+
+            float length =
+                line.Length();
 
             if (length <= 0f)
-                return Vector2.Distance(point, lineStart);
+            {
+                return Vector2.Distance(
+                    point,
+                    lineStart
+                );
+            }
 
-            float t = Vector2.Dot(point - lineStart, line) / (length * length);
-            t = MathHelper.Clamp(t, 0f, 1f);
+            float t =
+                Vector2.Dot(
+                    point - lineStart,
+                    line
+                ) / (length * length);
 
-            Vector2 projection = lineStart + line * t;
-            return Vector2.Distance(point, projection);
+            t = MathHelper.Clamp(
+                t,
+                0f,
+                1f
+            );
+
+            Vector2 projection =
+                lineStart + line * t;
+
+            return Vector2.Distance(
+                point,
+                projection
+            );
             // 점과 선분 사이의 최소 거리를 계산한다
         }
-
-        
     }
 }

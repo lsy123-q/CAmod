@@ -243,10 +243,11 @@ namespace CAmod.Players
                 );
                 // 잃은 체력 비율이다 (0~1)
 
-                float bonus = MathHelper.Lerp(0f, 0.15f, missingRatio2);
+                float bonus = MathHelper.Lerp(0f, 0.10f, missingRatio2);
                 // 최대 10%까지 증가한다
-
+                float bonus2 = MathHelper.Lerp(0f, 0.20f, missingRatio2);
                 Player.GetCritChance(DamageClass.Magic) += bonus * 100f;
+                Player.GetDamage(DamageClass.Magic) += bonus2;
                 // 마법 피해를 잃은 체력 비례로 증가시킨다
             }
             if (Player.creativeGodMode)

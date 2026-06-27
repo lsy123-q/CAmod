@@ -39,23 +39,7 @@ namespace CAmod.Projectiles
         }
         public override void SetStaticDefaults()
         {
-            try
-            {
-                brimstoneType = ModContent.Find<ModBuff>("CalamityMod", "BrimstoneFlames").Type;
-            }
-            catch
-            {
-                brimstoneType = -1; // 칼라미티가 없으면 -1로 둔다
-            }
-
-            try
-            {
-                holy = ModContent.Find<ModBuff>("CalamityMod", "HolyFlames").Type;
-                
-            }
-            catch {
-                brimstoneType = -1;
-            }
+          
 
         }
         public override void AI()
@@ -79,15 +63,50 @@ namespace CAmod.Projectiles
 
 
             // 3초 이후 감쇠 시작
-            if (Projectile.timeLeft <= 1 && now > 0 && target.realLife == -1)
+            // =========================
+            // 이름을 소문자로 통일한다
+            // =========================
+            string npcClassName = "";
+
+            if (target.ModNPC != null)
             {
-                Projectile.timeLeft = 2; // 소멸을 막는다
+                npcClassName = target.ModNPC.Name.ToLower();
+            }
+
+            bool isExoMech =
+                npcClassName.Contains("artemis") ||
+                npcClassName.Contains("apollo") ||
+                npcClassName.Contains("ares");
+
+            // =========================
+            // 일반 세그먼트 여부 검사한다
+            // =========================
+            bool isNormalSegment =
+                target.realLife != -1 &&
+                !isExoMech;
+
+            // =========================
+            // 3초 이후 감쇠 시작
+            // =========================
+            if (Projectile.timeLeft <= 1 && now > 0)
+            {
+                // =========================
+                // 일반 세그먼트는 즉시 제거한다
+                // =========================
+                if (isNormalSegment)
+                {
+                    Projectile.Kill();
+                    return;
+                }
+
+                Projectile.timeLeft = 2;
 
                 float ratio = 0f;
-                if (max > 0)
-                    ratio = MathHelper.Clamp(now / max, 0f, 1f); //0.5
 
-                float totalFadeFrames = 900f * ratio; // 300f
+                if (max > 0)
+                    ratio = MathHelper.Clamp(now / max, 0f, 1f);
+
+                float totalFadeFrames = 900f * ratio;
 
                 if (totalFadeFrames <= 1f)
                 {
@@ -95,17 +114,18 @@ namespace CAmod.Projectiles
                     return;
                 }
 
-                float decreasePerFrame = now / totalFadeFrames; // 3.3
+                float decreasePerFrame =
+                    now / totalFadeFrames;
 
-                // 소수 누적한다
-                fadeBuffer += decreasePerFrame; // 4.2 저장
+                fadeBuffer += decreasePerFrame;
 
-                int actualDecrease = (int)fadeBuffer; // 4 
+                int actualDecrease =
+                    (int)fadeBuffer;
 
                 if (actualDecrease > 0)
                 {
-                    now -= actualDecrease; // 
-                    fadeBuffer -= actualDecrease; //
+                    now -= actualDecrease;
+                    fadeBuffer -= actualDecrease;
                 }
 
                 if (now <= 1)
@@ -308,57 +328,14 @@ namespace CAmod.Projectiles
                 now = damageToDeal;
 
 
-                int brimstone = -1; // 유황불꽃 버프 타입을 저장한다
-
-                try
-                {
-                    brimstone = ModContent.Find<ModBuff>("CalamityMod", "BrimstoneFlames").Type;
-                }
-                catch
-                {
-                    brimstone = -1; // 칼라미티가 없으면 -1 유지
-                }
+                
                 if (owner != null && owner.active)
                 {
                     owner.addDPS(damageToDeal);
                 }
 
                
-                if (damageToDeal == magicPowerValue)
-                {
-                    burnTickCounter++; // 틱 누적한다
-
-                    int stage = burnTickCounter / 15 + 1;
-                    // 30틱 = 10초
-                    // 0~29 = 1단계
-                    // 30~59 = 2단계 ...
-                  
-                    if (stage > 8)
-                        stage = 8; // 최대 7단계 제한
-
-                    List<int> burnList = new List<int>()
-                    {
-                        BuffID.OnFire,        // 일반 화상
-                      
-                        BuffID.OnFire3,       // 지옥불 (Hellfire)
-                    
-  
-                        BuffID.Daybreak       // 데이브레이크 (최상위)
-                    };
-
-                   
-
-                    if (holy != -1)
-                    {
-                        burnList.Insert(burnList.Count, holy);
-                      
-                    }
-                    // 단계 수만큼 순서대로 부여한다
-                    for (int i = 0; i < stage && i < burnList.Count; i++)
-                    {
-                        target.AddBuff(burnList[i], 180);
-                    }
-                }
+                
 
 
             }

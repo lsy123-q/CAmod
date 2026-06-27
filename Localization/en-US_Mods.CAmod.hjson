@@ -170,6 +170,21 @@ Items: {
 		Tooltip: ""
 		DisplayName: Harmony Cycle
 	}
+
+	WorldBurner: {
+		Tooltip: ""
+		DisplayName: World Burner
+	}
+
+	RabbitLauncher: {
+		Tooltip: ""
+		DisplayName: Rabbit Launcher
+	}
+
+	Aureola: {
+		Tooltip: ""
+		DisplayName: Aureola
+	}
 }
 
 Keybinds: {
@@ -268,6 +283,8 @@ Projectiles: {
 	UltraCosmicDoGBeam.DisplayName: Ultra Cosmic Do G Beam
 	CosmicAttackHitbox.DisplayName: Cosmic Attack Hitbox
 	ExoProj.DisplayName: Exo Proj
+	MaskingProjectile.DisplayName: Masking Projectile
+	RabbitDamageProjectile.DisplayName: Rabbit Damage Projectile
 }
 
 Configs: {
@@ -299,4 +316,5 @@ Configs: {
 NPCs: {
 	ControlledMonster.DisplayName: Controlled Monster
 	AdaptationSensorNPC.DisplayName: Adaptation Sensor N P C
+	RabbitMissileNPC.DisplayName: Rabbit Missile N P C
 }
