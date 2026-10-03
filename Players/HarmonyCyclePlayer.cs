@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 using CAmod.Systems;
-using CAmod.NPCs; // Sensor NPC가 위치한 네임스페이스
+using CAmod.NPCs;
 using System.Reflection;
 
 namespace CAmod.Players
@@ -16,6 +17,7 @@ namespace CAmod.Players
     public class HarmonyCyclePlayer : ModPlayer
     {
         private int exoProjIndex = -1;
+
         // =========================
         // 상태 및 설정
         // =========================
@@ -24,27 +26,46 @@ namespace CAmod.Players
         public int evaluationTimer = 0;
         public int sensorNPCIndex = -1;
         private static FieldInfo _chaliceBufferField;
-        // 적응 관련 스택
-        public Dictionary<int, int> adaptStack = new(); // Key: NPC ID 또는 -(Proj ID + 10000)
-        public int debuffAdaptStack = 0;                // 디버프 대응 스택
-        public int voidAdaptStack = 0;                  // 위협 없을 때 쌓이는 기본 스택
 
-        // 위협 기록용 (Sensor NPC와 OnHurt에서 채워짐)
+        // 적응 관련 스택
+        public Dictionary<int, int> adaptStack = new();
+        public int debuffAdaptStack = 0;
+        public int voidAdaptStack = 0;
+
+        // 위협 기록용
         public Dictionary<int, int> hitCount = new();
         public Dictionary<int, int> totalDamage = new();
         public float dotAccumulatedDamage = 0;
+
+        // 마지막으로 타격이 감지된 시점부터 경과한 시간
+        public int noHitTimer = 0;
+
+        // 보너스 최대 체력
+        public int bonusMaxLife = 0;
+
         private static Type _calPlayerType;
+
         public static readonly Color[] ExoPalette = new Color[]
         {
-            new Color(250, 255, 112), new Color(211, 235, 108),
-            new Color(166, 240, 105), new Color(105, 240, 220),
-            new Color(64, 130, 145), new Color(145, 96, 145),
-            new Color(242, 112, 73), new Color(199, 62, 62),
+            new Color(250, 255, 112),
+            new Color(211, 235, 108),
+            new Color(166, 240, 105),
+            new Color(105, 240, 220),
+            new Color(64, 130, 145),
+            new Color(145, 96, 145),
+            new Color(242, 112, 73),
+            new Color(199, 62, 62),
         };
 
         public override void ResetEffects()
         {
             harmonyEquipped = false;
+
+            // 구조체가 비활성화되면 보너스 최대 체력을 초기화한다
+            if (!structureActive)
+            {
+                bonusMaxLife = 0;
+            }
         }
 
         public override void PostUpdateBuffs()
@@ -55,11 +76,13 @@ namespace CAmod.Players
                 for (int i = 0; i < Player.MaxBuffs; i++)
                 {
                     int buffType = Player.buffType[i];
+
                     if (buffType > 0 && Main.debuff[buffType])
                     {
                         if (Main.rand.Next(100) < debuffAdaptStack * 5)
                         {
-                            if (Player.buffTime[i] > 1) Player.buffTime[i]--;
+                            if (Player.buffTime[i] > 1)
+                                Player.buffTime[i]--;
                         }
                     }
                 }
@@ -70,11 +93,15 @@ namespace CAmod.Players
         {
             if (harmonyEquipped && structureActive)
             {
-                // 방어력 무력화 및 공격력 보너스
+                // 방어력을 0으로 만들고 적응 스택에 비례하여 마법 공격력을 증가시킨다
                 Player.statDefense *= 0;
+
                 float totalStack = voidAdaptStack;
-                // 필요 시 adaptStack.Values.Sum() 등을 추가하여 화력을 조절하세요.
                 Player.GetDamage(DamageClass.Magic) += 0.01f * totalStack;
+
+                // 누적된 보너스 최대 체력을 적용한다
+                if (bonusMaxLife > 0)
+                    Player.statLifeMax2 += bonusMaxLife;
             }
         }
 
@@ -83,7 +110,9 @@ namespace CAmod.Players
             // 1. 장신구 미착용 시 강제 비활성화
             if (!harmonyEquipped)
             {
-                if (structureActive) DeactivateStructure();
+                if (structureActive)
+                    DeactivateStructure();
+
                 return;
             }
 
@@ -92,21 +121,20 @@ namespace CAmod.Players
             {
                 if (!structureActive)
                 {
-                    if (HasExoPrism())
-                    {
-                        ActivateStructure();
-                    }
+                    ActivateStructure();
                 }
                 else
                 {
                     DeactivateStructure();
                 }
+
                 return;
             }
 
-            if (!structureActive) return;
+            if (!structureActive)
+                return;
 
-            // 3. 센서 NPC 관리 (서버/싱글 동일성 유지)
+            // 3. 센서 NPC 관리
             ManageSensorNPC();
 
             // 4. DoT 데미지 누적 계산
@@ -115,8 +143,19 @@ namespace CAmod.Players
                 dotAccumulatedDamage += (-Player.lifeRegen / 2f) / 60f;
             }
 
-            // 5. 평가 타이머 (600프레임 = 10초)
+            // 5. 타격이 없는 시간 측정
+            noHitTimer++;
+
+            // 30초 동안 타격이 없으면 스택만 초기화한다
+            if (noHitTimer >= 1800)
+            {
+                ResetAdaptationStacks();
+                noHitTimer = 0;
+            }
+
+            // 6. 평가 타이머 (600프레임 = 10초)
             evaluationTimer++;
+
             if (evaluationTimer >= 600)
             {
                 evaluationTimer = 0;
@@ -128,14 +167,25 @@ namespace CAmod.Players
         {
             structureActive = true;
             evaluationTimer = 0;
+            noHitTimer = 0;
+
             SoundEngine.PlaySound(SoundID.Item4);
 
             if (Main.myPlayer == Player.whoAmI)
             {
                 int type = ModContent.NPCType<AdaptationSensorNPC>();
-                int idx = NPC.NewNPC(Player.GetSource_FromThis(), (int)Player.Center.X, (int)Player.Center.Y, type, ai0: Player.whoAmI);
+
+                int idx = NPC.NewNPC(
+                    Player.GetSource_FromThis(),
+                    (int)Player.Center.X,
+                    (int)Player.Center.Y,
+                    type,
+                    ai0: Player.whoAmI
+                );
+
                 sensorNPCIndex = idx;
             }
+
             if (Main.myPlayer == Player.whoAmI)
             {
                 exoProjIndex = Projectile.NewProjectile(
@@ -152,46 +202,61 @@ namespace CAmod.Players
 
         private void ManageSensorNPC()
         {
-            if (Main.myPlayer != Player.whoAmI) return;
+            if (Main.myPlayer != Player.whoAmI)
+                return;
 
             int sensorType = ModContent.NPCType<AdaptationSensorNPC>();
-            bool npcInvalid = sensorNPCIndex == -1 || !Main.npc[sensorNPCIndex].active || Main.npc[sensorNPCIndex].type != sensorType;
+
+            bool npcInvalid =
+                sensorNPCIndex == -1 ||
+                !Main.npc[sensorNPCIndex].active ||
+                Main.npc[sensorNPCIndex].type != sensorType;
 
             if (npcInvalid)
             {
-                sensorNPCIndex = NPC.NewNPC(Player.GetSource_FromThis(), (int)Player.Center.X, (int)Player.Center.Y, sensorType, ai0: Player.whoAmI);
+                sensorNPCIndex = NPC.NewNPC(
+                    Player.GetSource_FromThis(),
+                    (int)Player.Center.X,
+                    (int)Player.Center.Y,
+                    sensorType,
+                    ai0: Player.whoAmI
+                );
             }
         }
 
         private void EvaluateAdaptation()
         {
-            if (!ConsumeExoPrism()) { DeactivateStructure(); return; }
-
-            
             PerformHealing();
 
             bool isAnyNewTargetRegistered = false;
 
             // 기존 대상 성장 및 피격 가속
             var keys = adaptStack.Keys.ToList();
+
             foreach (var key in keys)
             {
                 adaptStack[key]++;
+
                 if (hitCount.TryGetValue(key, out int count) && count > 0)
                 {
                     float bonusChance = 1f - (float)Math.Pow(0.5, count);
-                    if (Main.rand.NextFloat() < bonusChance) adaptStack[key]++;
+
+                    if (Main.rand.NextFloat() < bonusChance)
+                        adaptStack[key]++;
                 }
             }
 
-            // 신규 위협 등록 (Sensor NPC가 수집한 totalDamage 기반)
+            // 신규 디버프 위협 등록
             if (dotAccumulatedDamage > 0 && debuffAdaptStack == 0)
             {
                 debuffAdaptStack = 1;
                 isAnyNewTargetRegistered = true;
             }
-            if (debuffAdaptStack > 0) debuffAdaptStack++;
 
+            if (debuffAdaptStack > 0)
+                debuffAdaptStack++;
+
+            // 신규 위협 등록
             foreach (var entry in totalDamage)
             {
                 if (entry.Value > 0 && !adaptStack.ContainsKey(entry.Key))
@@ -202,71 +267,105 @@ namespace CAmod.Players
             }
 
             // 공허 적응
-            if (!isAnyNewTargetRegistered) voidAdaptStack++;
+            if (!isAnyNewTargetRegistered)
+                voidAdaptStack++;
 
             ClearHitRecords();
         }
 
         public override void OnHurt(Player.HurtInfo info)
         {
-            if (!harmonyEquipped || !structureActive) return;
+            if (!harmonyEquipped || !structureActive)
+                return;
 
             int sourceID = GetSourceID(info.DamageSource);
-            if (sourceID == -1) return;
 
-            if (!hitCount.ContainsKey(sourceID)) hitCount[sourceID] = 0;
-            if (!totalDamage.ContainsKey(sourceID)) totalDamage[sourceID] = 0;
+            if (sourceID == -1)
+                return;
+
+            if (!hitCount.ContainsKey(sourceID))
+                hitCount[sourceID] = 0;
+
+            if (!totalDamage.ContainsKey(sourceID))
+                totalDamage[sourceID] = 0;
 
             hitCount[sourceID]++;
             totalDamage[sourceID] += info.Damage;
+
+            // 타격이 감지되었으므로 무피격 타이머를 초기화한다
+            noHitTimer = 0;
         }
 
         public override void ModifyHurt(ref Player.HurtModifiers modifiers)
         {
-            if (!harmonyEquipped || !structureActive) return;
+            if (!harmonyEquipped || !structureActive)
+                return;
 
             int sourceID = GetSourceID(modifiers.DamageSource);
+
             if (sourceID != -1 && adaptStack.TryGetValue(sourceID, out int stack))
             {
                 float originalDamage = modifiers.FinalDamage.Flat;
-                float reductionRate = 1f - (float)Math.Pow(0.95f, stack);
-                float reductionAmount = originalDamage * reductionRate;
 
-                modifiers.FinalDamage *= (1f - reductionRate);
+                float reductionRate =
+                    1f - (float)Math.Pow(0.9f, stack);
 
-                float bufferSubtrahend = reductionAmount - 5f;
+                float reductionAmount =
+                    originalDamage * reductionRate;
+
+                modifiers.FinalDamage *= 1f - reductionRate;
+
+                float bufferSubtrahend =
+                    reductionAmount - 5f;
 
                 if (bufferSubtrahend > 0)
                 {
                     try
                     {
-                        // 1. 타입을 문자열로 찾습니다. (직접 참조 피하기)
+                        // CalamityPlayer 타입을 문자열로 찾는다
                         if (_calPlayerType == null)
                         {
-                            // tModLoader 환경에서 모드 클래스 타입을 가져오는 방식
                             if (ModLoader.TryGetMod("CalamityMod", out Mod calamity))
                             {
-                                _calPlayerType = calamity.Code.GetType("CalamityMod.CalPlayer.CalamityPlayer");
+                                _calPlayerType =
+                                    calamity.Code.GetType(
+                                        "CalamityMod.CalPlayer.CalamityPlayer"
+                                    );
                             }
                         }
 
                         if (_calPlayerType != null)
                         {
-                            // 2. 필드 정보 캐싱
+                            // Chalice 버퍼 필드를 한 번만 찾아 저장한다
                             if (_chaliceBufferField == null)
                             {
-                                _chaliceBufferField = _calPlayerType.GetField("chaliceBleedoutBuffer", BindingFlags.Instance | BindingFlags.Public);
+                                _chaliceBufferField =
+                                    _calPlayerType.GetField(
+                                        "chaliceBleedoutBuffer",
+                                        BindingFlags.Instance |
+                                        BindingFlags.Public
+                                    );
                             }
 
-                            // 3. Player.modPlayers에서 CalamityPlayer 인스턴스 찾기
-                            // GetModPlayer<T> 대신 리플렉션이나 다른 방식으로 인스턴스를 가져와야 함
+                            // 현재 플레이어의 CalamityPlayer를 찾는다
                             foreach (var mp in Player.ModPlayers)
                             {
                                 if (mp.GetType() == _calPlayerType)
                                 {
-                                    double currentBuffer = (double)_chaliceBufferField.GetValue(mp);
-                                    double newBuffer = Math.Max(0, currentBuffer - (double)bufferSubtrahend);
-                                    _chaliceBufferField.SetValue(mp, newBuffer);
+                                    double currentBuffer =
+                                        (double)_chaliceBufferField.GetValue(mp);
+
+                                    double newBuffer =
+                                        Math.Max(
+                                            0,
+                                            currentBuffer - bufferSubtrahend
+                                        );
+
+                                    _chaliceBufferField.SetValue(
+                                        mp,
+                                        newBuffer
+                                    );
+
                                     break;
                                 }
                             }
@@ -274,7 +373,7 @@ namespace CAmod.Players
                     }
                     catch
                     {
-                        // 오류 발생 시 무시 (CalamityMod가 없는 경우 등)
+                        // 오류가 발생하면 아무 처리도 하지 않는다
                     }
                 }
             }
@@ -282,29 +381,50 @@ namespace CAmod.Players
 
         private int GetSourceID(PlayerDeathReason source)
         {
-            if (source.SourceNPCIndex >= 0) return Main.npc[source.SourceNPCIndex].type;
-            if (source.SourceProjectileType >= 0) return -(source.SourceProjectileType + 10000);
+            if (source.SourceNPCIndex >= 0)
+                return Main.npc[source.SourceNPCIndex].type;
+
+            if (source.SourceProjectileType >= 0)
+                return -(source.SourceProjectileType + 10000);
+
             return -1;
         }
 
         private void DeactivateStructure()
         {
             structureActive = false;
-            if (sensorNPCIndex != -1 && Main.npc[sensorNPCIndex].type == ModContent.NPCType<AdaptationSensorNPC>())
+            bonusMaxLife = 0;
+
+            if (sensorNPCIndex != -1 &&
+                Main.npc[sensorNPCIndex].type ==
+                ModContent.NPCType<AdaptationSensorNPC>())
             {
                 Main.npc[sensorNPCIndex].active = false;
             }
-            if (exoProjIndex != -1 && Main.projectile[exoProjIndex].active)
+
+            if (exoProjIndex != -1 &&
+                Main.projectile[exoProjIndex].active)
             {
                 Main.projectile[exoProjIndex].Kill();
             }
+
             exoProjIndex = -1;
             sensorNPCIndex = -1;
             evaluationTimer = 0;
+            noHitTimer = 0;
+
             adaptStack.Clear();
             debuffAdaptStack = 0;
             voidAdaptStack = 0;
+
             ClearHitRecords();
+        }
+
+        private void ResetAdaptationStacks()
+        {
+            adaptStack.Clear();
+            debuffAdaptStack = 0;
+            voidAdaptStack = 0;
         }
 
         private void ClearHitRecords()
@@ -314,73 +434,98 @@ namespace CAmod.Players
             dotAccumulatedDamage = 0;
         }
 
-        // --- 유틸리티 메서드 ---
-        private bool HasExoPrism() => Player.inventory.Any(item => item?.ModItem?.FullName.Contains("ExoPrism") ?? false);
-
-        private bool ConsumeExoPrism()
-        {
-            foreach (var item in Player.inventory)
-            {
-                if (item?.ModItem?.FullName.Contains("ExoPrism") ?? false)
-                {
-                    item.stack--;
-                    if (item.stack <= 0) item.TurnToAir();
-                    return true;
-                }
-            }
-            return false;
-        }
-
         private void PerformHealing()
         {
-            int lostLife = Player.statLifeMax2 - Player.statLife;
-            float healRatio = 0.25f + (0.005f * voidAdaptStack);
-            int heal = (int)(lostLife * Math.Min(healRatio, 1f));
+            int effectiveMaxLife = Player.statLifeMax2 + bonusMaxLife;
+            int lostLife = effectiveMaxLife - Player.statLife;
+
+            float healRatio =
+                0.25f + (0.005f * voidAdaptStack);
+
+            int heal =
+                (int)(lostLife * Math.Min(healRatio, 1f));
 
             if (heal > 0)
             {
+                // 체력을 회복한다
                 Player.statLife += heal;
-                CombatText.NewText(Player.Hitbox, Color.Aquamarine, heal);
+
+                // 회복량의 10%만큼 최대 체력을 증가시킨다
+                int maxLifeIncrease =
+                    (int)(heal * 0.1f);
+
+                if (maxLifeIncrease > 0)
+                {
+                    // 보너스 최대 체력을 누적한다
+                    bonusMaxLife += maxLifeIncrease;
+                }
+
+                CombatText.NewText(
+                    Player.Hitbox,
+                    Color.Aquamarine,
+                    heal
+                );
             }
         }
 
         private void SpawnAstroidDust()
-
         {
+            Vector2 tipPosition =
+                Player.Center + new Vector2(0f, -30f);
 
-            Vector2 tipPosition = Player.Center + new Vector2(0f, -30f);
-
-            SoundEngine.PlaySound(SoundID.Item158 with { Volume = 1.6f }, tipPosition);
+            SoundEngine.PlaySound(
+                SoundID.Item158 with { Volume = 1.6f },
+                tipPosition
+            );
 
             for (int i = 0; i < 75; i++)
-
             {
+                float angle =
+                    MathHelper.TwoPi * i / 75f;
 
-                float angle = MathHelper.TwoPi * i / 75f;
+                float x =
+                    (float)Math.Pow(Math.Cos(angle), 3) * 5f;
 
-                float x = (float)Math.Pow(Math.Cos(angle), 3) * 5f;
+                float y =
+                    (float)Math.Pow(Math.Sin(angle), 3) * 5f;
 
-                float y = (float)Math.Pow(Math.Sin(angle), 3) * 5f;
-
-                Dust d = Dust.NewDustPerfect(tipPosition, DustID.RainbowMk2, new Vector2(x, y));
+                Dust d =
+                    Dust.NewDustPerfect(
+                        tipPosition,
+                        DustID.RainbowMk2,
+                        new Vector2(x, y)
+                    );
 
                 d.scale = 1.8f;
-
-                d.color = MulticolorLerp(i / 75f, ExoPalette);
-
+                d.color =
+                    MulticolorLerp(i / 75f, ExoPalette);
                 d.noGravity = true;
-
             }
-
         }
 
-        public static Color MulticolorLerp(float increment, params Color[] colors)
+        public static Color MulticolorLerp(
+            float increment,
+            params Color[] colors)
         {
             increment %= 0.999f;
-            int idx = (int)(increment * colors.Length);
-            return Color.Lerp(colors[idx], colors[(idx + 1) % colors.Length], (increment * colors.Length) % 1f);
+
+            int idx =
+                (int)(increment * colors.Length);
+
+            return Color.Lerp(
+                colors[idx],
+                colors[(idx + 1) % colors.Length],
+                (increment * colors.Length) % 1f
+            );
         }
 
-        public override void Kill(double damage, int hitDirection, bool pvp, PlayerDeathReason damageSource) => DeactivateStructure();
+        public override void Kill(
+            double damage,
+            int hitDirection,
+            bool pvp,
+            PlayerDeathReason damageSource)
+        {
+            DeactivateStructure();
+        }
     }
 }

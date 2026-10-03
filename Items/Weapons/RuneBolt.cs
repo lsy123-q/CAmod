@@ -28,7 +28,7 @@ namespace CAmod.Items.Weapons
             Item.UseSound = SoundID.Item28; // 마법 발사 시전 소리를 낸다
             Item.shoot = ModContent.ProjectileType<Projectiles.RuneBoltProj>();
             // RuneBoltProj 투사체를 발사한다
-
+            Item.scale = 0.5f;
             Item.shootSpeed = 20f;
             // 직선 발사 속도
 

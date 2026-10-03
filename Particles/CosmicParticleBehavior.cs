@@ -1,0 +1,58 @@
+﻿using ParticleLibrary.Core.V3.Particles;
+using ParticleLibrary.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Terraria;
+using Microsoft.Xna.Framework;
+
+namespace CAmod.Particles
+{
+    public class CosmicParticleBehavior : Behavior<ParticleInfo>
+    {
+        public override string Texture => "CAmod/Particles/Star";
+
+        public override void Initialize(ref ParticleInfo info)
+        {
+        }
+
+        public override void Update(ref ParticleInfo info)
+        {
+            info.Position += info.Velocity;
+
+            info.Velocity *= 0.94f;
+
+            float progress = info.Time / (float)info.Duration;
+            Color lightColor = info.InitialColor * progress;
+
+            Lighting.AddLight(
+                new Vector2(info.Position.X, info.Position.Y),
+                lightColor.R / 255f,
+                lightColor.G / 255f,
+                lightColor.B / 255f
+            );
+            // 이동 속도에 비례해서 진행 방향으로 길게 늘린다
+            float speed = info.Velocity.Length();
+
+            float stretch = 1f + speed * 0.25f;
+
+            // X축을 진행 방향으로 늘리고 Y축은 원래 크기를 유지한다
+            info.Scale = new System.Numerics.Vector2(
+                info.InitialScale.X * stretch * progress,
+                info.InitialScale.Y * progress
+            );
+
+            // 파티클의 X축이 이동 방향을 바라보게 한다
+            if (speed > 0.001f)
+            {
+                info.Rotation = info.Velocity.ToRotation();
+            }
+
+            info.Color = info.InitialColor * progress;
+
+            info.Time--;
+        }
+    }
+}

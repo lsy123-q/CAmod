@@ -462,7 +462,16 @@ namespace CAmod.Players
             }
             catch { }
         }
+        public override void UpdateLifeRegen()
+        {
+            if (!leafShieldEquipped)
+                return;
 
+            int stage = LeafWardSystem.GetStage();
+            int bonusLifeRegen = (int)Math.Ceiling(1f + stage * (4f / 40f));
+
+            Player.lifeRegen += bonusLifeRegen;
+        }
         public override void PostUpdateMiscEffects()
         {
             if (!leafShieldEquipped) return;

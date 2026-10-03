@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "pUj0EdQFmxM=",
+  "dgSpecHash": "LEj5SUblXFQ=",
   "success": true,
   "projectFilePath": "C:\\Users\\qufau\\Documents\\My Games\\Terraria\\tModLoader\\ModSources\\CAmod\\CAmod.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\qufau\\.nuget\\packages\\krafs.publicizer\\2.3.0\\krafs.publicizer.2.3.0.nupkg.sha512",
+    "C:\\Users\\qufau\\.nuget\\packages\\tmodloader\\2026.6.3.6\\tmodloader.2026.6.3.6.nupkg.sha512"
+  ],
   "logs": []
 }

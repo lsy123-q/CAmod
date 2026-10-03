@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework;
 using static CAmod.Items.Pyromancer;
 using System;
 using System.Collections.Generic;
+using ParticleLibrary.Core.V3.Particles;
+using CAmod.Particles;
 
 namespace CAmod.Projectiles
 {
@@ -19,10 +21,10 @@ namespace CAmod.Projectiles
         private int burnTickCounter = 0; // 화상 발동 카운터를 저장한다
         private int holy = -1;
 
-
         private int now = 0;
         private float max = 0;
         private float fadeBuffer = 0f; // 소수 감소량 누적 버퍼다
+
         public override void SetDefaults()
         {
             Projectile.width = 12;
@@ -37,14 +39,15 @@ namespace CAmod.Projectiles
 
             Projectile.alpha = 255; // 완전 투명 (판정만 남김)
         }
+
         public override void SetStaticDefaults()
         {
-          
-
         }
+
         public override void AI()
         {
             int targetWhoAmI = (int)Projectile.ai[0];
+
             if (targetWhoAmI < 0 || targetWhoAmI >= Main.npc.Length)
             {
                 Projectile.Kill();
@@ -52,17 +55,13 @@ namespace CAmod.Projectiles
             }
 
             NPC target = Main.npc[targetWhoAmI];
+
             if (!target.active || target.life <= 0)
             {
                 Projectile.Kill();
                 return;
             }
 
-
-
-
-
-            // 3초 이후 감쇠 시작
             // =========================
             // 이름을 소문자로 통일한다
             // =========================
@@ -136,175 +135,186 @@ namespace CAmod.Projectiles
 
                 damagePerTick = now;
             }
+
             // 대상에 고정
             Projectile.Center = target.Center;
 
             // ---------------------------------
-            // Dust 연출 (강도 = damagePerTick 비례)
+            // Fire 파티클 연출
             // ---------------------------------
             Player owner1 = Main.player[Projectile.owner];
-            float magicAdd1 = owner1.GetDamage(DamageClass.Magic).Additive - 1f;
-            float genericAdd1 = owner1.GetDamage(DamageClass.Generic).Additive - 1f;
 
-            float TotalMagicCrit1 = owner1.GetCritChance(DamageClass.Magic) / 100f + 1f;
+            float magicAdd1 =
+                owner1.GetDamage(DamageClass.Magic).Additive - 1f;
 
+            float genericAdd1 =
+                owner1.GetDamage(DamageClass.Generic).Additive - 1f;
+
+            float TotalMagicCrit1 =
+                owner1.GetCritChance(DamageClass.Magic) / 100f + 1f;
 
             // 두 증가분을 더한 뒤 1000 배율로 정수화한다
-            int magicPowerValue1 = (int)Math.Round((magicAdd1 + genericAdd1) * TotalMagicCrit1 * 1000f);
+            int magicPowerValue1 =
+                (int)Math.Round(
+                    (magicAdd1 + genericAdd1) *
+                    TotalMagicCrit1 *
+                    1000f
+                );
 
-           
+            float intensity =
+                MathHelper.Clamp(
+                    damagePerTick / (float)magicPowerValue1,
+                    0f,
+                    1f
+                );
 
-
-
-            float intensity = MathHelper.Clamp(damagePerTick / (float)magicPowerValue1, 0f, 1f);
             // 피해량 비례 강도 계산
+            int fireCount =
+                1 + (int)((target.width + target.height) / 10 * intensity / 2);
 
-            int dustCount = 1 + (int)((target.width + target.height) / 10 * intensity);
-
-            if (dustCount > 100) {
-                dustCount = 100;
-            }
-            // 기본 잔불 개수
-
-            for (int i = 0; i < dustCount; i++)
+            if (fireCount > 50)
             {
-                Vector2 offset = Main.rand.NextVector2Circular(target.width * ((0.4f * intensity)+0.1f), target.height*((0.4f * intensity) + 0.1f));
-                
+                fireCount = 50;
+            }
 
-                
-                // 중심은 밝은 성염, 외곽은 어두운 화염
-                float maxRadius = Math.Max(target.width, target.height) * ((0.4f * intensity) + 0.1f);
-                // 현재 실제 생성 반경을 정확히 구한다
+            // 스택이 낮을수록 중앙에 집중하고 최대 스택에서 기존 범위가 된다
+            float stackRatio = max > 0f
+                ? MathHelper.Clamp(
+                    damagePerTick / max,
+                    0f,
+                    1f)
+                : 0f;
 
-                float radiusRatio = offset.Length() / maxRadius;
-                // 생성된 위치가 전체 반경 대비 몇 %인지 계산한다
+            // 대상 주변에 계속 불꽃을 생성한다
+            for (int i = 0; i < fireCount; i++)
+            {
+                float angle = Main.rand.NextFloat(MathHelper.TwoPi);
+                float radius = MathF.Sqrt(Main.rand.NextFloat());
 
-                int dustType = (radiusRatio <= 0.35f) ? DustID.GoldCoin : DustID.CopperCoin;
-                // 중심 30% 이내는 Gold, 나머지는 무조건 Copper로 한다
+                float radiusX = target.width * 0.35f * stackRatio;
+                float radiusY = target.height * 0.35f * stackRatio;
+
+                Vector2 offset = new Vector2(
+                    MathF.Cos(angle) * radius * radiusX,
+                    MathF.Sin(angle) * radius * radiusY
+                );
+
                 Vector2 spawnPos = target.Center + offset;
 
-                int dustIndex = Dust.NewDust(spawnPos, 0, 0, dustType,
-                    Main.rand.NextFloat(-1.2f, 1.2f),
-                    Main.rand.NextFloat(-2.5f, -0.3f),
-                    200,
-                    default,
-                    1.0f + 1.0f * intensity); // 강할수록 커짐
+                Vector2 velocity = new Vector2(
+                    Main.rand.NextFloat(-0.6f, 0.6f),
+                    Main.rand.NextFloat(-5.0f, -0.5f)
+                );
 
-                Dust dust = Main.dust[dustIndex];
-                dust.noGravity = true;
-                dust.velocity *= 0.5f + intensity;
-                dust.scale *= 1f + 0.4f * intensity;
-                dust.fadeIn = 1.2f;
-               
+                float hitboxAverage = (target.width + target.height) * 0.5f;
+
+                float scaleValue = MathF.Min(
+                    Main.rand.NextFloat(0.7f, 1.2f) *
+                    (0.7f + intensity * 0.6f) *
+                    0.3f *
+                    hitboxAverage,
+                    40f
+                );
+
+                ParticleInfo info = new ParticleInfo(
+                    new System.Numerics.Vector2(
+                        spawnPos.X,
+                        spawnPos.Y
+                    ),
+                    new System.Numerics.Vector2(
+                        velocity.X,
+                        velocity.Y
+                    ),
+                    0f,
+                    new System.Numerics.Vector2(
+                        scaleValue,
+                        scaleValue
+                    ),
+                    Color.White,
+                    Main.rand.Next(40, 80)
+                );
+
+                // Fire1~Fire3 중 하나를 랜덤으로 선택한다
+                switch (Main.rand.Next(3))
+                {
+                    case 0:
+                        FireParticleSystem.Buffer1.Create(info);
+                        break;
+
+                    case 1:
+                        FireParticleSystem.Buffer2.Create(info);
+                        break;
+
+                    case 2:
+                        FireParticleSystem.Buffer3.Create(info);
+                        break;
+                }
             }
 
             // ---------------------------------
-            // 2️⃣ 화산 분출 연출 (폭발성 튀김)
+            // 화산 분출 연출
             // ---------------------------------
 
             float intensity2 = intensity * 2;
-            if (intensity2 > 1) {
+
+            if (intensity2 > 1)
+            {
                 intensity = 1;
             }
 
-            float burstCount = intensity * ((target.width+target.height)/10)  + 1f;
-                // 피해량이 높을수록 더 많이 분출한다
+            float burstCount =
+                intensity * ((target.width + target.height) / 10) + 1f;
 
-                
+            // 피해량이 높을수록 더 많이 분출한다
 
             // ---------------------------------
             // 도트 데미지 틱 (0.5초마다)
             // ---------------------------------
+
             tickTimer++;
+
             if (tickTimer >= 20) // 1초에 3번
             {
                 // 무적 상태 체크
-                if (target.immortal || target.dontTakeDamage || target.immune[Projectile.owner] > 0)
+                if (target.immortal ||
+                    target.dontTakeDamage ||
+                    target.immune[Projectile.owner] > 0)
                     return;
-
-                for (int i = 0; i < burstCount; i++)
-                {
-                    Vector2 offset = Main.rand.NextVector2Circular(target.width * ((0.4f * intensity) + 0.1f), target.height * ((0.4f * intensity) + 0.1f));
-                    float radiusRatio = offset.Length() / (Math.Max(target.width, target.height) * 0.6f);
-
-                    int dustType = Main.rand.Next(2);
-                    if (dustType == 0)
-                    {
-                        dustType = 169;
-                    }
-                    else
-                    {
-                        dustType = 158;
-                    }
-                    // 중심은 밝은 성염, 외곽은 어두운 화염
-
-                    Vector2 spawnPos = target.Center + offset;
-
-
-                    float angle = MathHelper.ToRadians(Main.rand.NextFloat(-40f, 40f) - 90f);
-                    float speed = Main.rand.NextFloat(3f, 6f);
-                    Vector2 eruptDir = angle.ToRotationVector2() * speed;
-
-                    int dustIndex = Dust.NewDust(
-                        spawnPos,
-                        0,
-                        0,
-                        dustType, // 화산 마그마 느낌
-                        eruptDir.X,
-                        eruptDir.Y,
-                        100,
-                        default,
-                        0.75f + 1.0f
-                    );
-
-                    Dust burst = Main.dust[dustIndex];
-                    burst.noGravity = false; // 중력을 켠다
-                    burst.velocity.Y = -Main.rand.NextFloat(1,4);
-                    // 위로 강하게 튀어오르게 한다
-
-                    burst.velocity.X = Main.rand.NextFloat(-2.5f, 2.5f);
-                    // 좌우 퍼짐
-
-                   
-                   
-                  
-
-                }
-
 
                 tickTimer = 0;
 
-
-
                 int damageToDeal = damagePerTick;
-                
 
                 Player owner = Main.player[Projectile.owner];
 
-                float magicAdd = owner.GetDamage(DamageClass.Magic).Additive - 1f;
-                float genericAdd = owner.GetDamage(DamageClass.Generic).Additive - 1f;
+                float magicAdd =
+                    owner.GetDamage(DamageClass.Magic).Additive - 1f;
 
-                float TotalMagicCrit = (owner.GetCritChance(DamageClass.Magic) + owner.GetCritChance(DamageClass.Generic)) / 100f + 1f;
+                float genericAdd =
+                    owner.GetDamage(DamageClass.Generic).Additive - 1f;
 
+                float TotalMagicCrit =
+                    (owner.GetCritChance(DamageClass.Magic) +
+                     owner.GetCritChance(DamageClass.Generic)) / 100f + 1f;
 
                 // 두 증가분을 더한 뒤 1000 배율로 정수화한다
-                float magicPowerValue = (magicAdd + genericAdd ) * TotalMagicCrit;
+                float magicPowerValue =
+                    (magicAdd + genericAdd) *
+                    TotalMagicCrit;
 
-                magicPowerValue = (int)Math.Round(1000 * magicPowerValue);
+                magicPowerValue =
+                    (int)Math.Round(1000 * magicPowerValue);
 
                 max = magicPowerValue;
-            
 
                 if (damageToDeal > magicPowerValue)
                 {
                     damageToDeal = (int)magicPowerValue;
-
                 }
 
-                if (damageToDeal <= 0) {
+                if (damageToDeal <= 0)
+                {
                     damageToDeal = 1;
-
-
                 }
 
                 NPC.HitInfo hitInfo = new NPC.HitInfo()
@@ -318,26 +328,20 @@ namespace CAmod.Projectiles
                 };
 
                 target.StrikeNPC(hitInfo);
+
                 CombatText.NewText(
-                   target.Hitbox,
-                   new Color(255, 189, 25),
-                   damageToDeal,
-                   dramatic: false
-               );
+                    target.Hitbox,
+                    new Color(255, 189, 25),
+                    damageToDeal,
+                    dramatic: false
+                );
 
                 now = damageToDeal;
 
-
-                
                 if (owner != null && owner.active)
                 {
                     owner.addDPS(damageToDeal);
                 }
-
-               
-                
-
-
             }
         }
 
@@ -347,8 +351,12 @@ namespace CAmod.Projectiles
         public void IncreaseDotDamage(int Tick)
         {
             damagePerTick += Tick;
-            if (!DEV_MODE && damagePerTick > BALANCED_TICK_DAMAGE_CAP)
+
+            if (!DEV_MODE &&
+                damagePerTick > BALANCED_TICK_DAMAGE_CAP)
+            {
                 damagePerTick = BALANCED_TICK_DAMAGE_CAP;
+            }
         }
     }
 }

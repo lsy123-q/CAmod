@@ -2,8 +2,11 @@
 using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ParticleLibrary.Core.V3.Particles;
+using ParticleLibrary.Utilities;
 using System;
 using System.Collections.Generic;
+using CAmod.Particles;
 
 namespace CAmod.Projectiles
 {
@@ -23,11 +26,18 @@ namespace CAmod.Projectiles
             Projectile.friendly = false;
             Projectile.hostile = false;
         }
-        public override void DrawBehind(int index, List<int> behindNPCsAndTiles, List<int> behindNPCs,
-           List<int> behindProjectiles, List<int> overPlayers, List<int> overWiresUI)
+
+        public override void DrawBehind(
+            int index,
+            List<int> behindNPCsAndTiles,
+            List<int> behindNPCs,
+            List<int> behindProjectiles,
+            List<int> overPlayers,
+            List<int> overWiresUI)
         {
             overPlayers.Add(index);
         }
+
         public override bool PreDraw(ref Color lightColor)
         {
             int myIndex = (int)Projectile.ai[0];
@@ -51,10 +61,8 @@ namespace CAmod.Projectiles
                 if (p.owner != Projectile.owner)
                     continue;
 
-                if (p.type == Projectile.type &&
-    p.owner == Projectile.owner &&
-    (int)p.ai[0] == myIndex - 1 &&
-    p.ai[1] == Projectile.ai[1])
+                if ((int)p.ai[0] == myIndex - 1 &&
+                    p.ai[1] == Projectile.ai[1])
                 {
                     prev = p;
                     break;
@@ -64,8 +72,10 @@ namespace CAmod.Projectiles
             if (prev == null)
                 return false;
 
-            Texture2D tex = ModContent.Request<Texture2D>("CAmod/Projectiles/ChainBeam").Value;
-            // 체인 스프라이트를 로드한다
+            Texture2D tex =
+                ModContent.Request<Texture2D>(
+                    "CAmod/Projectiles/ChainBeam"
+                ).Value;
 
             Vector2 start = prev.Center;
             Vector2 end = Projectile.Center;
@@ -78,46 +88,93 @@ namespace CAmod.Projectiles
 
             dir.Normalize();
 
-            float rotation = dir.ToRotation() + MathHelper.PiOver2;
+            float rotation =
+                dir.ToRotation() + MathHelper.PiOver2;
 
             float step = tex.Width;
 
-            float alpha = Projectile.timeLeft / 30f;
+            float alpha =
+                Projectile.timeLeft / 30f;
+
             // 30프레임 동안 페이드아웃한다
-            float t = Projectile.timeLeft / 30f;
-            float alpha2 = MathHelper.Clamp(t, 0.25f, 1f);
-            Vector2 origin = tex.Size() / 2f;
+            float t =
+                Projectile.timeLeft / 30f;
+
+            float alpha2 =
+                MathHelper.Clamp(
+                    t,
+                    0.25f,
+                    1f
+                );
+
+            Vector2 origin =
+                tex.Size() / 2f;
 
             for (float i = 0; i <= length; i += step)
             {
-                Vector2 pos = start + dir * i;
-                if (Main.rand.NextBool(20)) // 약 16% 확률
+                Vector2 pos =
+                    start + dir * i;
+
+                // =========================================
+                // V3 파티클
+                // =========================================
+
+                if (Main.rand.NextBool(20))
                 {
-                    int dustType = Main.rand.NextBool() ? 244 : 246;
-                    // dust 타입을 244 또는 246 중 하나로 선택한다
+                    Vector2 vel =
+                        Main.rand.NextVector2Circular(
+                            2.0f,
+                            2.0f
+                        );
 
-                    Vector2 vel = Main.rand.NextVector2Circular(2.0f, 2.0f);
-                    // 랜덤 방향 속도를 만든다
+                    Color color =
+                        Main.rand.NextBool()
+                        ? new Color(255, 210, 80)
+                        : new Color(255, 230, 130);
 
-                    Dust d = Dust.NewDustPerfect(
-                        pos,
-                        dustType,
-                        vel,
-                        (int)(1f - alpha)*255
+                    float particleScale =
+                        Main.rand.NextFloat(
+                            0.75f,
+                            1.0f
+                        );
+
+                    float particleRotation =
+                        Main.rand.NextFloat(
+                            MathHelper.TwoPi
+                        );
+
+                    CosmicParticleSystem.Buffer.Create(
+                        new ParticleInfo(
+                            position: pos.ToNumerics(),
+                            velocity: vel.ToNumerics(),
+                            rotation: particleRotation,
+                            scale: new System.Numerics.Vector2(
+                                particleScale * 10f,
+                                particleScale * 10f
+                            ),
+                            depth: 1f,
+                            color: color,
+                            duration: 30
+                        )
                     );
-
-                    d.scale = Main.rand.NextFloat(0.75f, 1.0f);
-                    d.noGravity = true;
-                 
+                    
                 }
-                Vector2 scale = new Vector2(alpha, 1f);
-                // X는 유지하고 Y(두께)만 페이드아웃한다
+
+                // =========================================
+                // 체인 빔 본체
+                // =========================================
+
+                Vector2 scale =
+                    new Vector2(
+                        alpha,
+                        1f
+                    );
 
                 Main.spriteBatch.Draw(
                     tex,
                     pos - Main.screenPosition,
                     null,
-                    Color.White* alpha2,
+                    Color.White * alpha2,
                     rotation,
                     origin,
                     scale,

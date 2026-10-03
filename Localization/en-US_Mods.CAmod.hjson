@@ -182,8 +182,23 @@ Items: {
 	}
 
 	Aureola: {
-		Tooltip: ""
+		Tooltip:
+			'''
+			20% increased magic damage
+			10% increased magic critical strike chance
+			Increases maximum mana by 150
+			Reduces mana usage by 10%
+			Increases mana star pickup range
+			Automatically uses mana potions when needed
+			Magic projectile attacks restore mana equal to 10% of damage dealt over time
+			This effect's cooldown is reduced by your maximum mana.
+			'''
 		DisplayName: Aureola
+	}
+
+	LumenAegis: {
+		Tooltip: ""
+		DisplayName: Lumen Aegis
 	}
 }
 
@@ -285,6 +300,7 @@ Projectiles: {
 	ExoProj.DisplayName: Exo Proj
 	MaskingProjectile.DisplayName: Masking Projectile
 	RabbitDamageProjectile.DisplayName: Rabbit Damage Projectile
+	LumenAegisProjectile.DisplayName: Lumen Aegis Projectile
 }
 
 Configs: {

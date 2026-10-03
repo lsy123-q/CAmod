@@ -11,10 +11,9 @@
 using System;
 using System.Reflection;
 
+[assembly: System.Runtime.CompilerServices.IgnoresAccessChecksToAttribute("tModLoader")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("CAmod")]
-[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b8ae27c7f0a58739129d33064194975bbfb758da")]
 [assembly: System.Reflection.AssemblyProductAttribute("CAmod")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CAmod")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

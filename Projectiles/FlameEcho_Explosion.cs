@@ -3,6 +3,10 @@ using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
 using Terraria.ID;
 using System;
+using CAmod.Particles;
+
+using ParticleLibrary.Core.V3.Particles;
+using ParticleLibrary.Utilities;
 
 namespace CAmod.Projectiles
 {
@@ -25,11 +29,10 @@ namespace CAmod.Projectiles
         {
         }
 
-        
-
-        
-
-        public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+        public override void OnHitNPC(
+            NPC target,
+            NPC.HitInfo hit,
+            int damageDone)
         {
             int buffTime = 180;
 
@@ -37,48 +40,123 @@ namespace CAmod.Projectiles
             try
             {
                 Mod calamity = ModLoader.GetMod("CalamityMod");
+
                 if (calamity != null)
                 {
-                    ModBuff holyFlames = calamity.Find<ModBuff>("HolyFlames");
+                    ModBuff holyFlames =
+                        calamity.Find<ModBuff>("HolyFlames");
+
                     if (holyFlames != null)
-                        target.AddBuff(holyFlames.Type, buffTime);
+                        target.AddBuff(
+                            holyFlames.Type,
+                            buffTime
+                        );
                     else
-                        target.AddBuff(BuffID.OnFire, buffTime);
+                        target.AddBuff(
+                            BuffID.OnFire,
+                            buffTime
+                        );
                 }
                 else
                 {
-                    target.AddBuff(BuffID.OnFire, buffTime);
+                    target.AddBuff(
+                        BuffID.OnFire,
+                        buffTime
+                    );
                 }
             }
             catch
             {
-                target.AddBuff(BuffID.OnFire, buffTime);
+                target.AddBuff(
+                    BuffID.OnFire,
+                    buffTime
+                );
             }
 
-            // ===== 더스트 연출 =====
+            // ===== 파티클 연출 =====
+
             float min = 4f;
             float max = 8f;
 
-            Vector2 hitDir = new Vector2(Projectile.ai[0], Projectile.ai[1]);
+            Vector2 hitDir =
+                new Vector2(
+                    Projectile.ai[0],
+                    Projectile.ai[1]
+                );
+
             if (hitDir == Vector2.Zero)
             {
                 hitDir = Main.rand.NextVector2Unit();
+
                 min = 2f;
                 max = 4f;
             }
+
             hitDir.Normalize();
 
-            int dustCount = 10;
-            for (int d = 0; d < dustCount; d++)
-            {
-                Vector2 vel = hitDir * Main.rand.NextFloat(min, max) + Main.rand.NextVector2Circular(2f, 2f);
-                int dustType = Main.rand.NextBool() ? 244 : 246;
+            int particleCount = 10;
 
-                int id = Dust.NewDust(target.Hitbox.TopLeft(), target.Hitbox.Width, target.Hitbox.Height, dustType, vel.X, vel.Y, 0, default, 1f);
-                Main.dust[id].noGravity = true;
-                Main.dust[id].scale = Main.rand.NextFloat(0.9f, 1.35f);
-                Main.dust[id].fadeIn = 1.2f;
-                Main.dust[id].rotation = Main.rand.NextFloat(MathHelper.TwoPi);
+            for (int i = 0; i < particleCount; i++)
+            {
+                // 기존 Dust와 동일하게 타격 방향을 기준으로 속도를 생성한다
+                Vector2 velocity =
+                    hitDir *
+                    Main.rand.NextFloat(min, max);
+
+                // 기존 랜덤 분산을 유지한다
+                velocity +=
+                    Main.rand.NextVector2Circular(
+                        2f,
+                        2f
+                    );
+
+                // 기존 Dust 크기 범위를 유지한다
+                float size =
+                    Main.rand.NextFloat(
+                        0.9f,
+                        1.35f
+                    );
+
+                // 기존 Dust의 랜덤 회전을 유지한다
+                float rotation =
+                    Main.rand.NextFloat(
+                        MathHelper.TwoPi
+                    );
+
+                // 기존 Dust의 위치 범위와 동일하게 타겟 히트박스 내부에서 생성한다
+                Vector2 position =
+    target.Hitbox.TopLeft() +
+    new Vector2(
+        Main.rand.NextFloat(target.Hitbox.Width),
+        Main.rand.NextFloat(target.Hitbox.Height)
+    );
+
+                CosmicParticleSystem.Buffer.Create(
+                    new ParticleInfo(
+                        position:
+                            position.ToNumerics(),
+
+                        velocity:
+                            velocity.ToNumerics(),
+
+                        rotation:
+                            rotation,
+
+                        scale:
+                            new System.Numerics.Vector2(
+                                size * 10f,
+                                size * 10f
+                            ),
+
+                        depth: 1f,
+
+                        color:
+                            Color.White,
+
+                        duration: 60
+                    )
+                );
+                
             }
         }
     }

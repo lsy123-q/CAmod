@@ -11,6 +11,10 @@ using System.Linq;
 using CAmod.Items;
 using CAmod.Buffs;
 using System.Reflection;
+using CAmod.Particles;
+
+using ParticleLibrary.Core.V3.Particles;
+using ParticleLibrary.Utilities;
 namespace CAmod.Players
 {
     public class DimGatePlayer : ModPlayer
@@ -492,6 +496,7 @@ namespace CAmod.Players
             }
 
             int count = (int)(20f * (1f - (speed / 60f)));
+
             if (count == 0)
             {
                 count = 1;
@@ -499,52 +504,59 @@ namespace CAmod.Players
 
             // 반지름 음수 방지한다
             float t = MathHelper.Clamp(speed / 20f, 0f, 1f);
-            float radius = 130 * (1f - t);
+            float radius = 130f * (1f - t);
 
-            float size = ((speed + 100f) / 100f) * 2;
+            float size = ((speed + 100f) / 100f) * 2f;
 
-            // =========================
             // 20프레임 동안 180도 회전한다
-            // =========================
-            float rotation = startDustRandomRot + MathHelper.TwoPi * t * startDustDir;
-
+            float rotation = startDustRandomRot +
+                             MathHelper.TwoPi * t * startDustDir;
 
             for (int i = 0; i < count; i++)
             {
                 float baseRot = MathHelper.TwoPi * i / count;
 
-                // 1. 먼저 "고정된 아스테로이드 형태" 만든다
+                // 고정된 아스테로이드 형태를 만든다
                 float x = (float)Math.Pow(Math.Cos(baseRot), 3);
                 float y = (float)Math.Pow(Math.Sin(baseRot), 3);
 
                 Vector2 offset = new Vector2(x, y) * radius;
 
-                // 2. 그 결과를 통째로 회전시킨다
-                offset = offset.RotatedBy(rotation); // 전체를 한 번 더 돌린다
-
-                int type = DustID.FireworksRGB;
+                // 생성 위치 전체를 회전시킨다
+                offset = offset.RotatedBy(rotation);
 
                 Color color = Main.rand.NextBool()
                     ? new Color(170, 80, 255)
                     : new Color(80, 160, 255);
 
-                Vector2 vel = offset.SafeNormalize(Vector2.Zero) * -5f * (1f - t); // 안쪽으로 수축한다
+                // 기존처럼 중심 방향으로 수축한다
+                Vector2 velocity =
+                    offset.SafeNormalize(Vector2.Zero) *
+                    -5f *
+                    (1f - t);
 
-                Dust d = Dust.NewDustPerfect(
-                    pos + offset,
-                    type,
-                    vel,
-                    150,
-                    default,
-                    1.0f * size
+               
+               
+
+                // 기존 Dust의 랜덤 회전을 그대로 사용한다
+                float particleRotation =
+                    Main.rand.NextFloat(MathHelper.TwoPi);
+
+                CosmicParticleSystem.Buffer.Create(
+                    new ParticleInfo(
+                        position: (pos + offset).ToNumerics(),
+                        velocity: velocity.ToNumerics(),
+                        rotation: particleRotation,
+                        scale: new System.Numerics.Vector2(
+                            size * 10f,
+                            size * 10f
+                        ),
+                        depth: 1f,
+                        color: color,
+                        duration: 180
+                    )
                 );
-
-                d.scale *= 0.7f;
-                d.alpha *= 1;
-                d.color = color;
-                d.velocity.Y /= 1.125f;
-                d.rotation = Main.rand.NextFloat(MathHelper.TwoPi);
-                d.noGravity = true;
+                
             }
         }
 
@@ -558,68 +570,64 @@ namespace CAmod.Players
 
             int count = 20;
 
-            // =========================
             // 0~1 정규화한다
-            // =========================
             float t = MathHelper.Clamp(speed / 10f, 0f, 1f);
 
-            // =========================
-            // 발산이므로 반지름 증가
-            // =========================
-            float radius = 45 * t;
+            // 발산하므로 반지름을 증가시킨다
+            float radius = 45f * t;
 
-            float size = ((speed + 100f) / 100f) * 2;
+            float size = ((speed + 100f) / 100f) * 2f;
 
-            // =========================
-            // 회전 (시작과 동일하게 180도)
-            // =========================
-            float rotation = endDustRandomRot + MathHelper.Pi * t * endDustDir;
+            // 시작과 동일하게 180도 회전한다
+            float rotation =
+                endDustRandomRot +
+                MathHelper.Pi * t * endDustDir;
 
-            float lastspeed = MathHelper.Lerp(2.0f, 2.5f, t);
+            float lastSpeed =
+                MathHelper.Lerp(2.0f, 2.5f, t);
 
             for (int i = 0; i < count; i++)
             {
                 float baseRot = MathHelper.TwoPi * i / count;
 
-                // =========================
-                // 아스테로이드 형태 만든다
-                // =========================
+                // 아스테로이드 형태를 만든다
                 float x = (float)Math.Pow(Math.Cos(baseRot), 3);
                 float y = (float)Math.Pow(Math.Sin(baseRot), 3);
 
                 Vector2 offset = new Vector2(x, y) * radius;
 
-                // =========================
-                // 전체 회전 적용한다
-                // =========================
+                // 전체 회전을 적용한다
                 offset = offset.RotatedBy(rotation);
-
-                int type = DustID.FireworksRGB;
 
                 Color color = Main.rand.NextBool()
                     ? new Color(170, 80, 255)
                     : new Color(80, 160, 255);
 
-                // =========================
-                // 바깥으로 발산한다
-                // =========================
-                Vector2 vel = offset.SafeNormalize(Vector2.Zero) * lastspeed;
+                // 바깥쪽으로 발산한다
+                Vector2 velocity =
+                    offset.SafeNormalize(Vector2.Zero) *
+                    lastSpeed;
 
-                Dust d = Dust.NewDustPerfect(
-                    pos + offset, // 위치도 퍼지게 바꾼다
-                    type,
-                    vel,
-                    150,
-                    default,
-                    1f * size
+                
+
+                float particleRotation =
+                    Main.rand.NextFloat(MathHelper.TwoPi);
+
+                CosmicParticleSystem.Buffer.Create(
+                    new ParticleInfo(
+                        position: (pos + offset).ToNumerics(),
+                        velocity: velocity.ToNumerics(),
+                        rotation: particleRotation,
+                        scale: new System.Numerics.Vector2(
+                            size * 10f,
+                            size * 10f
+                        ),
+                        depth: 1f,
+                        color: color,
+                        duration: 180
+                    )
                 );
-
-                d.scale *= 0.7f;
-                d.alpha *= 2;
-                d.color = color;
-                d.velocity.Y /= 1.125f;
-                d.rotation = Main.rand.NextFloat(MathHelper.TwoPi);
-                d.noGravity = true;
+               
             }
         }
 

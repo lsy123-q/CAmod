@@ -2,18 +2,21 @@
 using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
 using Terraria.ID;
-using System.Collections.Generic;
 using Terraria.Audio;
-using System;
 using Terraria.DataStructures;
+using System;
+using System.Collections.Generic;
+using ParticleLibrary.Core.V3.Particles;
+using ParticleLibrary.Utilities;
+using CAmod.Particles;
 
 namespace CAmod.Projectiles
 {
     public class FlameEcho_Controller : ModProjectile
     {
-        private const int SearchInterval = 6;   // 6프레임마다 탐색한다
-        private const int MaxChainCount = 15;   // 최대 전이 횟수다
-        private const float SearchRange = 1250f; // 탐색 반경이다
+        private const int SearchInterval = 6;
+        private const int MaxChainCount = 15;
+        private const float SearchRange = 1250f;
 
         private int lockedTarget = -1;
         private int frameTimer = 0;
@@ -22,7 +25,6 @@ namespace CAmod.Projectiles
         private const float AltSearchRange = 125f;
 
         private Vector2 previousPos;
-        // 이전 전이 위치를 저장한다
 
         private int chainIndex = 0;
 
@@ -31,13 +33,10 @@ namespace CAmod.Projectiles
         private int chainGroup;
 
         private int totalHitCount = 0;
-        // 전체 타격 판정 발생 횟수다
 
-        // 전이 대상으로 이미 사용된 NPC를 저장한다
         public override void OnSpawn(IEntitySource source)
         {
             chainGroup = Main.rand.Next();
-            // 시전마다 고유 체인 그룹을 생성한다
 
             Projectile.NewProjectile(
                 Projectile.GetSource_FromThis(),
@@ -50,10 +49,8 @@ namespace CAmod.Projectiles
                 chainIndex,
                 chainGroup
             );
-            // 첫 체인 노드를 생성한다
 
             chainIndex++;
-            // 체인 인덱스를 증가시킨다
         }
 
         public override void SetDefaults()
@@ -79,21 +76,18 @@ namespace CAmod.Projectiles
                 return;
 
             frameTimer = 0;
-            // 탐색 주기가 되었으므로 타이머를 초기화한다
 
             if (totalHitCount >= 20)
             {
                 Projectile.Kill();
                 return;
             }
-            // 타격 횟수 제한 도달시 다음 전이를 중단한다
 
             if (chainCount >= MaxChainCount)
             {
                 Projectile.Kill();
                 return;
             }
-            // 최대 전이 횟수에 도달하면 종료한다
 
             Vector2 dir = Vector2.Zero;
 
@@ -104,12 +98,10 @@ namespace CAmod.Projectiles
                 Projectile.Kill();
                 return;
             }
-            // 더 이상 타겟이 없으면 종료한다
 
             NPC npc = Main.npc[nextTarget];
 
             previousPos = Projectile.Center;
-            // 현재 위치를 이전 위치로 저장한다
 
             hitCache.Add(nextTarget);
 
@@ -117,10 +109,8 @@ namespace CAmod.Projectiles
 
             Projectile.damage =
                 (int)(Projectile.damage * 0.975f);
-            // 전이될 때마다 데미지를 감소시킨다
 
             Projectile.Center = npc.Center;
-            // 컨트롤러 위치를 타겟 NPC 위치로 이동시킨다
 
             Projectile.NewProjectile(
                 Projectile.GetSource_FromThis(),
@@ -133,12 +123,9 @@ namespace CAmod.Projectiles
                 chainIndex,
                 chainGroup
             );
-            // 전이 위치에 체인 노드 투사체를 생성한다
 
             chainIndex++;
-            // 체인 인덱스를 증가시킨다
 
-            // 전이 경로를 Dust 선분으로 그린다
             Vector2 chainDir = npc.Center - previousPos;
 
             if (chainDir.LengthSquared() > 100f)
@@ -151,6 +138,10 @@ namespace CAmod.Projectiles
                 npc.Center
             );
 
+            // =========================================
+            // V3 파티클 아스테로이드 폭발
+            // =========================================
+
             for (int i2 = 0; i2 < 75; i2++)
             {
                 float offsetAngle =
@@ -158,12 +149,14 @@ namespace CAmod.Projectiles
 
                 int dustType = Main.rand.Next(2);
 
-                if (dustType == 0)
-                    dustType = 244;
-                else
-                    dustType = 246;
+                // 기존 Dust 타입 선택은 더 이상 필요 없지만
+                // 색상 선택용 랜덤성을 유지한다.
+                Color color =
+                    dustType == 0
+                    ? new Color(255, 210, 80)
+                    : new Color(255, 230, 130);
 
-                // asteroid(둥근 4엽) 파라메트릭 곡선이다
+                // 아스테로이드(4엽) 형태
                 float unitOffsetX =
                     (float)Math.Pow(
                         Math.Cos(offsetAngle),
@@ -178,39 +171,43 @@ namespace CAmod.Projectiles
 
                 float dir2 = chainDir.ToRotation();
 
-                Vector2 puffDustVelocity =
+                Vector2 puffVelocity =
                     new Vector2(
                         unitOffsetX,
                         unitOffsetY
                     ).RotatedBy(dir2) * 5f;
-                // 벡터 자체를 커서 방향으로 회전시킨다
 
-                Dust gold = Dust.NewDustPerfect(
-                    npc.Center,
-                    dustType,
-                    puffDustVelocity
-                );
+                puffVelocity *= 0.65f;
 
-                gold.scale = 1.6f;
-                gold.fadeIn = 1.2f;
-                gold.noGravity = true;
-                gold.velocity *= 0.65f;
-                gold.rotation =
+                float particleRotation =
                     Main.rand.NextFloat(
                         MathHelper.TwoPi
                     );
-                // 골드 코인 더스트로 회전된 아스테로이드 연출을 만든다
+
+                CosmicParticleSystem.Buffer.Create(
+                    new ParticleInfo(
+                        position: npc.Center.ToNumerics(),
+                        velocity: puffVelocity.ToNumerics(),
+                        rotation: particleRotation,
+                        scale: new System.Numerics.Vector2(
+                            1.6f * 10f,
+                            1.6f * 10f
+                        ),
+                        depth: 1f,
+                        color: color,
+                        duration: 60
+                    )
+                );
+                
             }
 
             SpawnExplosion(npc, chainDir);
-            // 전이 대상에게 폭발 투사체를 소환한다
 
             SpawnExplosionAlongLine(
                 previousPos,
                 npc.Center,
                 chainDir
             );
-            // 전이 선분에 닿은 모든 NPC에게 폭발 투사체를 소환한다
         }
 
         private int FindNextTarget()
@@ -223,23 +220,18 @@ namespace CAmod.Projectiles
             bool isFirstChain =
                 chainCount == 0;
 
-            // ===== 기준점 =====
             Vector2 origin =
                 isFirstChain
                 ? Main.MouseWorld
                 : Projectile.Center;
-            // 첫 전이는 좌/우 동일하게 마우스 기준이다
 
-            // ===== 전이 반경 =====
             float range;
 
             if (isFirstChain || !altMode)
                 range = SearchRange;
             else
                 range = AltSearchRange;
-            // 우클릭 2번째 전이부터만 반경이 줄어든다
 
-            // ===== 거리 기준 =====
             float bestDist;
 
             if (isFirstChain || altMode)
@@ -256,13 +248,10 @@ namespace CAmod.Projectiles
 
                 if (n.catchItem > 0)
                     continue;
-                // 크리터는 제외한다
 
                 if (n.friendly || n.dontTakeDamage)
                     continue;
 
-                // 첫 전이는 좌/우 동일하게 중복 방지한다
-                // 이후 전이는 좌클릭만 중복 방지한다
                 if ((!altMode || isFirstChain)
                     && hitCache.Contains(i))
                     continue;
@@ -270,7 +259,6 @@ namespace CAmod.Projectiles
                 Player player =
                     Main.player[Projectile.owner];
 
-                // 플레이어 기준 1000 이내가 아니면 제외한다
                 if (Vector2.Distance(
                     player.Center,
                     n.Center
@@ -298,7 +286,7 @@ namespace CAmod.Projectiles
 
                 if (isFirstChain || altMode)
                 {
-                    // 최근접을 고른다
+                    // 최근접
                     if (dist >= bestDist)
                         continue;
 
@@ -306,7 +294,7 @@ namespace CAmod.Projectiles
                 }
                 else
                 {
-                    // 좌클릭 2번째 전이부터 최원을 고른다
+                    // 최원
                     if (dist <= bestDist)
                         continue;
 
@@ -325,7 +313,6 @@ namespace CAmod.Projectiles
         )
         {
             totalHitCount++;
-            // 폭발 판정 발생 횟수를 증가시킨다
 
             Projectile.NewProjectile(
                 Projectile.GetSource_FromThis(),
@@ -338,7 +325,6 @@ namespace CAmod.Projectiles
                 dir.X,
                 dir.Y
             );
-            // ai[0], ai[1]에 전이 방향을 전달한다
         }
 
         private void SpawnExplosionAlongLine(
@@ -348,7 +334,6 @@ namespace CAmod.Projectiles
         )
         {
             float lineRadius = 16f;
-            // 선분 판정 반경이다
 
             for (int i = 0; i < Main.maxNPCs; i++)
             {
@@ -362,7 +347,6 @@ namespace CAmod.Projectiles
 
                 if (hitCache.Contains(i))
                     continue;
-                // 전이 대상은 이미 처리했으므로 제외한다
 
                 float dist =
                     DistancePointToLine(
@@ -374,11 +358,7 @@ namespace CAmod.Projectiles
                 if (dist > lineRadius)
                     continue;
 
-               
-                // 최대 타격 횟수 도달시 추가 폭발 생성을 중단한다
-
                 SpawnExplosion(n, dir);
-                // 선분에 닿은 NPC 위치에 폭발 투사체를 소환한다
             }
         }
 
@@ -421,7 +401,6 @@ namespace CAmod.Projectiles
                 point,
                 projection
             );
-            // 점과 선분 사이의 최소 거리를 계산한다
         }
     }
 }

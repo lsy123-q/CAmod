@@ -223,7 +223,7 @@ namespace CAmod.Players
             int damageStack =
                 System.Math.Max(
                     1,
-                    damageDone / 100
+                    damageDone / 300
                 );
 
             // 최종 스택 계산한다

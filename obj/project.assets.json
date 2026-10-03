@@ -1,11 +1,214 @@
 {
   "version": 3,
   "targets": {
-    "net8.0": {}
+    "net8.0": {
+      "Krafs.Publicizer/2.3.0": {
+        "type": "package",
+        "contentFiles": {
+          "contentfiles/cs/any/Publicizer/IgnoresAccessChecksToAttribute.cs": {
+            "buildAction": "Compile",
+            "codeLanguage": "cs",
+            "copyToOutput": false
+          }
+        },
+        "build": {
+          "build/Krafs.Publicizer.props": {},
+          "build/Krafs.Publicizer.targets": {}
+        }
+      },
+      "tModLoader/2026.6.3.6": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Basic.Reference.Assemblies.Net80.dll": {},
+          "lib/net8.0/CsvHelper.dll": {},
+          "lib/net8.0/DotNetZip.dll": {},
+          "lib/net8.0/FNA.dll": {},
+          "lib/net8.0/Hjson.dll": {},
+          "lib/net8.0/Humanizer.dll": {},
+          "lib/net8.0/JetBrains.Annotations.dll": {},
+          "lib/net8.0/MP3Sharp.dll": {},
+          "lib/net8.0/Microsoft.Build.Framework.dll": {},
+          "lib/net8.0/Microsoft.Build.Locator.dll": {},
+          "lib/net8.0/Microsoft.Build.Tasks.Core.dll": {},
+          "lib/net8.0/Microsoft.Build.Utilities.Core.dll": {},
+          "lib/net8.0/Microsoft.Build.dll": {},
+          "lib/net8.0/Microsoft.CodeAnalysis.CSharp.Workspaces.dll": {},
+          "lib/net8.0/Microsoft.CodeAnalysis.CSharp.dll": {},
+          "lib/net8.0/Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll": {},
+          "lib/net8.0/Microsoft.CodeAnalysis.FlowAnalysis.Utilities.dll": {},
+          "lib/net8.0/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll": {},
+          "lib/net8.0/Microsoft.CodeAnalysis.Workspaces.MSBuild.dll": {},
+          "lib/net8.0/Microsoft.CodeAnalysis.Workspaces.dll": {},
+          "lib/net8.0/Microsoft.CodeAnalysis.dll": {},
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {},
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.dll": {},
+          "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll": {},
+          "lib/net8.0/Microsoft.Extensions.Logging.dll": {},
+          "lib/net8.0/Microsoft.Extensions.Options.dll": {},
+          "lib/net8.0/Microsoft.Extensions.Primitives.dll": {},
+          "lib/net8.0/Microsoft.NET.StringTools.dll": {},
+          "lib/net8.0/Microsoft.VisualStudio.Setup.Configuration.Interop.dll": {},
+          "lib/net8.0/Mono.Cecil.Mdb.dll": {},
+          "lib/net8.0/Mono.Cecil.Pdb.dll": {},
+          "lib/net8.0/Mono.Cecil.Rocks.dll": {},
+          "lib/net8.0/Mono.Cecil.dll": {},
+          "lib/net8.0/MonoMod.Backports.dll": {},
+          "lib/net8.0/MonoMod.Core.dll": {},
+          "lib/net8.0/MonoMod.ILHelpers.dll": {},
+          "lib/net8.0/MonoMod.Iced.dll": {},
+          "lib/net8.0/MonoMod.RuntimeDetour.dll": {},
+          "lib/net8.0/MonoMod.Utils.dll": {},
+          "lib/net8.0/NVorbis.dll": {},
+          "lib/net8.0/Newtonsoft.Json.dll": {},
+          "lib/net8.0/RailSDK.Net.dll": {},
+          "lib/net8.0/ReLogic.dll": {},
+          "lib/net8.0/Steamworks.NET.dll": {},
+          "lib/net8.0/SteelSeriesEngineWrapper.dll": {},
+          "lib/net8.0/Stubble.Core.dll": {},
+          "lib/net8.0/System.CodeDom.dll": {},
+          "lib/net8.0/System.Collections.Immutable.dll": {},
+          "lib/net8.0/System.CommandLine.dll": {},
+          "lib/net8.0/System.Composition.AttributedModel.dll": {},
+          "lib/net8.0/System.Composition.Convention.dll": {},
+          "lib/net8.0/System.Composition.Hosting.dll": {},
+          "lib/net8.0/System.Composition.Runtime.dll": {},
+          "lib/net8.0/System.Composition.TypedParts.dll": {},
+          "lib/net8.0/System.Configuration.ConfigurationManager.dll": {},
+          "lib/net8.0/System.Diagnostics.EventLog.dll": {},
+          "lib/net8.0/System.IO.Pipelines.dll": {},
+          "lib/net8.0/System.Reflection.MetadataLoadContext.dll": {},
+          "lib/net8.0/System.Resources.Extensions.dll": {},
+          "lib/net8.0/System.Security.Cryptography.Pkcs.dll": {},
+          "lib/net8.0/System.Security.Cryptography.ProtectedData.dll": {},
+          "lib/net8.0/System.Security.Cryptography.Xml.dll": {},
+          "lib/net8.0/System.Security.Permissions.dll": {},
+          "lib/net8.0/System.Text.Encodings.Web.dll": {},
+          "lib/net8.0/System.Text.Json.dll": {},
+          "lib/net8.0/System.Windows.Extensions.dll": {},
+          "lib/net8.0/TerrariaHooks.dll": {},
+          "lib/net8.0/UtfUnknown.dll": {},
+          "lib/net8.0/log4net.dll": {},
+          "lib/net8.0/tModLoader.dll": {},
+          "lib/net8.0/tModPorter.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/_._": {}
+        },
+        "build": {
+          "build/tModLoader.targets": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "Krafs.Publicizer/2.3.0": {
+      "sha512": "DjktTgctwxUMhMkWKrRECer3LR1lHzanCOlE4mpinAiY8SfWJq4DG/QitP5h1A+WBjyWHzQSOG+204i3VpO1FA==",
+      "type": "package",
+      "path": "krafs.publicizer/2.3.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "build/Krafs.Publicizer.props",
+        "build/Krafs.Publicizer.targets",
+        "build/net472/Publicizer.dll",
+        "build/net472/dnlib.dll",
+        "contentfiles/cs/any/Publicizer/IgnoresAccessChecksToAttribute.cs",
+        "icon.png",
+        "krafs.publicizer.2.3.0.nupkg.sha512",
+        "krafs.publicizer.nuspec"
+      ]
+    },
+    "tModLoader/2026.6.3.6": {
+      "sha512": "1zduniApJ2lLcyZpKIbD9Y8cA9kjsxmkYVAtNp+4PpK3xzBD0ZkrH1Xvpt6/humiHIfk2DE0JSqkfzWRoaExXA==",
+      "type": "package",
+      "path": "tmodloader/2026.6.3.6",
+      "files": [
+        ".nupkg.metadata",
+        "analyzers/dotnet/cs/tModCodeAssist.CodeFixes.dll",
+        "analyzers/dotnet/cs/tModCodeAssist.dll",
+        "build/tModLoader.targets",
+        "lib/net8.0/Basic.Reference.Assemblies.Net80.dll",
+        "lib/net8.0/CsvHelper.dll",
+        "lib/net8.0/DotNetZip.dll",
+        "lib/net8.0/FNA.dll",
+        "lib/net8.0/Hjson.dll",
+        "lib/net8.0/Humanizer.dll",
+        "lib/net8.0/JetBrains.Annotations.dll",
+        "lib/net8.0/MP3Sharp.dll",
+        "lib/net8.0/Microsoft.Build.Framework.dll",
+        "lib/net8.0/Microsoft.Build.Locator.dll",
+        "lib/net8.0/Microsoft.Build.Tasks.Core.dll",
+        "lib/net8.0/Microsoft.Build.Utilities.Core.dll",
+        "lib/net8.0/Microsoft.Build.dll",
+        "lib/net8.0/Microsoft.CodeAnalysis.CSharp.Workspaces.dll",
+        "lib/net8.0/Microsoft.CodeAnalysis.CSharp.dll",
+        "lib/net8.0/Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll",
+        "lib/net8.0/Microsoft.CodeAnalysis.FlowAnalysis.Utilities.dll",
+        "lib/net8.0/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll",
+        "lib/net8.0/Microsoft.CodeAnalysis.Workspaces.MSBuild.dll",
+        "lib/net8.0/Microsoft.CodeAnalysis.Workspaces.dll",
+        "lib/net8.0/Microsoft.CodeAnalysis.dll",
+        "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "lib/net8.0/Microsoft.Extensions.DependencyInjection.dll",
+        "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll",
+        "lib/net8.0/Microsoft.Extensions.Logging.dll",
+        "lib/net8.0/Microsoft.Extensions.Options.dll",
+        "lib/net8.0/Microsoft.Extensions.Primitives.dll",
+        "lib/net8.0/Microsoft.NET.StringTools.dll",
+        "lib/net8.0/Microsoft.VisualStudio.Setup.Configuration.Interop.dll",
+        "lib/net8.0/Mono.Cecil.Mdb.dll",
+        "lib/net8.0/Mono.Cecil.Pdb.dll",
+        "lib/net8.0/Mono.Cecil.Rocks.dll",
+        "lib/net8.0/Mono.Cecil.dll",
+        "lib/net8.0/MonoMod.Backports.dll",
+        "lib/net8.0/MonoMod.Core.dll",
+        "lib/net8.0/MonoMod.ILHelpers.dll",
+        "lib/net8.0/MonoMod.Iced.dll",
+        "lib/net8.0/MonoMod.RuntimeDetour.dll",
+        "lib/net8.0/MonoMod.Utils.dll",
+        "lib/net8.0/NVorbis.dll",
+        "lib/net8.0/Newtonsoft.Json.dll",
+        "lib/net8.0/RailSDK.Net.dll",
+        "lib/net8.0/ReLogic.dll",
+        "lib/net8.0/Steamworks.NET.dll",
+        "lib/net8.0/SteelSeriesEngineWrapper.dll",
+        "lib/net8.0/Stubble.Core.dll",
+        "lib/net8.0/System.CodeDom.dll",
+        "lib/net8.0/System.Collections.Immutable.dll",
+        "lib/net8.0/System.CommandLine.dll",
+        "lib/net8.0/System.Composition.AttributedModel.dll",
+        "lib/net8.0/System.Composition.Convention.dll",
+        "lib/net8.0/System.Composition.Hosting.dll",
+        "lib/net8.0/System.Composition.Runtime.dll",
+        "lib/net8.0/System.Composition.TypedParts.dll",
+        "lib/net8.0/System.Configuration.ConfigurationManager.dll",
+        "lib/net8.0/System.Diagnostics.EventLog.dll",
+        "lib/net8.0/System.IO.Pipelines.dll",
+        "lib/net8.0/System.Reflection.MetadataLoadContext.dll",
+        "lib/net8.0/System.Resources.Extensions.dll",
+        "lib/net8.0/System.Security.Cryptography.Pkcs.dll",
+        "lib/net8.0/System.Security.Cryptography.ProtectedData.dll",
+        "lib/net8.0/System.Security.Cryptography.Xml.dll",
+        "lib/net8.0/System.Security.Permissions.dll",
+        "lib/net8.0/System.Text.Encodings.Web.dll",
+        "lib/net8.0/System.Text.Json.dll",
+        "lib/net8.0/System.Windows.Extensions.dll",
+        "lib/net8.0/TerrariaHooks.dll",
+        "lib/net8.0/UtfUnknown.dll",
+        "lib/net8.0/log4net.dll",
+        "lib/net8.0/tModLoader.dll",
+        "lib/net8.0/tModPorter.dll",
+        "tmodloader.2026.6.3.6.nupkg.sha512",
+        "tmodloader.nuspec"
+      ]
+    }
+  },
   "projectFileDependencyGroups": {
-    "net8.0": []
+    "net8.0": [
+      "Krafs.Publicizer >= 2.3.0",
+      "tModLoader >= 2026.6.3.6"
+    ]
   },
   "packageFolders": {
     "C:\\Users\\qufau\\.nuget\\packages\\": {}
@@ -28,6 +231,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Users\\qufau\\AppData\\Roaming\\tml-build\\feed\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -50,6 +254,20 @@
     "frameworks": {
       "net8.0": {
         "targetAlias": "net8.0",
+        "dependencies": {
+          "Krafs.Publicizer": {
+            "include": "Compile, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[2.3.0, )"
+          },
+          "tModLoader": {
+            "include": "Compile, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[2026.6.3.6, )"
+          }
+        },
         "imports": [
           "net461",
           "net462",

@@ -102,7 +102,7 @@ namespace CAmod.Players
 
             int dustCount = Math.Max(1, (int)dustAmount); // 최소 1개는 생성한다
             float radius = 50f * Main.rand.NextFloat(0.75f, 1.25f); // 스톡이 많을수록 원형 소환 반지름을 증가시킨다
-            float dustScale = 0.8f; // 스톡이 많을수록 Dust 크기를 증가시킨다
+            float dustScale = 1.2f; // 스톡이 많을수록 Dust 크기를 증가시킨다
             float moveSpeed = 2.5f * Main.rand.NextFloat(0.75f, 1.25f); // 스톡이 많을수록 플레이어 쪽 이동 속도를 증가시킨다
 
             for (int i = 0; i < dustCount; i++)
@@ -140,6 +140,11 @@ namespace CAmod.Players
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
+
+
+            if (!aureola)
+                return;
+
             if (ModLoader.TryGetMod("CalamityMod", out Mod calamity))
             {
                 try
@@ -177,7 +182,7 @@ namespace CAmod.Players
             if (aureolastoredMana > Player.statManaMax2)
                 aureolastoredMana = Player.statManaMax2;
 
-            aureolarestoreCooldown = (aureolastoredMana / (aureolahighestObservedManaRegen/25f))*60f;
+            aureolarestoreCooldown = (aureolastoredMana / (aureolahighestObservedManaRegen/10f))*60f;
 
             // 600 20 30
         }
