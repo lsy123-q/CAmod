@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -10,7 +10,6 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using CAmod.Systems;
 using CAmod.NPCs;
-using System.Reflection;
 
 namespace CAmod.Players
 {
@@ -25,7 +24,6 @@ namespace CAmod.Players
         public bool structureActive = false;
         public int evaluationTimer = 0;
         public int sensorNPCIndex = -1;
-        private static FieldInfo _chaliceBufferField;
 
         // 적응 관련 스택
         public Dictionary<int, int> adaptStack = new();
@@ -43,7 +41,6 @@ namespace CAmod.Players
         // 보너스 최대 체력
         public int bonusMaxLife = 0;
 
-        private static Type _calPlayerType;
 
         public static readonly Color[] ExoPalette = new Color[]
         {
@@ -320,61 +317,9 @@ namespace CAmod.Players
 
                 if (bufferSubtrahend > 0)
                 {
-                    try
-                    {
-                        // CalamityPlayer 타입을 문자열로 찾는다
-                        if (_calPlayerType == null)
-                        {
-                            if (ModLoader.TryGetMod("CalamityMod", out Mod calamity))
-                            {
-                                _calPlayerType =
-                                    calamity.Code.GetType(
-                                        "CalamityMod.CalPlayer.CalamityPlayer"
-                                    );
-                            }
-                        }
-
-                        if (_calPlayerType != null)
-                        {
-                            // Chalice 버퍼 필드를 한 번만 찾아 저장한다
-                            if (_chaliceBufferField == null)
-                            {
-                                _chaliceBufferField =
-                                    _calPlayerType.GetField(
-                                        "chaliceBleedoutBuffer",
-                                        BindingFlags.Instance |
-                                        BindingFlags.Public
-                                    );
-                            }
-
-                            // 현재 플레이어의 CalamityPlayer를 찾는다
-                            foreach (var mp in Player.ModPlayers)
-                            {
-                                if (mp.GetType() == _calPlayerType)
-                                {
-                                    double currentBuffer =
-                                        (double)_chaliceBufferField.GetValue(mp);
-
-                                    double newBuffer =
-                                        Math.Max(
-                                            0,
-                                            currentBuffer - bufferSubtrahend
-                                        );
-
-                                    _chaliceBufferField.SetValue(
-                                        mp,
-                                        newBuffer
-                                    );
-
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // 오류가 발생하면 아무 처리도 하지 않는다
-                    }
+                    var calPlayer = Player.GetModPlayer<global::CalamityMod.CalPlayer.CalamityPlayer>();
+                    calPlayer.chaliceBleedoutBuffer = Math.Max(
+                        0D, calPlayer.chaliceBleedoutBuffer - bufferSubtrahend);
                 }
             }
         }

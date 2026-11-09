@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -20,8 +20,18 @@ namespace CAmod.Globals
         private static int dustTimer = 0;
         // 1초 타이머이다
 
+        public override void OnHitNPC(Projectile projectile, NPC target, NPC.HitInfo hit, int damageDone)
+        {
+            if (projectile.owner < 0 || projectile.owner >= Main.maxPlayers
+                || projectile.owner != Main.myPlayer)
+                return;
+            Main.player[projectile.owner].GetModPlayer<PyromancerPlayer>().ApplyBrand(target, hit, damageDone);
+        }
+
         public override void AI(Projectile projectile)
         {
+            if (Main.dedServ || projectile.owner < 0 || projectile.owner >= Main.maxPlayers)
+                return;
             Player player = Main.player[projectile.owner];
             var mp = player.GetModPlayer<PyromancerPlayer>();
 

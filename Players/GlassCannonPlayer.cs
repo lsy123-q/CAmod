@@ -1,4 +1,4 @@
-﻿using Terraria;
+using Terraria;
 using Terraria.ModLoader;
 using CAmod.Projectiles;
 using Terraria.Audio;
@@ -56,7 +56,21 @@ namespace CAmod.Players
         }
         
 
-        public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+        public override void OnHitNPCWithItem(Item item, NPC target, NPC.HitInfo hit, int damageDone)
+        {
+            TryBonusHit(target, hit, damageDone, false);
+        }
+
+        public override void OnHitNPCWithProj(Projectile proj, NPC target, NPC.HitInfo hit, int damageDone)
+        {
+            if (proj.type == ModContent.ProjectileType<GlassCannonBonusHit>())
+                return;
+
+            // Identify the attack itself, so switching held weapons cannot change its bonus.
+            TryBonusHit(target, hit, damageDone, proj.type == ModContent.ProjectileType<CosmicAttack>());
+        }
+
+        private void TryBonusHit(NPC target, NPC.HitInfo hit, int damageDone, bool cosmicDivide)
         {
             if (!glassCannonEquipped)
                 return;
@@ -65,11 +79,11 @@ namespace CAmod.Players
             if (hit.DamageType != DamageClass.Magic)
                 return;
             // 마법 피해가 아니면 즉시 차단한다
-            if (!Main.rand.NextBool(4))
+            if (!cosmicDivide && !Main.rand.NextBool(4))
                 return;
 
-            int bonusDamage = damageDone;
-            // 최종 피해 기준 25%를 산출한다
+            int bonusDamage = cosmicDivide ? damageDone / 4 : damageDone;
+            // Cosmic Divide: guaranteed 25%; other magic attacks: 25% chance for 100%.
 
             if (bonusDamage <= 0)
                 return;

@@ -1,4 +1,4 @@
-﻿using ParticleLibrary.Core.V3.Particles;
+using ParticleLibrary.Core.V3.Particles;
 using ParticleLibrary.Utilities;
 using System;
 using System.Collections.Generic;
@@ -20,6 +20,8 @@ namespace CAmod.Particles
 
         public override void Update(ref ParticleInfo info)
         {
+            if (ParticleCulling.Cull(ref info)) return;
+
             info.Position += info.Velocity;
 
             info.Velocity *= 0.94f;

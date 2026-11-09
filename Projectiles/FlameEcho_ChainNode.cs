@@ -1,4 +1,4 @@
-﻿using Terraria;
+using Terraria;
 using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -12,6 +12,11 @@ namespace CAmod.Projectiles
 {
     public class FlameEcho_ChainNode : ModProjectile
     {
+        public override void SetStaticDefaults()
+        {
+            Terraria.ID.ProjectileID.Sets.DrawScreenCheckFluff[Type] = 10000;
+        }
+
         public override void SetDefaults()
         {
             Projectile.width = 10;

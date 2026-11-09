@@ -1,4 +1,4 @@
-﻿using Terraria;
+using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using CAmod.Players;
@@ -26,7 +26,7 @@ namespace CAmod.Items
 
         public override void UpdateInventory(Player players)
         {
-            int stage = LeafWardSystem.GetStage();
+            int stage = LeafWardSystem.GetLeafShieldStage(players);
 
             float normalized = stage / 40f;
             float priceGold = normalized * normalized * 40f;
@@ -41,10 +41,13 @@ namespace CAmod.Items
 
             modPlayer.leafShieldEquipped = true;
 
+            // Calamity's current abyss system uses darkness reduction instead of integer light levels.
+            player.GetModPlayer<global::CalamityMod.CalPlayer.CalamityPlayer>().abyssDarkness -= 2f;
+
             if (!hideVisual)
                 modPlayer.leafShieldVisible = true;
 
-            int count = LeafWardSystem.GetStage();
+            int count = LeafWardSystem.GetLeafShieldStage(player);
 
             // =========================
             // 스탯 적용
@@ -53,7 +56,8 @@ namespace CAmod.Items
             player.GetDamage(DamageClass.Magic) += count * 0.005f + 0.05f;
             player.GetCritChance(DamageClass.Magic) += count * 0.25f + 2.5f;
 
-            int bonusLife = (int)Math.Ceiling(25f + count * (100f / 40f));
+            // 5% base + 0.5% per stage, using integer arithmetic to avoid float truncation.
+            int bonusLife = (int)((long)player.statLifeMax * (10 + count) / 200);
             player.statLifeMax2 += bonusLife;
 
             
@@ -73,7 +77,7 @@ namespace CAmod.Items
 
         public override void UpdateVanity(Player player2)
         {
-            int stage = LeafWardSystem.GetStage();
+            int stage = LeafWardSystem.GetLeafShieldStage(player2);
 
             float normalized = stage / 40f;
             float priceGold = normalized * normalized * 40f;
@@ -97,18 +101,18 @@ namespace CAmod.Items
         {
             tooltips.RemoveAll(l => l.Mod == "Terraria" && l.Name.StartsWith("Tooltip"));
 
-            int stage = LeafWardSystem.GetStage();
+            int stage = LeafWardSystem.GetLeafShieldStage(Main.LocalPlayer);
 
             float bonusMagicDamage = stage * 0.5f + 5f;
             float bonusMagicCrit = stage * 0.25f + 2.5f;
 
-            int bonusLife = (int)Math.Ceiling(25f + stage * (100f / 40f));
+            float bonusLifePercent = 5f + stage * (20f / 40f);
             int bonusLifeRegen = (int)Math.Ceiling(1f + stage * (4f / 40f));
             int bonusMana = stage * 5 + 50;
 
             float progress = (stage / 40f) * 100f;
             float cooldownReductionSec = stage * 0.25f;
-            float lastcool = 20f - cooldownReductionSec;
+            float lastcool = stage >= 40 ? 1f : 20f - cooldownReductionSec;
 
             string keyText = KeySystem.leafshield.GetAssignedKeys().Count > 0
                 ? KeySystem.leafshield.GetAssignedKeys()[0]
@@ -121,10 +125,10 @@ namespace CAmod.Items
                 "Magic projectiles inflict Dryad's Bane on enemies for 3 seconds."));
 
             tooltips.Add(new TooltipLine(Mod, "L4",
-                "Provides light in the Abyss."));
+                "Provides a faint green light at all times and reduces Abyss darkness intensity by 2."));
 
             tooltips.Add(new TooltipLine(Mod, "L5",
-                "This accessory grows with each new boss you defeat."));
+                "This accessory grows with each new boss you defeat. Silva armor set bonus instantly grants maximum growth."));
 
             tooltips.Add(new TooltipLine(Mod, "L6",
                 $"growth rate : {progress:F1}%"));
@@ -139,7 +143,7 @@ namespace CAmod.Items
                 $"+{bonusMagicCrit:F1}% magic critical chance"));
 
             tooltips.Add(new TooltipLine(Mod, "L10",
-                $"+{bonusLife} max life"));
+                $"+{bonusLifePercent:F1}% maximum life"));
 
             tooltips.Add(new TooltipLine(Mod, "L11",
                 $"+{bonusLifeRegen} life regeneration"));

@@ -2,4 +2,4 @@ displayName = Calamity Acane Evolution
 author = LSY
 version = 1.1
 include = Effects/*.fx
-modReferences = ParticleLibrary, Luminance
+modReferences = ParticleLibrary, Luminance, CalamityMod

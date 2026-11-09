@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using System;
 using Terraria;
 using Terraria.ModLoader;
@@ -69,15 +69,7 @@ namespace CAmod.Projectiles
 
             Vector2 oldPos = Projectile.Center;
 
-            Vector2 toPlayer = player.Center - Projectile.Center;
-
-            Vector2 targetPos = player.position + new Vector2(
-                Main.rand.NextFloat(player.width),
-                Main.rand.NextFloat(player.height)
-            );
-            // 플레이어 히트박스 내부의 랜덤 지점이다
-
-            Vector2 toTarget = targetPos - Projectile.Center;
+            Vector2 toTarget = GetHomingOffset(Projectile, player);
             float dist = toTarget.Length();
 
             if (dist < 25f)
@@ -154,29 +146,7 @@ namespace CAmod.Projectiles
                 return;
             }
 
-            // 폭탄식 추적 로직
-            float accel = 1.02f;
-            float damp = 0.92f;
-            float maxSpeed = 14f;
-
-            if (dist > 0f)
-            {
-                toTarget.Normalize();
-                toTarget *= accel;
-
-                Projectile.velocity.X =
-                    Projectile.velocity.X * damp + toTarget.X;
-
-                Projectile.velocity.Y =
-                    Projectile.velocity.Y * damp + toTarget.Y;
-
-                if (Projectile.velocity.Length() > maxSpeed)
-                {
-                    Projectile.velocity =
-                        Vector2.Normalize(Projectile.velocity) * maxSpeed;
-                }
-            }
-            // 추적 끝
+            SteerTowards(Projectile, toTarget);
 
             // 혈액 파티클 연출
             Vector2 nextPos =
@@ -264,5 +234,26 @@ namespace CAmod.Projectiles
                 }
             }
         }
+
+        internal static Vector2 GetHomingOffset(Projectile projectile, Player player)
+        {
+            Vector2 target = player.position + new Vector2(
+                Main.rand.NextFloat(player.width), Main.rand.NextFloat(player.height));
+            return target - projectile.Center;
+        }
+
+        internal static void SteerTowards(Projectile projectile, Vector2 offset)
+        {
+            const float acceleration = 1.02f;
+            const float damping = 0.92f;
+            const float maxSpeed = 14f;
+
+            if (offset.LengthSquared() == 0f) return;
+
+            projectile.velocity = projectile.velocity * damping + Vector2.Normalize(offset) * acceleration;
+            if (projectile.velocity.LengthSquared() > maxSpeed * maxSpeed)
+                projectile.velocity = Vector2.Normalize(projectile.velocity) * maxSpeed;
+        }
+
     }
 }

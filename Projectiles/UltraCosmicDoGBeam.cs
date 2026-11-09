@@ -1,7 +1,8 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.Utilities;
 
@@ -17,7 +18,7 @@ namespace CAmod.Projectiles
             Projectile.height = 0;
             // 히트박스는 작게 유지한다
             Projectile.friendly = false;
-         
+            ProjectileID.Sets.DrawScreenCheckFluff[Type] = 10000;
             Projectile.DamageType = DamageClass.Magic;
 
             Projectile.penetrate = -1;
@@ -76,13 +77,12 @@ namespace CAmod.Projectiles
                 go = true;
                 // 목표 지점에 CosmicAttack 생성한다
             }
-            Player player = Main.player[Projectile.owner];
-            Projectile.Center = player.Center;
+            // Keep the center at the cursor position captured when casting.
         }
 
         public override bool PreDraw(ref Color lightColor)
         {
-            Texture2D tex = ModContent.Request<Texture2D>("CAmod/Projectiles/UltraCosmicBeam").Value;
+            Texture2D tex = global::CAmod.Systems.UltraCosmicDivideAssets.TelegraphTexture.Value;
             // 초대형 세로 텍스처다
 
             Vector2 start = new Vector2(Projectile.ai[0], Projectile.ai[1]);

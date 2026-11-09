@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -8,7 +8,6 @@ using ParticleLibrary.Core.V3.Particles;
 using ParticleLibrary.Utilities;
 using System;
 using System;
-using System.Reflection;
 using Terraria.Audio;
 
 namespace CAmod.Players
@@ -314,49 +313,8 @@ namespace CAmod.Players
             {
                 int lastdamage = hurtInfo.Damage;
 
-                try
-                {
-                    Mod calamity = ModLoader.GetMod("CalamityMod");
-
-                    if (calamity != null)
-                    {
-                        var modPlayersField = typeof(Player).GetField(
-                            "modPlayers",
-                            BindingFlags.Instance | BindingFlags.NonPublic
-                        );
-
-                        var modPlayersList =
-                            modPlayersField?.GetValue(Player)
-                            as System.Collections.IEnumerable;
-
-                        foreach (var mp in modPlayersList)
-                        {
-                            if (mp.GetType().FullName ==
-                                "CalamityMod.CalPlayer.CalamityPlayer")
-                            {
-                                var bleedField = mp.GetType().GetField(
-                                    "chaliceBleedoutToApplyOnHurt",
-                                    BindingFlags.Instance | BindingFlags.Public
-                                );
-
-                                if (bleedField != null)
-                                {
-                                    int bleedThisHit =
-                                        (int)bleedField.GetValue(mp);
-
-                                    lastdamage += bleedThisHit;
-                                    // 이번 피격에서 출혈로 전환된 피해량을 추가한다
-                                }
-
-                                break;
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // Calamity가 없거나 구조 변경 시 조용히 무시한다
-                }
+                lastdamage += Player.GetModPlayer<global::CalamityMod.CalPlayer.CalamityPlayer>()
+                    .chaliceBleedoutToApplyOnHurt;
 
                 float damageRatio = MathHelper.Clamp(
                     lastdamage / (float)Player.statLifeMax2,
@@ -411,49 +369,8 @@ namespace CAmod.Players
             {
                 int lastdamage = hurtInfo.Damage;
 
-                try
-                {
-                    Mod calamity = ModLoader.GetMod("CalamityMod");
-
-                    if (calamity != null)
-                    {
-                        var modPlayersField = typeof(Player).GetField(
-                            "modPlayers",
-                            BindingFlags.Instance | BindingFlags.NonPublic
-                        );
-
-                        var modPlayersList =
-                            modPlayersField?.GetValue(Player)
-                            as System.Collections.IEnumerable;
-
-                        foreach (var mp in modPlayersList)
-                        {
-                            if (mp.GetType().FullName ==
-                                "CalamityMod.CalPlayer.CalamityPlayer")
-                            {
-                                var bleedField = mp.GetType().GetField(
-                                    "chaliceBleedoutToApplyOnHurt",
-                                    BindingFlags.Instance | BindingFlags.Public
-                                );
-
-                                if (bleedField != null)
-                                {
-                                    int bleedThisHit =
-                                        (int)bleedField.GetValue(mp);
-
-                                    lastdamage += bleedThisHit;
-                                    // 이번 피격에서 출혈로 전환된 피해량을 추가한다
-                                }
-
-                                break;
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // Calamity가 없거나 구조 변경 시 조용히 무시한다
-                }
+                lastdamage += Player.GetModPlayer<global::CalamityMod.CalPlayer.CalamityPlayer>()
+                    .chaliceBleedoutToApplyOnHurt;
 
                 float damageRatio = MathHelper.Clamp(
                     lastdamage / (float)Player.statLifeMax2,

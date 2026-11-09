@@ -1,4 +1,5 @@
-﻿using Terraria;
+using CalamityMod.NPCs.StormWeaver;
+using Terraria;
 using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
 using Terraria.ID;
@@ -27,6 +28,16 @@ namespace CAmod.Projectiles
 
         public override void AI()
         {
+        }
+
+        public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
+        {
+            if (target.ModNPC is not (StormWeaverHead or StormWeaverBody or StormWeaverTail))
+                return;
+
+            bool infernumActive = ModLoader.TryGetMod("InfernumMode", out Mod infernum)
+                && infernum.Call("GetInfernumActive") is true;
+            modifiers.FinalDamage *= infernumActive ? 0.15f : 0.5f;
         }
 
         public override void OnHitNPC(

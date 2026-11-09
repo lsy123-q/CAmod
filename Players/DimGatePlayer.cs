@@ -1,4 +1,4 @@
-﻿using Terraria;
+using Terraria;
 using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
 using Terraria.DataStructures;
@@ -10,7 +10,6 @@ using System;
 using System.Linq;
 using CAmod.Items;
 using CAmod.Buffs;
-using System.Reflection;
 using CAmod.Particles;
 
 using ParticleLibrary.Core.V3.Particles;
@@ -29,7 +28,6 @@ namespace CAmod.Players
         public bool startflag = false;
         public bool endflag = false;
         public int progress = 0;
-        public int gateGeneration = 0;
         private Vector2 oldpos;
         
         public int dustprogress = 0;
@@ -71,23 +69,7 @@ namespace CAmod.Players
                 return;
 
 
-            if (ModLoader.TryGetMod("CalamityMod", out Mod calamity))
-            {
-                try
-                {
-                   
-                    Type vulnType = calamity.Code.GetType("CalamityMod.Buffs.DamageOverTime.GodSlayerInferno");
-
-                    
-
-                    if (vulnType != null)
-                    {
-                        int vulnID = calamity.Find<ModBuff>(vulnType.Name).Type;
-                        target.AddBuff(vulnID, 180);
-                    }
-                }
-                catch { }
-            }
+            target.AddBuff(ModContent.BuffType<global::CalamityMod.Buffs.DamageOverTime.GodSlayerInferno>(), 180);
         }
         public override void ModifyDrawInfo(ref PlayerDrawSet drawInfo)
         {
@@ -204,7 +186,6 @@ namespace CAmod.Players
                     Player.immuneTime = 1;
                     gateTime = 60 * 5;      // 5초 무적
                      // 15초 쿨타임
-                    gateGeneration++;
                     startflag = true;
                     startDustRandomRot = Main.rand.NextFloat(MathHelper.TwoPi);
                     startDustDir = Main.rand.NextBool() ? 1f : -1f; // 방향 고정한다
@@ -432,19 +413,6 @@ namespace CAmod.Players
         }
         // ================= 무적 판정 =================
 
-        public override void ModifyHitByProjectile(Projectile proj, ref Player.HurtModifiers modifiers)
-        {
-            if (gateTime > 0 && gateTime < 270)
-            {
-                int projGen = (int)proj.localAI[0];
-
-                if (projGen == gateGeneration)
-                {
-                    modifiers.FinalDamage *= 0f;
-                    // 게이트 이후 생성된 투사체만 무효화한다
-                }
-            }
-        }
         public override bool CanHitNPC(NPC target)
         {
             if (gateTime < 0 && gateTime < 270)

@@ -17,8 +17,11 @@ namespace CAmod.Systems
                 ModContent.ItemType<LeafShield>(),      // 리프실드
                 ModContent.ItemType<BloodMage>(),       // 블러드메이지
                 ModContent.ItemType<DimensionGate>(),   // 데멘션게이트
-                ModContent.ItemType<Pyromancer>()       // 파이로맨서
+                ModContent.ItemType<Pyromancer>(),      // 파이로맨서
+                ModContent.ItemType<PhantomDragonLauncher>()
             };
+            if (ModLoader.TryGetMod("asd", out Mod asdMod) && asdMod.TryFind<ModItem>("Borderless", out var borderless))
+                glassGroup.Add(borderless.Type);
         }
     }
 }

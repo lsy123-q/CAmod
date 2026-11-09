@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ParticleLibrary.Core.V3.Particles;
 using ParticleLibrary.Utilities;
 using Terraria;
@@ -8,86 +8,63 @@ namespace CAmod.Particles
 {
     public class FireParticleBehavior : Behavior<ParticleInfo>
     {
+        private static readonly Color[] Palette =
+        {
+            new Color(255, 255, 182),
+            new Color(255, 242, 106),
+            new Color(255, 171, 93),
+            new Color(220, 220, 220),
+            new Color(55, 55, 55)
+        };
+
         public override string Texture => "CAmod/Particles/Fire1";
 
         public override void Initialize(ref ParticleInfo info)
         {
+            // Initialize is called only after the library successfully reserves a buffer slot.
+            if (info.Time > 0)
+                FireParticleSystem.ParticleCreated();
         }
 
         public override void Update(ref ParticleInfo info)
         {
-            info.Position += info.Velocity;
+            if (ParticleCulling.Cull(ref info))
+            {
+                FireParticleSystem.ParticleExpired();
+                return;
+            }
 
-            info.Velocity *= 0.94f;
+            FireParticleSystem.PrepareUpdate();
+            float acceleration = FireParticleSystem.TimeAcceleration;
+            info.Position += info.Velocity * acceleration;
+            info.Velocity *= MathF.Pow(0.94f, acceleration);
 
             float progress = info.Time / (float)info.Duration;
 
-            Color fireColor;
-
-            // 검은 회색 35%
-            // 회색 25%
-            // 주황 20%
-            // 노랑 13%
-            // 밝은 노랑 7%
-
-            if (progress > 0.93f)
-            {
-                float t = (progress - 0.93f) / 0.07f;
-                t = 1f - MathF.Pow(1f - t, 85f);
-
-                fireColor = Color.Lerp(
-                    new Color(255, 255, 182),
-                    new Color(255, 242, 106),
-                    t
-                );
-            }
-            else if (progress > 0.80f)
-            {
-                float t = (progress - 0.80f) / 0.13f;
-                t = 1f - MathF.Pow(1f - t, 85f); 
-
-                fireColor = Color.Lerp(
-                    new Color(255, 242, 106),
-                    new Color(255, 171, 93),
-                    t
-                );
-            }
-            else if (progress > 0.60f)
-            {
-                float t = (progress - 0.60f) / 0.20f;
-                t = 1f - MathF.Pow(1f - t, 85f);
-
-                fireColor = Color.Lerp(
-                    new Color(220, 220, 220),
-                    new Color(75, 75, 75),
-                    t
-                );
-            }
-            else if (progress > 0.35f)
-            {
-                float t = (progress - 0.35f) / 0.25f;
-                t = 1f - MathF.Pow(1f - t, 85f);
-
-                fireColor = Color.Lerp(
-                    new Color(220, 220, 220),
-                    new Color(55, 55, 55),
-                    t
-                );
-            }
-            else
-            {
-                fireColor = new Color(55, 55, 55);
-            }
-
-           
-
-            
+            Color fireColor = GetFireColor(progress);
 
             float alpha = progress * progress;
 
-            info.Color = fireColor * alpha;
+            // NonPremultiplied applies opacity to RGB during blending; fade alpha only.
+            info.Color = new Color(fireColor.R, fireColor.G, fireColor.B,
+                (byte)(255f * MathHelper.Clamp(alpha, 0f, 1f)));
 
-            info.Time--;
+            info.Time -= FireParticleSystem.LifetimeSteps;
+            if (info.Time <= 0)
+                FireParticleSystem.ParticleExpired();
+        }
+        protected virtual Color GetFireColor(float progress)
+        {
+            // Alpha fades as remainingLife^2, so accumulated visibility is 1 - remainingLife^3.
+            // Equal color weights in visibility space bring the darker colors forward and hold them longer.
+            float remainingLife = MathHelper.Clamp(progress, 0f, 1f);
+            float visibleProgress = 1f - remainingLife * remainingLife * remainingLife;
+            float palettePosition = MathHelper.Clamp(
+                visibleProgress * Palette.Length - 0.5f, 0f, Palette.Length - 1);
+            int colorIndex = Math.Min((int)palettePosition, Palette.Length - 2);
+            return Color.Lerp(Palette[colorIndex], Palette[colorIndex + 1],
+                palettePosition - colorIndex);
+
         }
     }
 }

@@ -1,0 +1,8 @@
+# Visual Studio caches and local settings
+/.vs/
+*.user
+*.suo
+
+# Build outputs
+/bin/
+/obj/

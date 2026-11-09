@@ -1,7 +1,7 @@
-﻿using Terraria;
+using CalamityMod;
+using Terraria;
 using Terraria.ModLoader;
 using System;
-using System.Reflection;
 
 namespace CAmod.Systems
 {
@@ -29,6 +29,13 @@ namespace CAmod.Systems
         {
             return Math.Min(cachedBossCount, 40);
             // 최대 40으로 제한한다
+        }
+
+        public static int GetLeafShieldStage(Player player)
+        {
+            return player.GetModPlayer<global::CalamityMod.CalPlayer.CalamityPlayer>().silvaSet
+                ? 40
+                : GetStage();
         }
 
         private static int CalculateBossCount()
@@ -103,40 +110,51 @@ namespace CAmod.Systems
 
         private static int GetCalamityBossCount()
         {
-            if (!ModLoader.TryGetMod("CalamityMod", out Mod calamity))
-                return 0;
-            // 칼라미티 없으면 0 반환한다
-
-            try
-            {
-                Type communityType = calamity.Code.GetType("CalamityMod.Items.Accessories.TheCommunity");
-                // Community 클래스 가져온다
-
-                if (communityType == null)
-                    return 0;
-
-                MethodInfo method = communityType.GetMethod("CalculatePower", BindingFlags.NonPublic | BindingFlags.Static);
-                // 내부 CalculatePower 메서드 가져온다
-
-                if (method == null)
-                    return 0;
-
-                object result = method.Invoke(null, new object[] { true });
-                // killsOnly = true로 호출한다 (보스 처치 비율 반환)
-
-                float ratio = (float)result;
-
-                int totalBosses = 42;
-                // 칼라미티 내부 총 보스 수다
-
-                return (int)(ratio * totalBosses);
-                // 비율을 실제 보스 수로 환산한다
-            }
-            catch
-            {
-                return 0;
-                // 실패하면 안전하게 0 반환한다
-            }
+            // Same boss flags as Calamity's TheCommunity.CalculatePower(killsOnly: true).
+            int count = 0;
+            count += (NPC.downedSlimeKing) ? 1 : 0;
+            count += (DownedBossSystem.downedDesertScourge) ? 1 : 0;
+            count += (NPC.downedBoss1) ? 1 : 0;
+            count += (DownedBossSystem.downedCrabulon) ? 1 : 0;
+            count += (NPC.downedBoss2) ? 1 : 0;
+            count += ((DownedBossSystem.downedHiveMind || DownedBossSystem.downedPerforator)) ? 1 : 0;
+            count += (NPC.downedQueenBee) ? 1 : 0;
+            count += (NPC.downedBoss3) ? 1 : 0;
+            count += (NPC.downedDeerclops) ? 1 : 0;
+            count += (DownedBossSystem.downedSlimeGod) ? 1 : 0;
+            count += (Main.hardMode) ? 1 : 0;
+            count += (NPC.downedQueenSlime) ? 1 : 0;
+            count += (DownedBossSystem.downedCryogen) ? 1 : 0;
+            count += (NPC.downedMechBoss1) ? 1 : 0;
+            count += (DownedBossSystem.downedAquaticScourge) ? 1 : 0;
+            count += (NPC.downedMechBoss2) ? 1 : 0;
+            count += (DownedBossSystem.downedBrimstoneElemental) ? 1 : 0;
+            count += (NPC.downedMechBoss3) ? 1 : 0;
+            count += (DownedBossSystem.downedCalamitasClone) ? 1 : 0;
+            count += (NPC.downedPlantBoss) ? 1 : 0;
+            count += (DownedBossSystem.downedLeviathan) ? 1 : 0;
+            count += (DownedBossSystem.downedAstrumAureus) ? 1 : 0;
+            count += (NPC.downedGolemBoss) ? 1 : 0;
+            count += (DownedBossSystem.downedPlaguebringer) ? 1 : 0;
+            count += (NPC.downedFishron) ? 1 : 0;
+            count += (NPC.downedEmpressOfLight) ? 1 : 0;
+            count += (DownedBossSystem.downedRavager) ? 1 : 0;
+            count += (NPC.downedAncientCultist) ? 1 : 0;
+            count += (DownedBossSystem.downedAstrumDeus) ? 1 : 0;
+            count += (NPC.downedMoonlord) ? 1 : 0;
+            count += (DownedBossSystem.downedGuardians) ? 1 : 0;
+            count += (DownedBossSystem.downedDragonfolly) ? 1 : 0;
+            count += (DownedBossSystem.downedProvidence) ? 1 : 0;
+            count += (DownedBossSystem.downedCeaselessVoid) ? 1 : 0;
+            count += (DownedBossSystem.downedStormWeaver) ? 1 : 0;
+            count += (DownedBossSystem.downedSignus) ? 1 : 0;
+            count += (DownedBossSystem.downedPolterghast) ? 1 : 0;
+            count += (DownedBossSystem.downedBoomerDuke) ? 1 : 0;
+            count += (DownedBossSystem.downedDoG) ? 1 : 0;
+            count += (DownedBossSystem.downedYharon) ? 1 : 0;
+            count += (DownedBossSystem.downedExoMechs) ? 1 : 0;
+            count += (DownedBossSystem.downedCalamitas) ? 1 : 0;
+            return count;
         }
     }
 }

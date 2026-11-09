@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using System;
 using Terraria;
 using Terraria.ModLoader;
@@ -145,20 +145,7 @@ namespace CAmod.Players
             if (!aureola)
                 return;
 
-            if (ModLoader.TryGetMod("CalamityMod", out Mod calamity))
-            {
-                try
-                {
-                    Type dragonType = calamity.Code.GetType("CalamityMod.Buffs.DamageOverTime.AuricRebuke");
-
-                    if (dragonType != null)
-                    {
-                        int dragonID = calamity.Find<ModBuff>(dragonType.Name).Type;
-                        target.AddBuff(dragonID, 180);
-                    }
-                }
-                catch { }
-            }
+            target.AddBuff(ModContent.BuffType<global::CalamityMod.Buffs.DamageOverTime.AuricRebuke>(), 180);
         }
 
         public override void OnHitNPCWithProj(Projectile proj, NPC target, NPC.HitInfo hit, int damageDone)

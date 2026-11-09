@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using Terraria.ModLoader;
 
 namespace CAmod.Systems
@@ -8,17 +8,20 @@ namespace CAmod.Systems
         public static ModKeybind DimGate;
         public static ModKeybind leafshield;
         public static ModKeybind HarmonyCycleToggle;
+        public static ModKeybind PhantomDragonMode;
         public override void Load()
         {
+            PhantomDragonMode = KeybindLoader.RegisterKeybind(Mod, "Phantom Dragon Mode", "B");
             DimGate = KeybindLoader.RegisterKeybind(Mod, "Dimension Gate", "Q");
             leafshield = KeybindLoader.RegisterKeybind(Mod, "Leaf Shield", "G");
             HarmonyCycleToggle = KeybindLoader.RegisterKeybind(Mod, "Harmony Cycle Toggle", "V");
-            // ÇÏ¸ð´Ï ±¸Á¶ ON/OFF Åä±Û Å°´Ù
-            // ¸ó½ºÅÍ Á¶Á¾¼ú ´ÜÃàÅ°¸¦ µî·ÏÇÑ´Ù
+            // ï¿½Ï¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ON/OFF ï¿½ï¿½ï¿½ Å°ï¿½ï¿½
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½
         }
 
         public override void Unload()
         {
+            PhantomDragonMode = null;
             DimGate = null;
             leafshield = null;
             HarmonyCycleToggle = null;

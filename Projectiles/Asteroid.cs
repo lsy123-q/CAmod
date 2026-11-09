@@ -1,4 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+using CAmod.Particles;
+using ParticleLibrary.Core.V3.Particles;
+using ParticleLibrary.Utilities;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -43,25 +46,31 @@ namespace CAmod.Projectiles
             }
             Projectile.scale = Projectile.ai[1];
             Projectile.rotation += Projectile.velocity.X * 2f;
-            Vector2 position = Projectile.Center + Vector2.Normalize(Projectile.velocity) * 10f;
-            Dust greenDust = Main.dust[Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.TerraBlade, 0f, 0f, 0, default, 1f)];
-            greenDust.position = position;
-            greenDust.velocity = Projectile.velocity.RotatedBy(1.5707963705062866, default) * 0.33f + Projectile.velocity / 4f;
-            greenDust.position += Projectile.velocity.RotatedBy(1.5707963705062866, default);
-            greenDust.fadeIn = 0.5f;
-            greenDust.noGravity = true;
-            greenDust = Main.dust[Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.TerraBlade, 0f, 0f, 0, default, 1f)];
-            greenDust.position = position;
-            greenDust.velocity = Projectile.velocity.RotatedBy(-1.5707963705062866, default) * 0.33f + Projectile.velocity / 4f;
-            greenDust.position += Projectile.velocity.RotatedBy(-1.5707963705062866, default);
-            greenDust.fadeIn = 0.5f;
-            greenDust.noGravity = true;
+            EmitFlightParticles();
+        }
 
-            int moreGreen = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.TerraBlade, 0f, 0f, 0, default, 1f);
-            Main.dust[moreGreen].velocity *= 0.5f;
-            Main.dust[moreGreen].scale *= 1.3f;
-            Main.dust[moreGreen].fadeIn = 1f;
-            Main.dust[moreGreen].noGravity = true;
+        private void EmitFlightParticles()
+        {
+            if (Main.dedServ) return;
+
+            Vector2 position = Projectile.Center + Projectile.velocity.SafeNormalize(Vector2.UnitY) * 10f;
+            Vector2 side = Projectile.velocity.RotatedBy(MathHelper.PiOver2);
+            EmitStar(position + side, side * 0.33f + Projectile.velocity / 4f);
+            EmitStar(position - side, -side * 0.33f + Projectile.velocity / 4f);
+            Vector2 scatteredPosition = Projectile.position + new Vector2(
+                Main.rand.NextFloat(Projectile.width), Main.rand.NextFloat(Projectile.height));
+            EmitStar(scatteredPosition, Main.rand.NextVector2Circular(1f, 1f));
+        }
+
+        private static void EmitStar(Vector2 position, Vector2 velocity)
+        {
+            CosmicParticleSystem.Buffer.Create(new ParticleInfo(
+                position: position.ToNumerics(),
+                velocity: velocity.ToNumerics(),
+                rotation: velocity.ToRotation(),
+                scale: new System.Numerics.Vector2(12f, 12f),
+                color: new Color(0x80, 0xFF, 0x56),
+                duration: 60));
         }
 
         public override void OnKill(int timeLeft)

@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.ID;
@@ -262,13 +262,8 @@ namespace CAmod.NPCs
         }
         private void Explode(NPC target)
         {
-            // 현재 체력 비례 데미지
-            int damage =
-                Utils.Clamp(
-                    (int)(target.life * 0.01f),
-                    100,
-                    500
-                );
+            // Fixed base damage; no target-health scaling.
+            const int damage = 150;
 
             // 실제 타격용 투사체 생성
             int p =

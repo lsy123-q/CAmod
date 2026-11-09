@@ -1,4 +1,4 @@
-﻿using Terraria;
+using Terraria;
 using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
 using Terraria.ID;
@@ -256,13 +256,7 @@ namespace CAmod.Projectiles
                     && hitCache.Contains(i))
                     continue;
 
-                Player player =
-                    Main.player[Projectile.owner];
-
-                if (Vector2.Distance(
-                    player.Center,
-                    n.Center
-                ) > 1000f)
+                if (isFirstChain && Vector2.DistanceSquared(Main.player[Projectile.owner].Center, n.Center) > 1000f * 1000f)
                     continue;
 
                 float dist =

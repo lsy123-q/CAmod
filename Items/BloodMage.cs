@@ -1,8 +1,7 @@
-﻿using Terraria;
+using Terraria;
 using Terraria.ModLoader;
 using CAmod.Players;
 using CAmod.Players;
-using System.Reflection;
 using Terraria.ID;
 using System.Collections.Generic;
 using System;

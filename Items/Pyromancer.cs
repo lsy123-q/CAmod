@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+using CalamityMod.Systems.Collections;
+using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using Terraria;
 using Terraria.ID;
@@ -17,9 +18,7 @@ namespace CAmod.Items
         public const int BASE_TICK_DAMAGE = 1;
         public const int TICK_INCREASE_PER_SECOND = 10;
         public const int BALANCED_TICK_DAMAGE_CAP = 600;
-        public const float ATTACK_SPEED_PER_DEBUFF = 0.025f;
-        public const float BALANCED_MAX_ATTACK_SPEED_BONUS = 1.0f;
-        public float bonusdd;
+        public const float BRAND_DAMAGE_PER_DEBUFF = 0.25f;
         public override void SetDefaults()
         {
             Item.width = 28;
@@ -106,6 +105,8 @@ namespace CAmod.Items
             float magicPowerValue = (magicAdd + genericAdd) * TotalMagicCrit;
 
             magicPowerValue = (int)Math.Round(1000 * magicPowerValue);
+            float brandBonus = owner.GetModPlayer<PyromancerPlayer>().BrandDamageBonus;
+            magicPowerValue = Math.Max(1f, magicPowerValue) * (1f + brandBonus);
             foreach (var line in tooltips)
             {
                 if (line.Text.Contains("[fire]"))
@@ -117,8 +118,8 @@ namespace CAmod.Items
                 if (line.Text.Contains("[damage]"))
                 {
 
-                    line.Text = line.Text.Replace("[damage]", (bonusdd * 100f).ToString("0.##"));
-                    // [damage]를 최종 마법 보정 퍼센트로 치환한다
+                    line.Text = line.Text.Replace("[damage]", (brandBonus * 100f).ToString("0.##"));
+                    // Display the current Flame Sigil damage bonus.
                 }
             }
             int prefixIndex = tooltips.FindIndex(t => t.Name == "Prefix");
@@ -182,64 +183,27 @@ namespace CAmod.Items
             mp.visualEnabled = !hideVisual;
             if (Main.GameUpdateCount % 1 == 0)
             {
-                foreach (Projectile p in Main.projectile)
+                foreach (NPC target in Main.ActiveNPCs)
                 {
-                    if (p.active &&
-                        p.owner == player.whoAmI &&
-                        p.type == ModContent.ProjectileType<HolyFlame>())
+                    if (!target.GetGlobalNPC<global::CAmod.Globals.PyromancerBrandGlobalNPC>().HasBrand(player.whoAmI))
+                        continue;
+                    HashSet<int> seen = new HashSet<int>();
+                    int count = 0;
+
+                    for (int i = 0; i < target.buffType.Length; i++)
                     {
-                        int targetWhoAmI = (int)p.ai[0];
-                        if (targetWhoAmI >= 0 && targetWhoAmI < Main.npc.Length)
-                        {
-                            NPC target = Main.npc[targetWhoAmI];
-                            if (target.active && target.life > 0)
-                            {
-                                HashSet<int> seen = new HashSet<int>();
-                                int count = 0;
+                        int buff = target.buffType[i];
+                        if (buff <= 0 || target.buffTime[i] <= 0
+                            || buff >= CalamityBuffSets.DebuffDataset.Length || !seen.Add(buff))
+                            continue;
 
-                                for (int i = 0; i < target.buffType.Length; i++)
-                                {
-                                    int b = target.buffType[i];
-                                    if (b > 0 && !seen.Contains(b))
-                                    {
-                                        string internalName = "";
-
-                                        if (b < BuffID.Count)
-                                        {
-                                            internalName = BuffID.Search.GetName(b);
-                                            // 바닐라 버프의 내부 ID 이름을 가져온다 (예: OnFire, CursedInferno)
-                                        }
-                                        else
-                                        {
-                                            ModBuff modBuff = BuffLoader.GetBuff(b);
-                                            if (modBuff != null)
-                                                internalName = modBuff.Name;
-                                            // 모드 버프의 내부 클래스 이름을 가져온다
-                                        }
-                                        
-                                        internalName = internalName.ToLower(); // 비교를 위해 소문자로 만든다
-                                        if (internalName.Contains("blood"))
-                                            continue;
-                                        if (internalName.Contains("fire") ||
-                                            internalName.Contains("flame") ||
-                                            internalName.Contains("burn") ||
-                                            internalName.Contains("inferno") ||
-                                            internalName.Contains("infernum") ||
-                                            internalName.Contains("hex") ||
-                                            internalName.Contains("daybreak")) // 데이브레이크를 추가한다
-                                        {
-                                            seen.Add(b);
-                                            count++;
-                                        }
-                                    }
-
-                                }
-
-                                if (count > maxbuffCount)
-                                    maxbuffCount = count;
-                            }
-                        }
+                        var data = CalamityBuffSets.DebuffDataset[buff];
+                        if (data != null && data.HeatDebuffScaling > 0f)
+                            count++;
                     }
+
+                    if (count > maxbuffCount)
+                        maxbuffCount = count;
                 }
 
                 if (maxbuffCount > mp.CurrentBuffCount)
@@ -262,15 +226,7 @@ namespace CAmod.Items
 
                 mp.TargetDebuffsApplied = (int)mp.CurrentBuffCount;
 
-                int debuffCountNow = mp.TargetDebuffsApplied;
-                float bonus = ATTACK_SPEED_PER_DEBUFF * debuffCountNow;
-
-                if (!DEV_MODE && bonus > BALANCED_MAX_ATTACK_SPEED_BONUS)
-                    bonus = BALANCED_MAX_ATTACK_SPEED_BONUS;
-
-
-                mp.bonusd = bonus;
-                bonusdd = bonus; 
+                mp.BrandDamageBonus = BRAND_DAMAGE_PER_DEBUFF * mp.TargetDebuffsApplied;
              
 
             }

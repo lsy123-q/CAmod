@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +10,6 @@ using Terraria;
 using Terraria.ModLoader;
 using CAmod.Players;
 using CAmod.Players;
-using System.Reflection;
 using Terraria.ID;
 using System.Collections.Generic;
 using System;

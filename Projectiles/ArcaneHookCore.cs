@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using System;
@@ -715,20 +715,9 @@ namespace CAmod.Projectiles
         }
         private bool IsExcludedNPC(NPC n)
         {
-            // 모드 NPC면 실제 클래스 타입명을 가져온다 (RavagerClawLeft 같은거)
-            string typeName = n.ModNPC?.GetType().Name ?? string.Empty;
-
-            // 혹시 모를 대비로 FullName도 같이 본다 (표시명 기반인 경우가 많음)
-            string fullName = n.FullName ?? string.Empty;
-
-            // 포함 검사로 제외한다
-            if (typeName.Contains("RavagerClaw") || typeName.Contains("RockPillar"))
-                return true;
-
-            if (fullName.Contains("RavagerClaw") || fullName.Contains("RockPillar"))
-                return true;
-
-            return false;
+            return n.type == ModContent.NPCType<global::CalamityMod.NPCs.Ravager.RavagerClawLeft>()
+                || n.type == ModContent.NPCType<global::CalamityMod.NPCs.Ravager.RavagerClawRight>()
+                || n.type == ModContent.NPCType<global::CalamityMod.NPCs.Ravager.RockPillar>();
         }
         private void SpawnWaterDust()
         {

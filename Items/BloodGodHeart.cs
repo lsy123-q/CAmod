@@ -1,4 +1,4 @@
-﻿using Terraria;
+using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using CAmod.Players;
@@ -35,7 +35,7 @@ namespace CAmod.Items
 
             mp.bloodHeartEquipped = true; // 장착 상태 등록한다
             player.GetDamage(DamageClass.Magic) += 0.10f; // 마법 피해 15% 증가한다
-            player.statLifeMax2 += (int)(player.statLifeMax * 0.10f);
+            player.statLifeMax2 += (int)(player.statLifeMax * 0.25f);
         }
 
         public override void AddRecipes()

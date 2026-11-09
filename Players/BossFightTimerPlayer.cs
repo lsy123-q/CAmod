@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Terraria;
 using Terraria.ModLoader;
@@ -10,11 +10,29 @@ namespace CAmod.Players
     {
         private bool inBossFight = false;
         private int fightTimer = 0;
+        private long pyromancerDamage;
+        private long phantomDragonDamage;
+
+        public void RecordPyromancerDamage(int damage)
+        {
+            if (inBossFight && Player.whoAmI == Main.myPlayer && damage > 0)
+                pyromancerDamage += damage;
+        }
+
+        public void RecordPhantomDragonDamage(int damage)
+        {
+            if (inBossFight && Player.whoAmI == Main.myPlayer && damage > 0)
+                phantomDragonDamage += damage;
+        }
 
         private int lastBossCount = 0;
 
         public override void PostUpdate()
         {
+            // Each client displays and measures its own player's brand damage once.
+            if (Main.dedServ || Player.whoAmI != Main.myPlayer)
+                return;
+
             // 보스가 살아있는지 검사한다
             int bossCount = 0;
 
@@ -36,6 +54,8 @@ namespace CAmod.Players
                 {
                     inBossFight = true;
                     fightTimer = 0;
+                    pyromancerDamage = 0;
+                    phantomDragonDamage = 0;
                     lastBossCount = bossCount;
                 }
             }
@@ -58,10 +78,12 @@ namespace CAmod.Players
 
                     if (Main.netMode != 2) // 서버에서는 로컬 채팅 출력 안 한다
                     {
-                        Main.NewText($"보스 교전시간: {timeText}", 255, 200, 80); // 교전시간을 출력한다
+                        Main.NewText($"보스 교전시간: {timeText} | 파이로맨서 낙인 총 피해량: {pyromancerDamage:N0} | 팬텀드래곤 총 피해량: {phantomDragonDamage:N0}", 255, 200, 80); // 교전시간을 출력한다
                     }
 
                     fightTimer = 0;
+                    pyromancerDamage = 0;
+                    phantomDragonDamage = 0;
                     lastBossCount = 0;
                 }
                 else

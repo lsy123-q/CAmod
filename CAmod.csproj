@@ -16,6 +16,29 @@
 		<Reference Include="Luminance">
 			<HintPath>References/Luminance.dll</HintPath>
 		</Reference>
+		<Reference Include="CalamityMod">
+			<HintPath>References/CalamityMod.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	
+	<ItemGroup>
+	  <ShaderCompile Remove="Effects\SimpleAlchemicalSeal_B.fx" />
+	</ItemGroup>
+
+	
+	<ItemGroup>
+	  <ShaderCompile Remove="Effects\SimpleAlchemicalSeal_A.fx" />
+	</ItemGroup>
+
+	
+	<ItemGroup>
+	  <None Remove="Effects\SimpleAlchemicalSeal_A.fxc" />
+	</ItemGroup>
+
+	
+	<ItemGroup>
+	  <None Remove="Effects\SimpleAlchemicalSeal_B.fxc" />
 	</ItemGroup>
 
 </Project>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reflection;
+using System;
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.Audio;
@@ -70,58 +69,14 @@ namespace CAmod.Players
             if (!bloodHeartEquipped || bloodHeartCooldown > 0)
                 return;
 
-            if (!ModLoader.HasMod("CalamityMod"))
+            var calPlayer = Player.GetModPlayer<global::CalamityMod.CalPlayer.CalamityPlayer>();
+            double buffer = calPlayer.chaliceBleedoutBuffer;
+            if (buffer <= 0)
                 return;
 
-            try
-            {
-                var modPlayersField =
-                    typeof(Player).GetField("modPlayers", BindingFlags.Instance | BindingFlags.NonPublic);
-
-                var modPlayersList =
-                    modPlayersField?.GetValue(Player) as System.Collections.IEnumerable;
-
-                if (modPlayersList == null)
-                    return;
-
-                foreach (var mp in modPlayersList)
-                {
-                    if (mp.GetType().FullName == "CalamityMod.CalPlayer.CalamityPlayer")
-                    {
-                        var bufferField =
-                            mp.GetType().GetField("chaliceBleedoutBuffer",
-                                BindingFlags.Instance | BindingFlags.Public);
-
-                        var partialField =
-                            mp.GetType().GetField("chaliceDamagePointPartialProgress",
-                                BindingFlags.Instance | BindingFlags.Public);
-
-                        if (bufferField == null || partialField == null)
-                            return;
-
-                        double buffer = (double)bufferField.GetValue(mp);
-                        double partial = (double)partialField.GetValue(mp);
-
-                        if (buffer <= 0)
-                            return;
-
-                        double amountThisFrame = buffer * BleedDecay;
-                        double total = partial + amountThisFrame;
-                        int nextTickDamage = (int)total;
-
-                        if (nextTickDamage >= Player.statLife)
-                        {
-                            TriggerRevive();
-                        }
-
-                        break;
-                    }
-                }
-            }
-            catch
-            {
-                // 구조 변경 대비 무시
-            }
+            double total = calPlayer.chaliceDamagePointPartialProgress + buffer * BleedDecay;
+            if ((int)total >= Player.statLife)
+                TriggerRevive();
         }
 
         // ─────────────────────────────
@@ -163,39 +118,8 @@ namespace CAmod.Players
         // ─────────────────────────────
         private void ClearChaliceBuffer()
         {
-            try
-            {
-                var modPlayersField =
-                    typeof(Player).GetField("modPlayers", BindingFlags.Instance | BindingFlags.NonPublic);
-
-                var modPlayersList =
-                    modPlayersField?.GetValue(Player) as System.Collections.IEnumerable;
-
-                if (modPlayersList == null)
-                    return;
-
-                foreach (var mp in modPlayersList)
-                {
-                    if (mp.GetType().FullName == "CalamityMod.CalPlayer.CalamityPlayer")
-                    {
-                        foreach (var f in mp.GetType().GetFields(
-                            BindingFlags.Instance | BindingFlags.Public))
-                        {
-                            if (f.Name.Contains("chaliceBleedout"))
-                            {
-                                if (f.FieldType == typeof(double))
-                                    f.SetValue(mp, 0d);
-                                else if (f.FieldType == typeof(float))
-                                    f.SetValue(mp, 0f);
-                                else if (f.FieldType == typeof(int))
-                                    f.SetValue(mp, 0);
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-            catch { }
+            var calPlayer = Player.GetModPlayer<global::CalamityMod.CalPlayer.CalamityPlayer>();
+            calPlayer.chaliceBleedoutBuffer = 0D;
         }
 
         // ─────────────────────────────

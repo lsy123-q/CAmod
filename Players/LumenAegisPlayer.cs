@@ -5,9 +5,9 @@ using Terraria.DataStructures;
 using Terraria.ModLoader;
 using CAmod.Projectiles;
 using Terraria.ID;
-using System.Reflection;
 using System;
 using Terraria;
+using CalamityMod.CalPlayer;
 namespace CAmod.Players
 {
     public class LumenAegisPlayer : ModPlayer
@@ -18,7 +18,7 @@ namespace CAmod.Players
 
         public bool lumenAegisEquipped;
         public bool lumenAegisActive;
-
+        private bool lumenAegisFreeDodgePending;
         private const float NormalFresnelPower = 5f;
 
         public float lumenAegisShield;
@@ -71,23 +71,8 @@ namespace CAmod.Players
         // 현재 생성된 보호막 투사체의 인덱스를 저장한다
         private int lumenAegisProjectileIndex = -1;
 
-        // =========================
-        // 칼라미티 리플렉션 캐시
-        // =========================
-
-        private static Type calamityPlayerType;
-        private static MethodInfo getModPlayerMethod;
-
-        private static FieldInfo chaliceOfTheBloodGodField;
-        private static FieldInfo chaliceBleedoutBufferField;
-        private static FieldInfo chaliceBleedoutToApplyField;
-        private static FieldInfo chaliceDamagePointProgressField;
-
-        // 현재 플레이어의 CalamityPlayer 객체를 저장한다
-        private object cachedCalamityPlayer;
-
-        // 리플렉션 캐싱이 끝났는지 저장한다
-        private bool calamityPlayerCached;
+        // 현재 플레이어의 칼라미티 플레이어 데이터를 저장한다
+        private CalamityPlayer calamityPlayer;
 
         // =========================
         // 상수
@@ -97,9 +82,9 @@ namespace CAmod.Players
         private const int ShieldDuration = 180;
 
         private const float ShieldDamageThreshold = 0.05f;
-        private const float ShieldDamageReduction = 0.5f;
+        private const float ShieldDamageReduction = 0.1f;
 
-        private const float MinimumCooldown = 5f;
+        private const float MinimumCooldown = 15f;
         private const float MaximumCooldown = 75f;
 
         // 준비 상태 페이드 시간 0.2초
@@ -125,10 +110,13 @@ namespace CAmod.Players
             lumenAegisEquipped = false;
         }
 
+        public override void Initialize()
+        {
+            calamityPlayer = Player.GetModPlayer<CalamityPlayer>();
+        }
+
         public override void PostUpdate()
         {
-            CacheCalamityPlayer();
-
             UpdateEquipTimer();
             UpdateShieldTimer();
             UpdateCooldown();
@@ -137,117 +125,13 @@ namespace CAmod.Players
         }
 
         // =========================
-        // 칼라미티 플레이어 캐싱
-        // =========================
-
-        private void CacheCalamityPlayer()
-        {
-            // 이미 캐싱했으면 다시 리플렉션하지 않는다
-            if (calamityPlayerCached)
-                return;
-
-            try
-            {
-                if (!ModLoader.HasMod("CalamityMod"))
-                    return;
-
-                Mod calamity =
-                    ModLoader.GetMod("CalamityMod");
-
-                if (calamity == null)
-                    return;
-
-                // 성공한 기존 코드와 동일하게 Calamity 코드에서 타입을 가져온다
-                if (calamityPlayerType == null)
-                {
-                    calamityPlayerType =
-                        calamity.Code.GetType(
-                            "CalamityMod.CalPlayer.CalamityPlayer");
-                }
-
-                if (calamityPlayerType == null)
-                    return;
-
-                // GetModPlayer<T>() 메서드를 한 번만 찾는다
-                if (getModPlayerMethod == null)
-                {
-                    getModPlayerMethod =
-                        typeof(Player).GetMethod(
-                            "GetModPlayer",
-                            1,
-                            Type.EmptyTypes);
-                }
-
-                if (getModPlayerMethod == null)
-                    return;
-
-                // CalamityPlayer 타입으로 GetModPlayer를 구성한다
-                MethodInfo constructed =
-                    getModPlayerMethod.MakeGenericMethod(
-                        calamityPlayerType);
-
-                // 현재 플레이어의 CalamityPlayer 객체를 캐싱한다
-                cachedCalamityPlayer =
-                    constructed.Invoke(
-                        Player,
-                        null);
-
-                if (cachedCalamityPlayer == null)
-                    return;
-
-                // 성배 관련 필드를 한 번만 찾는다
-                chaliceOfTheBloodGodField =
-                    calamityPlayerType.GetField(
-                        "chaliceOfTheBloodGod",
-                        BindingFlags.Public |
-                        BindingFlags.NonPublic |
-                        BindingFlags.Instance);
-
-                chaliceBleedoutBufferField =
-                    calamityPlayerType.GetField(
-                        "chaliceBleedoutBuffer",
-                        BindingFlags.Public |
-                        BindingFlags.NonPublic |
-                        BindingFlags.Instance);
-
-                chaliceBleedoutToApplyField =
-                    calamityPlayerType.GetField(
-                        "chaliceBleedoutToApplyOnHurt",
-                        BindingFlags.Public |
-                        BindingFlags.NonPublic |
-                        BindingFlags.Instance);
-
-                chaliceDamagePointProgressField =
-                    calamityPlayerType.GetField(
-                        "chaliceDamagePointPartialProgress",
-                        BindingFlags.Public |
-                        BindingFlags.NonPublic |
-                        BindingFlags.Instance);
-
-                // 모든 캐싱이 완료되었음을 기록한다
-                calamityPlayerCached = true;
-            }
-            catch
-            {
-                // 칼라미티가 없거나 구조가 변경되면 무시한다
-            }
-        }
-
-        // =========================
         // 성배 활성화 여부
         // =========================
 
         private bool IsChaliceActive()
         {
-            if (!calamityPlayerCached ||
-                cachedCalamityPlayer == null ||
-                chaliceOfTheBloodGodField == null)
-            {
-                return false;
-            }
-
-            return (bool)chaliceOfTheBloodGodField.GetValue(
-                cachedCalamityPlayer);
+            return calamityPlayer != null &&
+                   calamityPlayer.chaliceOfTheBloodGod;
         }
 
         // =========================
@@ -256,35 +140,17 @@ namespace CAmod.Players
 
         private double GetChaliceTotalBuffer()
         {
-            if (!calamityPlayerCached ||
-                cachedCalamityPlayer == null)
-            {
+            if (calamityPlayer == null)
                 return 0d;
-            }
 
-            double existingBuffer = 0d;
-            int pendingBuffer = 0;
-
-            if (chaliceBleedoutBufferField != null)
-            {
-                existingBuffer =
-                    (double)chaliceBleedoutBufferField.GetValue(
-                        cachedCalamityPlayer);
-            }
-
-            if (chaliceBleedoutToApplyField != null)
-            {
-                pendingBuffer =
-                    (int)chaliceBleedoutToApplyField.GetValue(
-                        cachedCalamityPlayer);
-            }
-
-            return existingBuffer + pendingBuffer;
+            return calamityPlayer.chaliceBleedoutBuffer +
+                   calamityPlayer.chaliceBleedoutToApplyOnHurt;
         }
 
         // =========================
         // 성배 버퍼를 실드가 대신 부담한다
         // =========================
+
 
         private void ApplyChaliceBufferToShield()
         {
@@ -294,22 +160,11 @@ namespace CAmod.Players
             if (lumenAegisShield <= 0f)
                 return;
 
-            double existingBuffer = 0d;
-            int pendingBuffer = 0;
+            double existingBuffer =
+                calamityPlayer.chaliceBleedoutBuffer;
 
-            if (chaliceBleedoutBufferField != null)
-            {
-                existingBuffer =
-                    (double)chaliceBleedoutBufferField.GetValue(
-                        cachedCalamityPlayer);
-            }
-
-            if (chaliceBleedoutToApplyField != null)
-            {
-                pendingBuffer =
-                    (int)chaliceBleedoutToApplyField.GetValue(
-                        cachedCalamityPlayer);
-            }
+            int pendingBuffer =
+                calamityPlayer.chaliceBleedoutToApplyOnHurt;
 
             double totalBuffer =
                 existingBuffer + pendingBuffer;
@@ -317,79 +172,55 @@ namespace CAmod.Players
             if (totalBuffer <= 0d)
                 return;
 
-            // 성배 버퍼에는 보호막 피해 감소율을 적용한다
+            // 피해 감소율을 적용해 성배 버퍼가 보호막에 주는 피해를 계산한다
             double shieldDamageFromBuffer =
-                totalBuffer * ShieldDamageReduction;
+                totalBuffer * (1d - ShieldDamageReduction);
 
-            // 현재 실드가 감당할 수 있는 만큼만 보호막 피해를 적용한다
+            // 현재 보호막이 감당할 수 있는 만큼만 피해를 적용한다
             shieldDamageFromBuffer =
-                Math.Min(
-                    lumenAegisShield,
-                    shieldDamageFromBuffer);
+                Math.Min(lumenAegisShield, shieldDamageFromBuffer);
 
             if (shieldDamageFromBuffer <= 0d)
                 return;
 
-            // 보호막에 실제로 들어간 피해량을 기준으로 성배 버퍼를 소모한다
+            // 보호막에 실제로 적용된 피해량을 기준으로 성배 버퍼 소모량을 계산한다
             double bufferConsumed =
                 shieldDamageFromBuffer /
-                ShieldDamageReduction;
+                (1d - ShieldDamageReduction);
 
             // 이번 피격에서 새로 생긴 버퍼부터 소모한다
             int pendingDamage =
-                (int)Math.Min(
-                    pendingBuffer,
-                    bufferConsumed);
+                (int)Math.Min(pendingBuffer, bufferConsumed);
 
             pendingBuffer -= pendingDamage;
             bufferConsumed -= pendingDamage;
 
-            if (chaliceBleedoutToApplyField != null)
-            {
-                chaliceBleedoutToApplyField.SetValue(
-                    cachedCalamityPlayer,
-                    pendingBuffer);
-            }
+            calamityPlayer.chaliceBleedoutToApplyOnHurt =
+                pendingBuffer;
 
             // 기존에 쌓여 있던 버퍼를 소모한다
             double existingDamage =
-                Math.Min(
-                    existingBuffer,
-                    bufferConsumed);
+                Math.Min(existingBuffer, bufferConsumed);
 
             existingBuffer -= existingDamage;
 
-            if (chaliceBleedoutBufferField != null)
-            {
-                chaliceBleedoutBufferField.SetValue(
-                    cachedCalamityPlayer,
-                    existingBuffer);
-            }
+            calamityPlayer.chaliceBleedoutBuffer =
+                existingBuffer;
 
-            // 기존 성배 버퍼의 소수점 진행량도 같이 감소시킨다
-            if (chaliceDamagePointProgressField != null)
-            {
-                double partialProgress =
-                    (double)chaliceDamagePointProgressField.GetValue(
-                        cachedCalamityPlayer);
+            // 기존 성배 버퍼의 소수점 진행량도 함께 감소시킨다
+            calamityPlayer.chaliceDamagePointPartialProgress -=
+                existingDamage;
 
-                partialProgress -= existingDamage;
+            if (calamityPlayer.chaliceDamagePointPartialProgress < 0d)
+                calamityPlayer.chaliceDamagePointPartialProgress = 0d;
 
-                if (partialProgress < 0d)
-                    partialProgress = 0d;
-
-                chaliceDamagePointProgressField.SetValue(
-                    cachedCalamityPlayer,
-                    partialProgress);
-            }
-
-            // 성배 버퍼가 부담한 피해에 50% 감소율을 적용해 실드를 깎는다
-            lumenAegisShield -=
-                (float)shieldDamageFromBuffer;
+            // 성배 버퍼가 부담한 피해를 보호막에 적용한다
+            lumenAegisShield -= (float)shieldDamageFromBuffer;
 
             if (lumenAegisShield < 0f)
                 lumenAegisShield = 0f;
         }
+
 
         // =========================
         // 장착 시간
@@ -486,20 +317,10 @@ namespace CAmod.Players
 
 
 
-            int regen = Player.lifeRegen;
-
-            float lifeRatio = (float)Player.statLife / Player.statLifeMax2;
-            if (lifeRatio < 1f)
-            {
-                int missing = Player.statLifeMax2 - Player.statLife;
-                regen += missing / 80;
-            }
-
-            float timeBonus = Player.lifeRegenTime / 10f;
-            if (timeBonus > 15)
-                timeBonus = 15;
-            regen += (int)timeBonus;
-            Player.lifeRegen = regen;
+            int missing = Player.statLifeMax2 - Player.statLife;
+            Player.lifeRegen += (int)Math.Round(
+                missing / (float)Player.statLifeMax2 * 1f,
+                MidpointRounding.AwayFromZero);
 
         }
 
@@ -567,45 +388,52 @@ namespace CAmod.Players
             modifiers.ModifyHurtInfo +=
                 ModifyLumenAegisHurt;
         }
+        public override bool FreeDodge(Player.HurtInfo info)
+        {
+            if (lumenAegisFreeDodgePending)
+            {
+                lumenAegisFreeDodgePending = false;
+                return true;
+            }
+
+            return false;
+        }
 
         private void ModifyLumenAegisHurt(
             ref Player.HurtInfo info)
         {
-            // =========================
-            // 이미 활성화된 실드
-            // =========================
-
+            // 이미 활성화된 보호막을 처리한다
             if (lumenAegisActive)
             {
                 int shieldDamage =
-    (info.Damage + 1) / 2;
+                    (int)Math.Ceiling(
+                        info.Damage * (1f - ShieldDamageReduction));
 
-                lumenAegisShield -=
-                    shieldDamage;
+                lumenAegisShield -= shieldDamage;
 
                 // 성배 버퍼가 적용되기 전의 값을 저장한다
                 double chaliceBufferBefore =
                     GetChaliceTotalBuffer();
 
-                // 성배 출혈 버퍼도 실드가 대신 부담한다
+                // 성배 출혈 버퍼도 보호막이 대신 부담한다
                 ApplyChaliceBufferToShield();
 
-                // 실제로 실드가 추가로 부담한 성배 버퍼 피해량을 계산한다
+                // 실제로 보호막이 부담한 성배 버퍼 피해량을 계산한다
                 double chaliceBufferAfter =
                     GetChaliceTotalBuffer();
 
                 int chaliceShieldDamage =
                     (int)Math.Ceiling(
                         (chaliceBufferBefore - chaliceBufferAfter) *
-                        ShieldDamageReduction);
+                        (1d - ShieldDamageReduction));
 
-                // 실제 실드가 부담한 총 피해량이다
+                // 보호막이 부담한 총 피해량을 계산한다
                 int totalShieldDamage =
                     shieldDamage + chaliceShieldDamage;
 
-                lumenAegisVisualHitTimer =
-                    VisualHitTime;
-                int dustCount = totalShieldDamage / 5;
+                lumenAegisVisualHitTimer = VisualHitTime;
+
+                int dustCount = totalShieldDamage / 6;
 
                 for (int k = 0; k < dustCount; k++)
                 {
@@ -616,13 +444,19 @@ namespace CAmod.Players
                         Player.Center + direction * 20f;
 
                     Vector2 particleVelocity =
-                    direction * Main.rand.NextFloat(2f, 6f);
+                        direction * Main.rand.NextFloat(2f, 6f);
+
                     direction.Y *= 0.6f;
 
-                    Dust dust2 = Dust.NewDustPerfect(spawnPosition, DustID.Electric, particleVelocity);
+                    Dust dust2 = Dust.NewDustPerfect(
+                        spawnPosition,
+                        DustID.Electric,
+                        particleVelocity);
+
                     dust2.scale = Main.rand.NextFloat(0.9f, 1.5f);
                     dust2.noGravity = true;
                 }
+
                 SoundEngine.PlaySound(
                     ShieldHitSound,
                     Player.Center);
@@ -637,24 +471,25 @@ namespace CAmod.Players
                     Color.Gray,
                     "-" + totalShieldDamage);
 
-                if (lumenAegisShield >= 0f)
+                if (lumenAegisShield > 0f)
                 {
+                    lumenAegisFreeDodgePending = true;
                     info.Damage = 0;
-
-                    if (lumenAegisShield == 0f)
-                    {
-                        lumenAegisShield = 0f;
-
-                        SoundEngine.PlaySound(
-                            ShieldBreakSound,
-                            Player.Center);
-
-                        EndShield();
-                    }
-
                     return;
                 }
 
+                if (lumenAegisShield == 0f)
+                {
+                    info.Damage = 0;
+                    SoundEngine.PlaySound(
+                        ShieldBreakSound,
+                        Player.Center);
+
+                    EndShield();
+                    return;
+                }
+
+                // 보호막을 초과한 피해를 실제 피해량으로 환산한다
                 float overflowDamage =
                     -lumenAegisShield;
 
@@ -665,43 +500,38 @@ namespace CAmod.Players
                     Player.Center);
 
                 int damageToPlayer =
-                    (int)(overflowDamage * 2f);
+                    (int)Math.Ceiling(
+                        overflowDamage /
+                        (1f - ShieldDamageReduction));
 
                 if (damageToPlayer < 1)
                     damageToPlayer = 1;
 
-                info.Damage =
-                    damageToPlayer;
+                info.Damage = damageToPlayer;
 
                 EndShield();
                 return;
             }
 
-            // =========================
-            // 실드 최초 활성화
-            // =========================
-
+            // 보호막 최초 활성화 조건을 검사한다
             if (lumenAegisCooldown > 0)
                 return;
 
             if (lumenAegisEquipTimer > 0)
                 return;
 
-            double effectiveDamage =
-                info.Damage;
+            double effectiveDamage = info.Damage;
 
             if (IsChaliceActive())
             {
                 // 현재 피해와 성배 출혈 버퍼를 합산한다
-                effectiveDamage +=
-                    GetChaliceTotalBuffer();
+                effectiveDamage += GetChaliceTotalBuffer();
             }
 
             double threshold =
-                Player.statLifeMax2 *
-                ShieldDamageThreshold;
+                Player.statLifeMax2 * ShieldDamageThreshold;
 
-            // 5%를 초과했을 때만 보호막을 발동한다
+            // 최대 체력의 5%를 초과하는 피해에서만 보호막을 발동한다
             if (effectiveDamage <= threshold)
                 return;
 
@@ -711,19 +541,19 @@ namespace CAmod.Players
                 return;
 
             int initialShieldDamage =
-    (info.Damage + 1) / 2;
+                (int)Math.Ceiling(
+                    info.Damage * (1f - ShieldDamageReduction));
 
-            lumenAegisShield -=
-                initialShieldDamage;
+            lumenAegisShield -= initialShieldDamage;
 
-            // 첫 방어에서 성배 버퍼가 적용되기 전 값을 저장한다
+            // 최초 방어에서 성배 버퍼가 적용되기 전의 값을 저장한다
             double initialChaliceBufferBefore =
                 GetChaliceTotalBuffer();
 
-            // 최초 발동 공격의 성배 버퍼도 실드가 부담한다
+            // 최초 발동 공격의 성배 버퍼도 보호막이 부담한다
             ApplyChaliceBufferToShield();
 
-            // 첫 방어에서 실제로 소모된 성배 버퍼를 계산한다
+            // 최초 방어에서 실제로 소모된 성배 버퍼를 계산한다
             double initialChaliceBufferAfter =
                 GetChaliceTotalBuffer();
 
@@ -731,14 +561,13 @@ namespace CAmod.Players
                 (int)Math.Ceiling(
                     (initialChaliceBufferBefore -
                      initialChaliceBufferAfter) *
-                    ShieldDamageReduction);
+                    (1d - ShieldDamageReduction));
 
             int initialTotalShieldDamage =
                 initialShieldDamage +
                 initialChaliceShieldDamage;
 
-            lumenAegisVisualHitTimer =
-                VisualHitTime;
+            lumenAegisVisualHitTimer = VisualHitTime;
 
             int initialDustCount =
                 initialTotalShieldDamage / 5;
@@ -756,15 +585,12 @@ namespace CAmod.Players
 
                 direction.Y *= 0.6f;
 
-                Dust dust2 =
-                    Dust.NewDustPerfect(
-                        spawnPosition,
-                        DustID.Electric,
-                        particleVelocity);
+                Dust dust2 = Dust.NewDustPerfect(
+                    spawnPosition,
+                    DustID.Electric,
+                    particleVelocity);
 
-                dust2.scale =
-                    Main.rand.NextFloat(0.9f, 1.5f);
-
+                dust2.scale = Main.rand.NextFloat(0.9f, 1.5f);
                 dust2.noGravity = true;
             }
 
@@ -782,24 +608,25 @@ namespace CAmod.Players
                 Color.Gray,
                 "-" + initialTotalShieldDamage);
 
-            if (lumenAegisShield >= 0f)
+            if (lumenAegisShield > 0f)
             {
+                lumenAegisFreeDodgePending = true;
                 info.Damage = 0;
-
-                if (lumenAegisShield == 0f)
-                {
-                    lumenAegisShield = 0f;
-
-                    SoundEngine.PlaySound(
-                        ShieldBreakSound,
-                        Player.Center);
-
-                    EndShield();
-                }
-
                 return;
             }
 
+            if (lumenAegisShield == 0f)
+            {
+                info.Damage = 0;
+                SoundEngine.PlaySound(
+                    ShieldBreakSound,
+                    Player.Center);
+
+                EndShield();
+                return;
+            }
+
+            // 최초 발동에서 보호막을 초과한 피해를 환산한다
             float initialOverflowDamage =
                 -lumenAegisShield;
 
@@ -810,16 +637,18 @@ namespace CAmod.Players
                 Player.Center);
 
             int initialDamageToPlayer =
-                (int)(initialOverflowDamage * 2f);
+                (int)Math.Ceiling(
+                    initialOverflowDamage /
+                    (1f - ShieldDamageReduction));
 
             if (initialDamageToPlayer < 1)
                 initialDamageToPlayer = 1;
 
-            info.Damage =
-                initialDamageToPlayer;
+            info.Damage = initialDamageToPlayer;
 
             EndShield();
         }
+
 
         // =========================
         // 실드 생성
@@ -838,8 +667,7 @@ namespace CAmod.Players
 
             lumenAegisActive = true;
 
-            lumenAegisShieldMax =
-                Player.statManaMax2;
+            lumenAegisShieldMax = Player.statManaMax2 + 120f;
 
             lumenAegisShield =
                 lumenAegisShieldMax;
@@ -852,7 +680,7 @@ namespace CAmod.Players
             lumenAegisVisualActivateTimer =
     VisualActivateTime;
 
-            
+
 
             lumenAegisVisualReadyTimer = 0;
 
@@ -895,10 +723,7 @@ namespace CAmod.Players
                     1f);
 
             float cooldownSeconds =
-                MinimumCooldown +
-                damageRatio *
-                (MaximumCooldown -
-                MinimumCooldown);
+    Math.Max(MinimumCooldown, damageRatio * MaximumCooldown);
 
             lumenAegisCooldownMax =
                 (int)(cooldownSeconds * 60f);
@@ -1125,7 +950,7 @@ namespace CAmod.Players
                 lumenAegisVisualAlpha =
                     MathHelper.Lerp(
                         0f,
-                        0.1f,
+                        0.15f,
                         progress);
 
                 lumenAegisVisualFresnelPower =
@@ -1225,8 +1050,8 @@ namespace CAmod.Players
         public override void OnRespawn()
         {
             // 사망 후 리스폰하면 보호막 쿨타임을 다시 최대치로 설정한다
-           
-                lumenAegisCooldown = 0;
+
+            lumenAegisCooldown = 0;
             lumenAegisCooldownMax = 0;
             lumenAegisEquipTimer = 0;
             lumenAegisActive = false;
@@ -1235,7 +1060,7 @@ namespace CAmod.Players
             lumenAegisImmuneTime = 0;
         }
         // =========================
-        // 렌더링 데이터
+        // 렌더링 데이터이터이터
         // =========================
 
         public bool TryGetLumenAegisRenderData(

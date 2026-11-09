@@ -1,4 +1,4 @@
-﻿using Terraria;
+using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using CAmod.Buffs;
@@ -25,7 +25,7 @@ namespace CAmod.Items.Weapons
         {
             Item.width = 42;
             Item.height = 20;
-            Item.damage = 10000;
+            Item.damage = 75000;
             Item.DamageType = DamageClass.Magic;
             Item.mana = 100;
             Item.useTime = 30;
@@ -62,7 +62,7 @@ namespace CAmod.Items.Weapons
     ref float scale,
     int whoAmI)
         {
-            Texture2D tex = ModContent.Request<Texture2D>("CAmod/Items/Weapons/cosmic").Value;
+            Texture2D tex = global::CAmod.Systems.UltraCosmicDivideAssets.ItemTexture.Value;
             // 월드 드랍용 스프라이트 불러온다
 
             Vector2 position = Item.Center - Main.screenPosition;
@@ -93,7 +93,7 @@ namespace CAmod.Items.Weapons
     Vector2 origin,
     float scale)
         {
-            Texture2D tex = ModContent.Request<Texture2D>("CAmod/Items/Weapons/cosmic").Value;
+            Texture2D tex = global::CAmod.Systems.UltraCosmicDivideAssets.ItemTexture.Value;
             // 인벤토리에서만 사용할 별도 스프라이트 불러온다
 
             spriteBatch.Draw(

@@ -1,4 +1,4 @@
-﻿using Terraria;
+using Terraria;
 using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
 using Terraria.ID;
@@ -54,36 +54,54 @@ namespace CAmod.Projectiles
                 Projectile.frame = (Projectile.frame + 1) % 5;
             }
 
-            // [수정] 플레이어가 ai[1]을 1로 유지하는 동안은 timeLeft를 61로 고정하여 절대 죽지 않음 (무한 유지)
-            // 플레이어가 토글을 끄면 ai[1]이 0이 되므로, 그때부터 자연스럽게 timeLeft가 60틱 동안 감소함
-            bool isInfiniteMode = Projectile.ai[1] == 1f;
+            bool fadingOut = Projectile.ai[2] > 0f;
+            bool isInfiniteMode = Projectile.ai[1] == 1f && !fadingOut;
             if (isInfiniteMode)
+                Projectile.timeLeft = EndFadeTime + 1;
+
+            // End fade takes precedence even when the original fade-in has not finished.
+            if (!isInfiniteMode && Projectile.timeLeft <= EndFadeTime && !fadingOut)
             {
-                Projectile.timeLeft = 61;
+                BeginFadeOut();
+                fadingOut = true;
             }
 
-            // 회전 속도 제어 (페이드아웃 구간 60틱 이하일 때 2배속)
-            float rotateSpeedMultiplier = 1f;
-            if (Projectile.timeLeft <= EndFadeTime)
+            angle += RotatePerTick * (fadingOut ? 2f : 1f);
+            if (fadingOut)
             {
-                rotateSpeedMultiplier = 2f;
-            }
-            angle += RotatePerTick * rotateSpeedMultiplier;
-
-            // 스케일 페이드인 / 페이드아웃
-            int elapsed = (int)Projectile.ai[0];
-            if (elapsed < FadeInTime)
-            {
-                Projectile.scale = elapsed / (float)FadeInTime;
-            }
-            else if (Projectile.timeLeft <= EndFadeTime) // [수정] 꺼지는 도중(60틱 이하)일 때 축소
-            {
-                Projectile.scale = Projectile.timeLeft / (float)EndFadeTime;
+                Projectile.timeLeft = Math.Min(Projectile.timeLeft, EndFadeTime);
+                float remaining = MathHelper.Clamp(Projectile.timeLeft / (float)EndFadeTime, 0f, 1f);
+                Projectile.scale = (Projectile.ai[2] - 1f) * MathHelper.SmoothStep(0f, 1f, remaining);
             }
             else
             {
-                Projectile.scale = 1f;
+                int elapsed = (int)Projectile.ai[0];
+                Projectile.scale = MathHelper.Clamp(elapsed / (float)FadeInTime, 0f, 1f);
             }
+        }
+
+        public void BeginFadeOut()
+        {
+            if (Projectile.ai[2] > 0f)
+                return;
+            // Encode the current scale plus one, so zero remains the non-fading state.
+            // ai[2] is synchronized, keeping early-cancel scale consistent on other clients.
+            Projectile.ai[2] = 1f + MathHelper.Clamp(Projectile.scale, 0f, 1f);
+            Projectile.ai[1] = 0f;
+            Projectile.timeLeft = Math.Min(Projectile.timeLeft, EndFadeTime);
+            Projectile.netUpdate = true;
+        }
+
+        public static float GetRadiusMultiplier(int elapsed, int timeLeft)
+        {
+            float expansion = MathHelper.Clamp((elapsed - FadeInTime) / (float)ExpandTime, 0f, 1f);
+            float multiplier = MathHelper.SmoothStep(1f, ExpandMultiplier, expansion);
+            if (timeLeft <= EndFadeTime)
+            {
+                float endProgress = MathHelper.Clamp(1f - timeLeft / (float)EndFadeTime, 0f, 1f);
+                multiplier *= MathHelper.SmoothStep(1f, 3.5f, endProgress);
+            }
+            return multiplier;
         }
 
         public override bool PreDraw(ref Color lightColor)
@@ -103,23 +121,7 @@ namespace CAmod.Projectiles
 
         private void DrawOrbitCircle(Texture2D texture, int frameHeight, Vector2 origin, Color glowColor, int elapsed, float baseRadius, float dir)
         {
-            float radius = baseRadius;
-            if (elapsed >= FadeInTime && elapsed < FadeInTime + ExpandTime)
-            {
-                float t = (elapsed - FadeInTime) / (float)ExpandTime;
-                radius = MathHelper.Lerp(baseRadius, baseRadius * ExpandMultiplier, t);
-            }
-            else if (elapsed >= FadeInTime + ExpandTime)
-            {
-                radius = baseRadius * ExpandMultiplier;
-            }
-
-            // [수정] 무한 유지 모드가 해제되어 완전히 소멸하는 단계(60틱 이하)일 때 반경 확산 연출
-            if (Projectile.timeLeft <= 60)
-            {
-                float t = 1f - (Projectile.timeLeft / 60f);
-                radius *= MathHelper.Lerp(1f, 3.5f, t * t);
-            }
+            float radius = baseRadius * GetRadiusMultiplier(elapsed, Projectile.timeLeft);
 
             for (int i = 0; i < 10; i++)
             {

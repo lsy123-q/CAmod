@@ -1,4 +1,64 @@
 Items: {
+	FlameManaWard: {
+		DisplayName: 화염 마나 결계
+		Tooltip:
+			'''
+			마나 화상을 포함한 화상 지속 피해를 마나 소모로 대신 지불합니다.
+			초당 최대 20의 체력 피해를 치환하며, 피해 1당 마나 10을 소모합니다.
+			역병보석과 광채의 지속 피해 상쇄 효과를 먼저 합산하여 적용합니다.
+			마나가 부족하면 치환하지 못한 피해는 체력으로 받습니다.
+			'''
+	}
+
+	PhantomDragonLauncher: {
+		DisplayName: 팬텀 드래곤 발사기
+		Tooltip:
+			'''
+			영혼을 대가로 팬텀 드래곤과 계약하여 함께 싸웁니다.
+			[DRAGON_KEY] 키를 눌러 팬텀 드래곤의 공격 모드와 방어 모드를 전환할 수 있습니다.
+			공격 모드에서는 피해를 입히거나 입을 수 있으며, 방어 모드에서는 피해를 입히거나 입지 않습니다.
+			드래곤이 누적 피해 10,000을 달성할 때마다 플레이어에게 날아가는 회복 구체를 생성합니다.
+			드래곤은 당신의 여정이 진행될수록 더욱 강력해지며, 드래곤이 사망하면 [c/FF4040:플레이어 또한 사망합니다].
+			현재 드래곤의 스탯
+			체력 : [DRAGON_HP]
+			공격력 : [DRAGON_DAMAGE]
+			'''
+	}
+
+	HiveLauncher: {
+		DisplayName: 벌집 발사기
+		Tooltip:
+			'''
+			5초마다 벌통 1개 충전, 최대 5개 저장
+			마법 공격 적중 시 벌통 NPC를 연속 발사
+			벌통이 충돌하거나 요격되면 소형 벌 NPC 10마리 방출
+			소형 벌은 각각 25의 기본 피해를 주며 적 투사체에 요격당할 수 있음
+			지속 적중 기준 기본 DPS 50 (방어력, 요격 및 빗나감 미포함)
+			'''
+	}
+
+	TentacleLauncher: {
+		DisplayName: 촉수 발사기
+		Tooltip:
+			'''
+			5초마다 촉수 1개 충전, 최대 5개 저장
+			마법 공격 적중 시 플랜테라 촉수 NPC를 연속 발사
+			충돌 피해량 625, 적 투사체에 요격당할 수 있음
+			지속 적중 기준 기본 DPS 125 (방어력, 요격 및 빗나감 미포함)
+			'''
+	}
+
+	SharkLauncher: {
+		DisplayName: 상어 발사기
+		Tooltip:
+			'''
+			5초마다 상어 1마리 충전, 최대 5마리 저장
+			마법 공격 적중 시 듀크 피쉬론의 상어 NPC를 연속 발사
+			충돌 피해량 1,250, 적 투사체에 요격당할 수 있음
+			지속 적중 기준 기본 DPS 250 (방어력, 요격 및 빗나감 미포함)
+			'''
+	}
+
 	MageCharm: {
 		DisplayName: Mage Charm
 		Tooltip: ""
@@ -115,7 +175,7 @@ Items: {
 		Tooltip:
 			'''
 			+10% magic damage
-			+10% maximum life
+			+25% maximum life
 			When taking fatal damage, releases 16 Empowered Bloodflare Souls and survives with 10 life
 			Cooldown is 60 seconds, and during the cooldown, life regeneration +2
 			'''
@@ -135,9 +195,9 @@ Items: {
 			and ignores debuff immunity.
 			When the Flame Sigil reaches maximum stacks,
 			multiple types of burning debuffs are inflicted on the target.
-			+2.5% final Magic damage for each burning debuff applied to the target.
+			+25% Flame Sigil damage per Calamity Heat-type debuff on a branded enemy.
 			Current maximum Sigil damage: [fire]
-			Applied final Magic damage bonus: +[damage]%
+			Current Flame Sigil damage bonus: +[damage]%
 			'''
 	}
 
@@ -197,7 +257,14 @@ Items: {
 	}
 
 	LumenAegis: {
-		Tooltip: ""
+		Tooltip:
+			'''
+			When taking damage equal to or greater than 5% of your maximum health, surround yourself with an Overcharged Quantum Shield that absorbs incoming damage.
+			The shield has a capacity equal to 100% of your maximum mana plus 120, grants 10% damage reduction, and dissipates after 3 seconds.
+			Its cooldown ranges from 15 to 75 seconds, depending on the amount of damage absorbed by the shield.
+			The shield becomes available 15 seconds after equipping the accessory.
+			While the shield is on cooldown, natural health regeneration is increased by 75% and occurs 100% faster. Additionally, gain +1 to +8 health regeneration based on your missing health.
+			'''
 		DisplayName: Lumen Aegis
 	}
 }
@@ -214,6 +281,7 @@ Keybinds: {
 	}
 
 	"Harmony Cycle Toggle.DisplayName": Harmony  Cycle  Toggle
+	"Phantom Dragon Mode.DisplayName": Phantom  Dragon  Mode
 }
 
 Buffs: {
@@ -301,6 +369,9 @@ Projectiles: {
 	MaskingProjectile.DisplayName: Masking Projectile
 	RabbitDamageProjectile.DisplayName: Rabbit Damage Projectile
 	LumenAegisProjectile.DisplayName: Lumen Aegis Projectile
+	SimpleAlchemicalSealProjectile.DisplayName: Simple Alchemical Seal Projectile
+	PhantomDragonContactHit.DisplayName: Phantom Dragon Contact Hit
+	PhantomDragonHealOrb.DisplayName: Phantom Dragon Heal Orb
 }
 
 Configs: {
@@ -326,10 +397,105 @@ Configs: {
 			Label: UI Y
 			Tooltip: ""
 		}
+
+		ArcaneCooldownUIScale: {
+			Label: Arcane Cooldown UI Scale
+			Tooltip: ""
+		}
+
+		Headers: {
+			BloodMageCooldownUI: Blood Mage Cooldown U I Header
+			DimensionGateCooldownUI: Dimension Gate Cooldown U I Header
+			LeafShieldCooldownUI: Leaf Shield Cooldown U I Header
+			ArcaneCooldownUI: Arcane Cooldown U I Header
+			LumenAegisCooldownUI: Lumen Aegis Cooldown U I Header
+			BloodGodHeartCooldownUI: Blood God Heart Cooldown U I Header
+			BorderlessCooldownUI: Borderless Cooldown U I Header
+		}
+
+		BloodMageUIPosX: {
+			Label: Blood Mage UI X
+			Tooltip: ""
+		}
+
+		BloodMageUIPosY: {
+			Label: Blood Mage UI Y
+			Tooltip: ""
+		}
+
+		DimensionGateUIPosX: {
+			Label: Dimension Gate UI X
+			Tooltip: ""
+		}
+
+		DimensionGateUIPosY: {
+			Label: Dimension Gate UI Y
+			Tooltip: ""
+		}
+
+		LeafShieldUIPosX: {
+			Label: Leaf Shield UI X
+			Tooltip: ""
+		}
+
+		LeafShieldUIPosY: {
+			Label: Leaf Shield UI Y
+			Tooltip: ""
+		}
+
+		CooldownUIIconAlpha: {
+			Label: Cooldown UI Icon Alpha
+			Tooltip: ""
+		}
+
+		CooldownUIOverallAlpha: {
+			Label: Cooldown UI Overall Alpha
+			Tooltip: ""
+		}
+
+		LumenAegisUIPosX: {
+			Label: Lumen Aegis UI X
+			Tooltip: ""
+		}
+
+		LumenAegisUIPosY: {
+			Label: Lumen Aegis UI Y
+			Tooltip: ""
+		}
+
+		BloodGodHeartUIPosX: {
+			Label: Blood God Heart UI X
+			Tooltip: ""
+		}
+
+		BorderlessUIPosX: {
+			Label: Borderless UI X
+			Tooltip: ""
+		}
+
+		BorderlessUIPosY: {
+			Label: Borderless UI Y
+			Tooltip: ""
+		}
+
+		BloodGodHeartUIPosY: {
+			Label: Blood God Heart UI Y
+			Tooltip: ""
+		}
 	}
 }
 
 NPCs: {
+	LauncherPhantomDragonHead.DisplayName: 팬텀 드래곤
+	LauncherPhantomDragonBody1.DisplayName: 팬텀 드래곤 몸통
+	LauncherPhantomDragonBody2.DisplayName: 팬텀 드래곤 몸통
+	LauncherPhantomDragonBody3.DisplayName: 팬텀 드래곤 몸통
+	LauncherPhantomDragonBody4.DisplayName: 팬텀 드래곤 몸통
+	LauncherPhantomDragonTail.DisplayName: 팬텀 드래곤 꼬리
+	LauncherHiveNPC.DisplayName: 발사된 벌통
+	LauncherBeeNPC.DisplayName: 소형 벌
+	LauncherTentacleNPC.DisplayName: 플랜테라 촉수
+	LauncherSharkNPC.DisplayName: 상어
 	ControlledMonster.DisplayName: Controlled Monster
 	AdaptationSensorNPC.DisplayName: Adaptation Sensor N P C
 	RabbitMissileNPC.DisplayName: Rabbit Missile N P C

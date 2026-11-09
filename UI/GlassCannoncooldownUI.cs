@@ -103,7 +103,6 @@ namespace CAmod.UI
 
             if (hitbox.Contains(Main.MouseScreen.ToPoint()))
             {
-                Main.LocalPlayer.mouseInterface = true; // 아이템 클릭 방지
 
                 Main.hoverItemName = "Arcane Evolving : Glass Cannon";
 

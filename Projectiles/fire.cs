@@ -1,4 +1,4 @@
-﻿using Terraria;
+using Terraria;
 using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -338,20 +338,7 @@ namespace CAmod.Projectiles
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            if (ModLoader.TryGetMod("CalamityMod", out Mod calamity))
-            {
-                try
-                {
-                    Type dragonType = calamity.Code.GetType("CalamityMod.Buffs.DamageOverTime.Dragonfire");
-
-                    if (dragonType != null)
-                    {
-                        int dragonID = calamity.Find<ModBuff>(dragonType.Name).Type;
-                        target.AddBuff(dragonID, 180);
-                    }
-                }
-                catch { }
-            }
+            target.AddBuff(ModContent.BuffType<global::CalamityMod.Buffs.DamageOverTime.Dragonfire>(), 180);
 
             SpawnExplosionDust();
 
@@ -908,20 +895,7 @@ namespace CAmod.Projectiles
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            if (ModLoader.TryGetMod("CalamityMod", out Mod calamity))
-            {
-                try
-                {
-                    Type dragonType = calamity.Code.GetType("CalamityMod.Buffs.DamageOverTime.Dragonfire");
-
-                    if (dragonType != null)
-                    {
-                        int dragonID = calamity.Find<ModBuff>(dragonType.Name).Type;
-                        target.AddBuff(dragonID, 180);
-                    }
-                }
-                catch { }
-            }
+            target.AddBuff(ModContent.BuffType<global::CalamityMod.Buffs.DamageOverTime.Dragonfire>(), 180);
 
             SpawnExplosionDust();
 

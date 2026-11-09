@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ModLoader;
@@ -21,7 +21,7 @@ namespace CAmod.Players
 
         public float dotRemainderStock = 0f;
 
-        public float bonusd = 1f;
+        public float BrandDamageBonus;
 
         public int totalDustCounter = 0;
         // 1초 동안 생성된 전체 더스트 수를 저장한다
@@ -37,6 +37,7 @@ namespace CAmod.Players
         public override void ResetEffects()
         {
             HasConduitEquipped = false;
+            BrandDamageBonus = 0f;
         }
 
         public override void PostUpdate()
@@ -57,120 +58,22 @@ namespace CAmod.Players
             dustThisFrame = 0;
         }
 
-        public override void ModifyHitNPCWithProj(
-            Projectile proj,
-            NPC target,
-            ref NPC.HitModifiers modifiers
-        )
+        public override void OnHitNPCWithItem(Item item, NPC target, NPC.HitInfo hit, int damageDone)
         {
-            // 장신구 미착용시 종료한다
-            if (!HasConduitEquipped)
-                return;
-
-            if (
-                proj.DamageType == DamageClass.Magic &&
-                proj.owner == Player.whoAmI
-            )
-            {
-                modifiers.FinalDamage *= 1f + bonusd;
-                // 마법 투사체 최종 데미지를 증가시킨다
-            }
+            ApplyBrand(target, hit, damageDone);
         }
 
-        public override void OnHitNPC(
-            NPC target,
-            NPC.HitInfo hit,
-            int damageDone
-        )
+        internal void ApplyBrand(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            if (!HasConduitEquipped)
+            if (!HasConduitEquipped || Player.whoAmI != Main.myPlayer
+                || !target.active || target.life <= 0 || target.friendly
+                || hit.DamageType != DamageClass.Magic
+                || (!hit.Crit && damageDone == 1) || (hit.Crit && damageDone == 2)
+                || damageDone <= 0)
                 return;
 
-            if (!target.active || target.life <= 0)
-                return;
-
-            // 마법 공격만 적용한다
-            if (hit.DamageType != DamageClass.Magic)
-                return;
-
-            // 최소 강제 데미지는 무시한다
-            if (
-                (!hit.Crit && damageDone == 1) ||
-                (hit.Crit && damageDone == 2)
-            )
-                return;
-
-            bool existing =
-                Main.projectile.Any(
-                    p =>
-                        p.active &&
-                        p.owner == Player.whoAmI &&
-                        p.type ==
-                        ModContent.ProjectileType<HolyFlame>() &&
-                        (int)p.ai[0] == target.whoAmI
-                );
-
-            // -------------------------
-            // 최초 생성
-            // -------------------------
-
-            if (!existing)
-            {
-                int projIndex =
-                    Projectile.NewProjectile(
-                        Player.GetSource_OnHit(target),
-                        target.Center,
-                        Vector2.Zero,
-                        ModContent.ProjectileType<HolyFlame>(),
-                        0,
-                        0f,
-                        Player.whoAmI,
-                        ai0: target.whoAmI
-                    );
-
-                // 생성된 투사체를 가져온다
-                Projectile proj =
-                    Main.projectile[projIndex];
-
-                if (proj.ModProjectile is HolyFlame flame)
-                {
-                    int stack =
-                        CalculateDotStack(damageDone);
-
-                    // 생성 직후 즉시 스택을 부여한다
-                    flame.IncreaseDotDamage(stack);
-                }
-            }
-
-            // -------------------------
-            // 이미 존재할 경우
-            // -------------------------
-
-            else
-            {
-                foreach (
-                    var p in Main.projectile.Where(
-                        p =>
-                            p.active &&
-                            p.type ==
-                            ModContent.ProjectileType<HolyFlame>() &&
-                            (int)p.ai[0] == target.whoAmI
-                    )
-                )
-                {
-                    // 지속시간을 갱신한다
-                    p.timeLeft = 180;
-
-                    if (p.ModProjectile is HolyFlame flame)
-                    {
-                        int stack =
-                            CalculateDotStack(damageDone);
-
-                        // 스택을 증가시킨다
-                        flame.IncreaseDotDamage(stack);
-                    }
-                }
-            }
+            target.GetGlobalNPC<global::CAmod.Globals.PyromancerBrandGlobalNPC>()
+                .AddBrand(target, Player.whoAmI, CalculateDotStack(damageDone));
         }
 
         // 화상 스택 증가량 계산 함수
